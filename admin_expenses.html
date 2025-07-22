@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Expenses Overview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+ <style>
+  * {
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  body, html {
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)),
+      url('bg.png') no-repeat center center fixed;
+    background-size: cover;
+  }
+
+  header {
+    background-color: #800000;
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .logo-container img {
+    height: 80px;
+    width: auto;
+  }
+
+  .logo-container h1 {
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .branch-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-left: 0.1rem;
+    color: #fff;
+  }
+
+  .nav-buttons {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .nav-buttons a {
+    background: #fff;
+    color: #800000;
+    padding: 0.6rem 1.3rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .nav-buttons a:hover {
+    background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
+    color: #fff;
+  }
+
+  .main-content {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .branch-box {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+  }
+
+  .branch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .branch-header h3 {
+    color: #800000;
+    font-size: 1.2rem;
+  }
+
+  .filters input,
+  .filters select {
+    padding: 0.3rem;
+    border-radius: 0.3rem;
+    border: 1px solid #ccc;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 0.3rem;
+    text-align: center;
+  }
+
+  th {
+    background-color: #800000;
+    color: #fff;
+  }
+
+  .branch-total {
+    text-align: right;
+    font-weight: 600;
+    color: #800000;
+    margin-top: 0.3rem;
+  }
+
+  .grand-total {
+    text-align: center;
+    font-weight: 700;
+    color: #800000;
+    font-size: 1.2rem;
+    margin: 1rem 0;
+  }
+
+  .action-buttons {
+    text-align: center;
+    margin: 1rem 0;
+  }
+
+  .action-buttons button {
+    margin: 0 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #800000;
+    color: #fff;
+    border: none;
+    border-radius: 0.3rem;
+    cursor: pointer;
+  }
+
+  .action-buttons button:hover {
+    background: #a00000;
+  }
+
+  #chartContainer {
+    margin-top: 2rem;
+    text-align: center;
+  }
+
+  #addExpenseModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #addExpenseModal div {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    width: 300px;
+  }
+
+  #chartContainer {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+}
+
+</style>
+
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="ERestore Logo" />
+      <h1>ERestore Leatherworks <span class="branch-name">| Admin Panel</span></h1>
+    </div>
+    <nav class="nav-buttons">
+      <a href="admin.html">Home</a>
+      <a href="admin_reports.html">Reports</a>
+      <a href="admin_appointments.html">Appointments</a>
+      <a href="admin_customerlist.html">Customers</a>
+      <a href="admin_attendance.html">Attendance</a>
+      <a href="admin_expenses.html">Expenses</a>
+    </nav>
+  </header>
+
+  <div class="main-content" id="branchesContainer"></div>
+  <div class="grand-total" id="grandTotal">Grand Total: ₱0.00</div>
+
+  <div class="action-buttons">
+    <button onclick="exportCSV()">Export CSV</button>
+    <button onclick="exportPDF()">Export PDF</button>
+    <button onclick="showAddModal()">Add Expense</button>
+  </div>
+
+<div id="chartContainer" style="width: 80%; height: 30vh; margin: 1rem auto;">
+  <canvas id="expensesChart"></canvas>
+</div>
+
+
+
+  <div id="addExpenseModal">
+    <div>
+      <h3>Add Expense</h3>
+      <input type="text" id="expenseDate" placeholder="Date (YYYY-MM-DD)" /><br><br>
+      <input type="text" id="expenseDesc" placeholder="Description" /><br><br>
+      <input type="number" id="expenseAmount" placeholder="Amount" /><br><br>
+      <button onclick="addExpense()">Save</button>
+      <button onclick="closeAddModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg", authDomain: "erestore-leatherworks.firebaseapp.com", projectId: "erestore-leatherworks", storageBucket: "erestore-leatherworks.appspot.com", messagingSenderId: "727698074030", appId: "1:727698074030:web:58870b6be96934e71c003f" };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const branches = [ { name: "Greenhills", collection: "gh_expenses" }, { name: "Abreeza", collection: "abreeza_expenses" }, { name: "Bacolod", collection: "bcd_expenses" }, { name: "CDO", collection: "cdo_expenses" }, { name: "Gensan", collection: "gensan_expenses" }, { name: "Lanang", collection: "lanang_expenses" } ];
+
+    const branchesContainer = document.getElementById('branchesContainer');
+    const grandTotalDisplay = document.getElementById('grandTotal');
+    const ctx = document.getElementById('expensesChart').getContext('2d');
+    let grandTotal = 0;
+    let expensesChart;
+
+    async function loadBranchExpenses(branch) {
+      const querySnapshot = await getDocs(collection(db, branch.collection));
+      let branchTotal = 0;
+      const branchBox = document.createElement('div');
+      branchBox.className = 'branch-box';
+      branchBox.innerHTML = `
+  <div class="branch-header">
+    <h3>${branch.name}</h3>
+    <div class="branch-filters" style="display:flex; gap:0.5rem; align-items:center;">
+      <input type="text" class="date-range-picker" placeholder="Filter by date range" style="padding:5px; border-radius:5px; border:1px solid #ccc;">
+      <button onclick="exportBranchCSV('${branch.name}')" style="padding:5px 10px; border:none; background:#800000; color:white; border-radius:5px; cursor:pointer;">Export CSV</button>
+      <button onclick="exportBranchPDF('${branch.name}')" style="padding:5px 10px; border:none; background:#800000; color:white; border-radius:5px; cursor:pointer;">Print PDF</button>
+    </div>
+  </div>
+  <table>
+    <thead><tr><th>Date</th><th>Description</th><th>₱ Amount</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <div class="branch-total">Total: ₱0.00</div>`;
+
+      branchesContainer.appendChild(branchBox);
+      flatpickr(branchBox.querySelector('.date-range-picker'), {
+  mode: "range",
+  dateFormat: "Y-m-d",
+  onChange: function(selectedDates, dateStr) {
+    filterBranchExpenses(branch.name, selectedDates);
+  }
+});
+
+      const tbody = branchBox.querySelector('tbody');
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${data.date}</td><td>${data.description}</td><td>${data.amount.toFixed(2)}</td>`;
+        tbody.appendChild(row);
+        branchTotal += data.amount;
+        grandTotal += data.amount;
+      });
+      branch.total = branchTotal; // Save total for chart
+      branchBox.querySelector('.branch-total').textContent = `Total: ₱${branchTotal.toFixed(2)}`;
+    }
+
+    async function loadAllBranches() {
+      for (const branch of branches) {
+        await loadBranchExpenses(branch);
+      }
+      grandTotalDisplay.textContent = `Grand Total: ₱${grandTotal.toFixed(2)}`;
+      renderChart();
+    }
+
+    function renderChart() {
+  if (expensesChart) expensesChart.destroy();
+  expensesChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: branches.map(b => b.name),
+      datasets: [{
+        label: 'Total Expenses',
+        data: branches.map(b => b.total),
+        backgroundColor: [
+          '#800000', '#a52a2a', '#b22222', '#cd5c5c', '#e9967a', '#f08080'
+        ],
+        borderColor: '#333',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return '₱' + context.parsed.y.toLocaleString();
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '₱' + value.toLocaleString();
+            },
+            color: '#800000',
+            font: {
+              size: 12
+            }
+          },
+          title: {
+            display: true,
+            text: 'Amount (₱)',
+            color: '#800000',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
+          }
+        },
+        x: {
+          ticks: {
+            color: '#800000',
+            font: {
+              size: 12
+            }
+          },
+          title: {
+            display: true,
+            text: 'Branches',
+            color: '#800000',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+
+   window.exportCSV = function() {
+  let csvContent = "data:text/csv;charset=utf-8,";
+
+  document.querySelectorAll('.branch-box').forEach(branchBox => {
+    const branchName = branchBox.querySelector('.branch-header h3').innerText;
+    csvContent += `${branchName} Expenses\n`;
+    csvContent += "Date,Description,Amount\n";
+
+    branchBox.querySelectorAll('tbody tr').forEach(row => {
+      const cells = row.querySelectorAll('td');
+      csvContent += `${cells[0].innerText},${cells[1].innerText},${cells[2].innerText}\n`;
+    });
+
+    csvContent += "\n"; // Add a blank line between branches
+  });
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', 'expenses.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+window.exportBranchCSV = function(branchName) {
+  const branchBox = [...document.querySelectorAll('.branch-box')].find(box =>
+    box.querySelector('h3').innerText === branchName);
+  let csvContent = "data:text/csv;charset=utf-8,Date,Description,Amount\n";
+
+  branchBox.querySelectorAll('tbody tr').forEach(row => {
+    if (row.style.display !== 'none') {
+      const cells = row.querySelectorAll('td');
+      csvContent += `${cells[0].innerText},${cells[1].innerText},${cells[2].innerText}\n`;
+    }
+  });
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', `${branchName}_expenses.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+
+
+window.exportPDF = async function () {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Load Logo as Base64 (for compatibility)
+  const logoUrl = 'logo.png'; // Use online URL or replace with absolute path if needed
+  const getBase64Image = (url) => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = function () {
+      const canvas = document.createElement('canvas');
+      canvas.width = this.naturalWidth;
+      canvas.height = this.naturalHeight;
+      canvas.getContext('2d').drawImage(this, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+
+  try {
+    const logoBase64 = await getBase64Image(logoUrl);
+    doc.addImage(logoBase64, 'PNG', 10, 10, 30, 30); // x, y, width, height
+  } catch (e) {
+    console.warn("Logo could not be loaded for PDF. Skipping.");
+  }
+
+  // Add Company Name and Title
+  doc.setFontSize(16);
+  doc.text("ERestore Leatherworks | Admin Panel", 45, 20);
+  doc.setFontSize(12);
+  doc.text("Expenses Report", 45, 28);
+
+  let y = 50; // Start position after header
+
+  // Loop through each branch
+  document.querySelectorAll('.branch-box').forEach(branchBox => {
+    const branchName = branchBox.querySelector('.branch-header h3').innerText;
+
+    // Check for page overflow
+    if (y > 260) {
+      doc.addPage();
+      y = 20;
+    }
+
+    // Add Branch Name
+    doc.setFontSize(14);
+    doc.setTextColor(128, 0, 0); // Maroon
+    doc.text(branchName + " Expenses", 10, y);
+    y += 8;
+
+    // Table Header
+    doc.setFillColor(128, 0, 0); // Maroon background
+    doc.setTextColor(255, 255, 255); // White text
+    doc.rect(10, y - 5, pageWidth - 20, 7, 'F'); // x, y, width, height
+    doc.text("Date", 12, y);
+    doc.text("Description", 70, y);
+    doc.text("Amount", pageWidth - 40, y);
+    y += 8;
+
+    doc.setTextColor(0, 0, 0); // Black text
+
+    // Table Rows
+    branchBox.querySelectorAll('tbody tr').forEach(row => {
+      const cells = row.querySelectorAll('td');
+      doc.text(cells[0].innerText, 12, y); // Date
+      doc.text(cells[1].innerText, 70, y); // Description
+      doc.text("₱" + cells[2].innerText, pageWidth - 40, y, { align: 'right' }); // Amount
+      y += 7;
+
+      if (y > 280) { // Prevent overflow
+        doc.addPage();
+        y = 20;
+      }
+    });
+
+    // Branch Total
+    const branchTotal = branchBox.querySelector('.branch-total').innerText;
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text(branchTotal, pageWidth - 10, y, { align: 'right' });
+    doc.setFont(undefined, 'normal');
+    y += 12;
+  });
+
+  // Grand Total
+  doc.setFontSize(13);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Grand Total: " + document.getElementById('grandTotal').innerText.replace("Grand Total: ", ""), pageWidth / 2, y, { align: 'center' });
+
+  // Save PDF
+  doc.save('expenses_report.pdf');
+};
+
+window.exportBranchPDF = async function (branchName) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 15;
+  let y = 20;
+
+  // ✅ Fix Peso Sign: Replace ₱ with PHP (as fallback if font can't show ₱)
+  const formatAmount = (amount) => `PHP ${amount.replace(/[^\d.,-]/g, '')}`;
+
+  // ✅ Load Logo as Base64
+  const logoUrl = 'logo.png'; // Or full URL if hosted online
+  const getBase64Image = (url) => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = function () {
+      const canvas = document.createElement('canvas');
+      canvas.width = this.naturalWidth;
+      canvas.height = this.naturalHeight;
+      canvas.getContext('2d').drawImage(this, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+
+  try {
+    const logoBase64 = await getBase64Image(logoUrl);
+    doc.addImage(logoBase64, 'PNG', margin, y, 25, 25);
+  } catch (e) {
+    console.warn("Logo not loaded for PDF header.");
+  }
+
+  // ✅ Add Company Name and Report Title
+  doc.setFontSize(16);
+  doc.setTextColor(128, 0, 0);
+  doc.text("ERestore Leatherworks", margin + 30, y + 8);
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Admin Panel - Expenses Report", margin + 30, y + 15);
+
+  // ✅ Add Branch Name
+  y += 35;
+  doc.setFontSize(12);
+  doc.setTextColor(128, 0, 0);
+  doc.text(`${branchName} Expenses`, margin, y);
+  y += 8;
+
+  // ✅ Table Header
+  doc.setFillColor(128, 0, 0);
+  doc.setTextColor(255, 255, 255);
+  doc.rect(margin, y - 5, pageWidth - margin * 2, 7, 'F');
+  doc.text("Date", margin + 2, y);
+  doc.text("Description", margin + 50, y);
+  doc.text("Amount", pageWidth - margin - 20, y, { align: 'right' });
+  y += 6;
+
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(9);
+
+  const branchBox = [...document.querySelectorAll('.branch-box')].find(box =>
+    box.querySelector('h3').innerText === branchName);
+
+  // ✅ Table Rows
+  branchBox.querySelectorAll('tbody tr').forEach(row => {
+    if (row.style.display !== 'none') {
+      const cells = row.querySelectorAll('td');
+      doc.text(cells[0].innerText, margin + 2, y); // Date
+      doc.text(cells[1].innerText, margin + 50, y); // Description
+      doc.text(formatAmount(cells[2].innerText), pageWidth - margin - 20, y, { align: 'right' }); // Amount
+      y += 5;
+
+      if (y > pageHeight - 20) {
+        doc.addPage();
+        y = 20;
+
+        // ✅ Repeat Header
+        doc.setFillColor(128, 0, 0);
+        doc.setTextColor(255, 255, 255);
+        doc.rect(margin, y - 5, pageWidth - margin * 2, 7, 'F');
+        doc.text("Date", margin + 2, y);
+        doc.text("Description", margin + 50, y);
+        doc.text("Amount", pageWidth - margin - 20, y, { align: 'right' });
+        y += 6;
+        doc.setTextColor(0, 0, 0);
+      }
+    }
+  });
+
+  // ✅ Branch Total
+  const branchTotal = branchBox.querySelector('.branch-total').innerText;
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'bold');
+  doc.text(branchTotal.replace('₱', 'PHP '), pageWidth - margin, y + 5, { align: 'right' });
+  doc.setFont(undefined, 'normal');
+
+  // ✅ Footer with Page Numbers
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+  }
+
+  // ✅ Save PDF
+  doc.save(`${branchName}_expenses.pdf`);
+};
+
+
+
+    window.showAddModal = function() {
+      document.getElementById('addExpenseModal').style.display = 'flex';
+      flatpickr("#expenseDate", { dateFormat: "Y-m-d" });
+    };
+
+    window.closeAddModal = function() {
+      document.getElementById('addExpenseModal').style.display = 'none';
+    };
+
+    window.addExpense = async function() {
+      const date = document.getElementById('expenseDate').value;
+      const description = document.getElementById('expenseDesc').value;
+      const amount = parseFloat(document.getElementById('expenseAmount').value);
+      if (!date || !description || isNaN(amount)) {
+        alert("Please fill all fields correctly"); return;
+      }
+      await addDoc(collection(db, branches[0].collection), { date, description, amount });
+      alert("Expense added successfully");
+      closeAddModal();
+      location.reload();
+    };
+
+    function filterBranchExpenses(branchName, selectedDates) {
+  const branchBox = [...document.querySelectorAll('.branch-box')].find(box =>
+    box.querySelector('h3').innerText === branchName);
+  const tbody = branchBox.querySelector('tbody');
+  const rows = tbody.querySelectorAll('tr');
+  let branchTotal = 0;
+
+  rows.forEach(row => {
+    const date = new Date(row.children[0].innerText);
+    const startDate = selectedDates[0];
+    const endDate = selectedDates[1] || startDate;
+
+    if (date >= startDate && date <= endDate) {
+      row.style.display = '';
+      branchTotal += parseFloat(row.children[2].innerText.replace('₱', '').replace(',', ''));
+    } else {
+      row.style.display = 'none';
+    }
+  });
+
+  // Update the total for this branch
+  branchBox.querySelector('.branch-total').textContent = `Total: ₱${branchTotal.toFixed(2)}`;
+}
+
+    loadAllBranches();
+  </script>
+</body>
+</html>
+
