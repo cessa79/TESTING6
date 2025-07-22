@@ -497,7 +497,7 @@
       <h2>New Sales Order</h2>
       <form id="salesOrderForm">
         <label for="jobOrderNumber">Job Order Number</label>
-        <input type="text" id="jobOrderNumber" readonly />
+        <input type="text" id="jobOrderNumber" required  />
 
         <label for="dateBooked">Date Booked</label>
         <input type="date" id="dateBooked" required />
@@ -891,9 +891,22 @@ function getNextTicketNumber() {
   try {
     const ordersCollection = collection(db, "gh_salesOrders");
     console.log("📤 Attempting to write to Firestore...");
-    await addDoc(ordersCollection, order);
-    alert("✅ Sales Order has been saved to Firestore!");
-    window.location.href = "gh_salesorder.html";
+   import { query, where } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+const enteredJobOrderNumber = order.jobOrderNumber.trim();
+const q = query(ordersCollection, where("jobOrderNumber", "==", enteredJobOrderNumber));
+const querySnapshot = await getDocs(q);
+
+if (!querySnapshot.empty) {
+  alert("❌ Job Order Number already exists. Please enter a unique Job Order Number.");
+  return; // Stop saving
+}
+
+// Safe to save
+await addDoc(ordersCollection, order);
+alert("✅ Sales Order has been saved to Firestore!");
+window.location.href = "gh_salesorder.html";
+
   } catch (error) {
     console.error("❌ Firestore Error:", error);
     alert("❌ Failed to save sales order. Please try again.");
