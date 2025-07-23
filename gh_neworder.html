@@ -672,7 +672,9 @@
     getFirestore,
     collection,
     addDoc,
-    getDocs
+    getDocs,
+    query,
+    where
   } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -711,7 +713,7 @@
         if (receivers[receiver] === enteredPassword) {
           receiverInput.value = receiver;
           modal.style.display = "none";
-          passwordInput.value = ''; // Clear input
+          passwordInput.value = '';
           return;
         }
       }
@@ -728,22 +730,22 @@
     const addItemBtn = document.getElementById('addItemBtn');
     const itemTableBody = document.querySelector('#itemTable tbody');
 
-function getNextTicketNumber() {
-  return document.querySelectorAll('#itemTable tbody tr').length + 1;
-}
+    function getNextTicketNumber() {
+      return document.querySelectorAll('#itemTable tbody tr').length + 1;
+    }
 
     addItemBtn.addEventListener('click', function () {
-  const newRow = document.createElement('tr');
-  const nextTicket = getNextTicketNumber();
-  newRow.innerHTML = `
-       <td><input type="text" name="ticketNo" value="${nextTicket}" readonly /></td>
-       <td><input type="text" name="itemDescription" list="brandList" /></td>
-       <td><input type="number" name="quantity" required /></td>
+      const newRow = document.createElement('tr');
+      const nextTicket = getNextTicketNumber();
+      newRow.innerHTML = `
+        <td><input type="text" name="ticketNo" value="${nextTicket}" readonly /></td>
+        <td><input type="text" name="itemDescription" list="brandList" /></td>
+        <td><input type="number" name="quantity" required /></td>
         <td><input type="number" name="price" step="0.01" required /></td>
         <td><input type="text" name="remarks" /></td>
         <td>
           <select name="repairman">
-          <option value="" disabled selected>Select Repairman</option>
+            <option value="" disabled selected>Select Repairman</option>
             <option>Edwin Casoy</option><option>Priam Gatela</option><option>Jomer Sol</option>
             <option>Jett Villanueva</option><option>Joselito Yude</option><option>Randy Rubi</option>
             <option>Benjie Rubi</option><option>Edgardo Yude Jr.</option><option>Charlie Carpio</option>
@@ -753,14 +755,12 @@ function getNextTicketNumber() {
         </td>
         <td><button type="button" class="removeBtn">Remove</button></td>
       `;
-
       itemTableBody.appendChild(newRow);
 
       newRow.querySelector('.removeBtn').addEventListener('click', function () {
         this.closest('tr').remove();
         updateBalance();
         document.querySelector('#itemTable tbody tr input[name="ticketNo"]').value = "1";
-
       });
 
       attachInputListeners(newRow);
@@ -801,7 +801,7 @@ function getNextTicketNumber() {
     imageInput.addEventListener('change', function (e) {
       const files = e.target.files;
       imagePreviewWrapper.innerHTML = '';
-      Array.from(files).forEach((file, index) => {
+      Array.from(files).forEach(file => {
         const reader = new FileReader();
         reader.onload = function (event) {
           const previewContainer = document.createElement('div');
@@ -820,155 +820,135 @@ function getNextTicketNumber() {
       });
     });
 
-    // Auto-generate Job Order Number
-    import { query, where } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    // ✅ Auto-generate Job Order Number (starting at JO-00063)
+    async function generateUniqueJobOrderNumber() {
+      const ordersCollection = collection(db, "gh_salesOrders");
+      let currentNumber = parseInt(localStorage.getItem('jobOrderCounter') || '63'); // Start at 63
+      let isUnique = false;
 
-async function generateUniqueJobOrderNumber() {
-  const ordersCollection = collection(db, "gh_salesOrders");
-  let currentNumber = parseInt(localStorage.getItem('jobOrderCounter') || '63'); // Start from 63
-  let isUnique = false;
+      while (!isUnique) {
+        const formattedNumber = currentNumber.toString().padStart(5, '0');
+        const jobOrderNumber = 'JO-' + formattedNumber;
 
-  while (!isUnique) {
-    const formattedNumber = currentNumber.toString().padStart(5, '0');
-    const jobOrderNumber = 'JO-' + formattedNumber;
+        const q = query(ordersCollection, where("jobOrderNumber", "==", jobOrderNumber));
+        const querySnapshot = await getDocs(q);
 
-    // Check Firestore for duplicates
-    const q = query(ordersCollection, where("jobOrderNumber", "==", jobOrderNumber));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      // ✅ Unique found
-      document.getElementById('jobOrderNumber').value = jobOrderNumber;
-      localStorage.setItem('jobOrderCounter', currentNumber + 1); // Save next number
-      isUnique = true;
-    } else {
-      // 🔁 Try next number
-      currentNumber++;
+        if (querySnapshot.empty) {
+          document.getElementById('jobOrderNumber').value = jobOrderNumber;
+          localStorage.setItem('jobOrderCounter', currentNumber + 1);
+          isUnique = true;
+        } else {
+          currentNumber++;
+        }
+      }
     }
-  }
-}
-
-generateUniqueJobOrderNumber();
-
+    generateUniqueJobOrderNumber();
 
     // FORM SUBMIT (Save & Redirect)
     document.getElementById('salesOrderForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+      e.preventDefault();
 
+      console.log("🚀 Submit clicked");
 
-  console.log("🚀 Submit clicked");
+      for (let row of document.querySelectorAll('#itemTable tbody tr')) {
+        const desc = row.querySelector('input[name="itemDescription"]').value.trim();
+        const repairman = row.querySelector('select[name="repairman"]').value;
+        if (!desc || !repairman) {
+          alert("Please complete all item descriptions and select a repairman.");
+          return;
+        }
+      }
 
-  // Validate items before saving
- for (let row of document.querySelectorAll('#itemTable tbody tr')) {
-    const desc = row.querySelector('input[name="itemDescription"]').value.trim();
-    const repairman = row.querySelector('select[name="repairman"]').value;
+      const items = [];
+      document.querySelectorAll('#itemTable tbody tr').forEach(row => {
+        items.push({
+          ticketNo: row.querySelector('input[name="ticketNo"]').value,
+          itemDescription: row.querySelector('input[name="itemDescription"]').value,
+          quantity: row.querySelector('input[name="quantity"]').value,
+          price: row.querySelector('input[name="price"]').value,
+          remarks: row.querySelector('input[name="remarks"]').value,
+          repairman: row.querySelector('select[name="repairman"]').value,
+        });
+      });
 
-    if (!desc || !repairman) {
-      alert("Please complete all item descriptions and select a repairman.");
-      return;
-    }
-  }
+      const imageBase64List = Array.from(document.querySelectorAll('#imagePreviewWrapper img')).map(img => img.src);
 
-  // Prepare items array
-  const items = [];
-  document.querySelectorAll('#itemTable tbody tr').forEach(row => {
-    items.push({
-      ticketNo: row.querySelector('input[name="ticketNo"]').value,
-      itemDescription: row.querySelector('input[name="itemDescription"]').value,
-      quantity: row.querySelector('input[name="quantity"]').value,
-      price: row.querySelector('input[name="price"]').value,
-      remarks: row.querySelector('input[name="remarks"]').value,
-      repairman: row.querySelector('select[name="repairman"]').value,
+      const totalAmount = parseFloat(document.getElementById('totalAmount').value || 0);
+      const downPayment = parseFloat(document.getElementById('downPayment').value || 0);
+      const discount = parseFloat(document.getElementById('discount').value || 0);
+      const balance = totalAmount - discount - downPayment;
+
+      const order = {
+        jobOrderNumber: document.getElementById('jobOrderNumber').value,
+        dateBooked: document.getElementById('dateBooked').value,
+        customerName: document.getElementById('customerName').value,
+        contactNumber: document.getElementById('contactNumber').value,
+        email: document.getElementById('email').value,
+        receiver: document.getElementById('receiver').value,
+        paymentMode: document.getElementById('paymentMode').value,
+        balance: balance,
+        discount: discount,
+        downPayment: downPayment,
+        totalAmount: totalAmount,
+        amountPaid: downPayment,
+        completionDate: document.getElementById('completionDate').value,
+        branch: "Greenhills",
+        items: items,
+        images: imageBase64List
+      };
+
+      console.log("📝 Order data to be saved:", order);
+
+      try {
+        const ordersCollection = collection(db, "gh_salesOrders");
+        const enteredJobOrderNumber = order.jobOrderNumber.trim();
+        const q = query(ordersCollection, where("jobOrderNumber", "==", enteredJobOrderNumber));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          alert("❌ Job Order Number already exists. Please enter a unique Job Order Number.");
+          return;
+        }
+
+        await addDoc(ordersCollection, order);
+        alert("✅ Sales Order has been saved to Firestore!");
+        window.location.href = "gh_salesorder.html";
+
+      } catch (error) {
+        console.error("❌ Firestore Error:", error);
+        alert("❌ Failed to save sales order. Please try again.");
+      }
     });
-  });
-
-  // Get image base64 data
-    const imageBase64List = Array.from(document.querySelectorAll('#imagePreviewWrapper img')).map(img => img.src);
-
-  // ✅ Proper number parsing for balance, discount, downPayment, and new fields totalAmount & amountPaid
-  const totalAmount = parseFloat(document.getElementById('totalAmount').value || 0);
-  const downPayment = parseFloat(document.getElementById('downPayment').value || 0);
-  const discount = parseFloat(document.getElementById('discount').value || 0);
-  const balance = totalAmount - discount - downPayment;
-
-  const order = {
-    jobOrderNumber: document.getElementById('jobOrderNumber').value,
-    dateBooked: document.getElementById('dateBooked').value,
-    customerName: document.getElementById('customerName').value,
-    contactNumber: document.getElementById('contactNumber').value,
-    email: document.getElementById('email').value,
-    receiver: document.getElementById('receiver').value,
-    paymentMode: document.getElementById('paymentMode').value,
-    balance: balance,
-    discount: discount,
-    downPayment: downPayment,
-    totalAmount: totalAmount,
-    amountPaid: downPayment,
-    completionDate: document.getElementById('completionDate').value,
-    branch: "Greenhills",
-    items: items,
-    images: imageBase64List
-  };
-
-  console.log("📝 Order data to be saved:", order);
-
-  try {
-    const ordersCollection = collection(db, "gh_salesOrders");
-    console.log("📤 Attempting to write to Firestore...");
-   import { query, where } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-const enteredJobOrderNumber = order.jobOrderNumber.trim();
-const q = query(ordersCollection, where("jobOrderNumber", "==", enteredJobOrderNumber));
-const querySnapshot = await getDocs(q);
-
-if (!querySnapshot.empty) {
-  alert("❌ Job Order Number already exists. Please enter a unique Job Order Number.");
-  return; // Stop saving
-}
-
-// Safe to save
-await addDoc(ordersCollection, order);
-alert("✅ Sales Order has been saved to Firestore!");
-window.location.href = "gh_salesorder.html";
-
-  } catch (error) {
-    console.error("❌ Firestore Error:", error);
-    alert("❌ Failed to save sales order. Please try again.");
-  }
-});
-
 
     // Print Receipt
-    // Print Receipt
-document.getElementById('printBtn').addEventListener('click', () => {
-  const printContainer = document.getElementById('printableImages');
-  printContainer.innerHTML = '';
-  document.querySelectorAll('#imagePreviewWrapper img').forEach(img => {
-    const clone = img.cloneNode(true);
-    clone.removeAttribute('onclick');
-    printContainer.appendChild(clone);
-  });
+    document.getElementById('printBtn').addEventListener('click', () => {
+      const printContainer = document.getElementById('printableImages');
+      printContainer.innerHTML = '';
+      document.querySelectorAll('#imagePreviewWrapper img').forEach(img => {
+        const clone = img.cloneNode(true);
+        clone.removeAttribute('onclick');
+        printContainer.appendChild(clone);
+      });
 
-  const printedRemarks = document.getElementById('printedRemarks');
-  printedRemarks.innerHTML = '<h4 style="margin-bottom: 0.5rem;">Remarks:</h4>';
+      const printedRemarks = document.getElementById('printedRemarks');
+      printedRemarks.innerHTML = '<h4 style="margin-bottom: 0.5rem;">Remarks:</h4>';
 
-  const rows = document.querySelectorAll('#itemTable tbody tr');
-  rows.forEach((row, index) => {
-    const ticketNo = row.querySelector('input[name="ticketNo"]').value || `#${index + 1}`;
-    const itemDescription = row.querySelector('input[name="itemDescription"]').value || 'N/A';
-    const price = parseFloat(row.querySelector('input[name="price"]').value || '0');
-    const qty = parseFloat(row.querySelector('input[name="quantity"]').value || '1');
-    const total = (price * qty).toFixed(2);
-    const remarks = row.querySelector('input[name="remarks"]').value || 'No remarks';
+      const rows = document.querySelectorAll('#itemTable tbody tr');
+      rows.forEach((row, index) => {
+        const ticketNo = row.querySelector('input[name="ticketNo"]').value || `#${index + 1}`;
+        const itemDescription = row.querySelector('input[name="itemDescription"]').value || 'N/A';
+        const price = parseFloat(row.querySelector('input[name="price"]').value || '0');
+        const qty = parseFloat(row.querySelector('input[name="quantity"]').value || '1');
+        const total = (price * qty).toFixed(2);
+        const remarks = row.querySelector('input[name="remarks"]').value || 'No remarks';
 
-    const p = document.createElement('p');
-    p.textContent = `Ticket No: ${ticketNo} | Description: ${itemDescription} | Qty: ${qty} | Total: ₱${total} | Remarks: ${remarks}`;
-    printedRemarks.appendChild(p);
-  });
+        const p = document.createElement('p');
+        p.textContent = `Ticket No: ${ticketNo} | Description: ${itemDescription} | Qty: ${qty} | Total: ₱${total} | Remarks: ${remarks}`;
+        printedRemarks.appendChild(p);
+      });
 
-  window.print();
-});
-
+      window.print();
+    });
 
     // Print Ticket
     document.getElementById('printTicketBtn').addEventListener('click', () => {
@@ -1030,10 +1010,9 @@ document.getElementById('printBtn').addEventListener('click', () => {
       printWindow.focus();
       printWindow.print();
     });
+  });
 
-  }); // End DOMContentLoaded
-
-  // Load customer list from Firestore using modular syntax
+  // Load customer list from Firestore
   async function loadCustomerList() {
     try {
       const ordersCollection = collection(db, "gh_salesOrders");
@@ -1046,7 +1025,7 @@ document.getElementById('printBtn').addEventListener('click', () => {
       });
 
       const datalist = document.getElementById('customerList');
-      datalist.innerHTML = ''; // Clear before appending
+      datalist.innerHTML = '';
       customerSet.forEach(name => {
         const option = document.createElement('option');
         option.value = name;
@@ -1059,6 +1038,7 @@ document.getElementById('printBtn').addEventListener('click', () => {
 
   loadCustomerList();
 </script>
+
 
 
 </body>
