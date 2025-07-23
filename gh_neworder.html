@@ -821,11 +821,35 @@ function getNextTicketNumber() {
     });
 
     // Auto-generate Job Order Number
-    let currentNumber = parseInt(localStorage.getItem('jobOrderCounter') || '0');
-    currentNumber += 1;
-    localStorage.setItem('jobOrderCounter', currentNumber);
+    import { query, where } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+async function generateUniqueJobOrderNumber() {
+  const ordersCollection = collection(db, "gh_salesOrders");
+  let currentNumber = parseInt(localStorage.getItem('jobOrderCounter') || '63'); // Start from 63
+  let isUnique = false;
+
+  while (!isUnique) {
     const formattedNumber = currentNumber.toString().padStart(5, '0');
-    document.getElementById('jobOrderNumber').value = 'JO-' + formattedNumber;
+    const jobOrderNumber = 'JO-' + formattedNumber;
+
+    // Check Firestore for duplicates
+    const q = query(ordersCollection, where("jobOrderNumber", "==", jobOrderNumber));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      // ✅ Unique found
+      document.getElementById('jobOrderNumber').value = jobOrderNumber;
+      localStorage.setItem('jobOrderCounter', currentNumber + 1); // Save next number
+      isUnique = true;
+    } else {
+      // 🔁 Try next number
+      currentNumber++;
+    }
+  }
+}
+
+generateUniqueJobOrderNumber();
+
 
     // FORM SUBMIT (Save & Redirect)
     document.getElementById('salesOrderForm').addEventListener('submit', async function (e) {
