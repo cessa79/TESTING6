@@ -392,7 +392,7 @@
         <td>₱${total.toFixed(2)}</td>
         <td>
           ₱${balance}<br>
-        <button class="edit-btn" onclick="window.editBalance('${order.id}', ${total})">Edit</button>
+${balance > 0 ? `<button class="edit-btn" onclick="window.editBalance('${order.id}', ${total})">Edit</button>` : ''}
         </td>
         <td>${order.completionDate}</td>
         <td style="white-space: pre-wrap; text-align: left">${items}</td>
