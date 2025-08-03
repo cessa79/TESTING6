@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
+    
     .edit-btn {
   background-color: #004080;
   color: white;
@@ -210,6 +211,20 @@
   border: 1px solid #ccc;
   border-radius: 1rem;
 }
+#paymentModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
 
   </style>
 </head>
@@ -282,6 +297,24 @@
 
     </div>
   </div>
+
+<div id="paymentModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:#fff; padding:2rem; border-radius:1rem; box-shadow:0 4px 10px rgba(0,0,0,0.3); width:300px; text-align:center;">
+    <h3 style="margin-bottom:1rem;">Mark as Paid</h3>
+    <label><input type="checkbox" id="markPaidCheckbox" /> Paid</label><br><br>
+    <select id="paymentMethodSelect" style="padding:0.5rem; width:100%; border-radius:0.5rem;">
+      <option value="" disabled selected>Select Payment Method</option>
+      <option value="Cash">Cash</option>
+      <option value="G-Cash">G-Cash</option>
+      <option value="Debit Card">Debit Card</option>
+      <option value="Credit Card">Credit Card</option>
+      <option value="Check">Check</option>
+      <option value="PayMaya">PayMaya</option>
+    </select><br><br>
+    <button onclick="confirmPaymentUpdate()" style="background:#004080; color:white; padding:0.5rem 1rem; border-radius:1rem;">Confirm</button>
+    <button onclick="closePaymentModal()" style="margin-left:0.5rem; background:#ccc; color:#000; padding:0.5rem 1rem; border-radius:1rem;">Cancel</button>
+  </div>
+</div>
 
   <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-wrap:wrap; gap:1rem; padding:2rem;"></div>
 
@@ -359,7 +392,7 @@
         <td>₱${total.toFixed(2)}</td>
         <td>
           ₱${balance}<br>
-          <button class="edit-btn" onclick="editBalance('${order.id}', ${total})">Edit</button>
+        <button class="edit-btn" onclick="window.editBalance('${order.id}', ${total})">Edit</button>
         </td>
         <td>${order.completionDate}</td>
         <td style="white-space: pre-wrap; text-align: left">${items}</td>
@@ -384,23 +417,23 @@
 }
 
 
+let currentDocId = null;
+let currentTotalAmount = 0;
 
-  window.editBalance = async function (docId, totalAmount) {
-    const newPaid = prompt("Enter new amount paid:");
-    if (!newPaid || isNaN(newPaid)) return;
-    const amountPaid = parseFloat(newPaid);
-    const balance = totalAmount - amountPaid;
-    try {
-      await updateDoc(doc(db, "lanang_salesOrders", docId), {
-        amountPaid,
-        balance
-      });
-      alert("Balance updated successfully.");
-      loadSalesOrders();
-    } catch (e) {
-      alert("Update failed: " + e.message);
-    }
-  };
+window.editBalance = function (docId, totalAmount) {
+  currentDocId = docId;
+  currentTotalAmount = totalAmount;
+
+  // Reset modal values
+  document.getElementById('markPaidCheckbox').checked = false;
+  document.getElementById('paymentMethodSelect').value = '';
+
+  // Show modal
+  const modal = document.getElementById('paymentModal');
+  modal.style.display = 'flex';
+};
+
+
 
   function showImages(images) {
     const modal = document.getElementById('imageModal');
@@ -428,6 +461,45 @@
   });
 
   window.resetFormFields = resetFormFields;
+ window.confirmPaymentUpdate = async function () {
+  const paid = document.getElementById('markPaidCheckbox').checked;
+  const method = document.getElementById('paymentMethodSelect').value;
+
+  if (!paid) {
+    alert("Please check 'Paid' to confirm payment.");
+    return;
+  }
+
+  if (!method) {
+    alert("Please select a payment method.");
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, "lanang_salesOrders", currentDocId), {
+      amountPaid: currentTotalAmount,
+      balance: 0,
+      paymentMode: method
+    });
+    alert("✅ Payment status updated.");
+    closePaymentModal();
+    loadSalesOrders();
+  } catch (e) {
+    alert("❌ Update failed: " + e.message);
+  }
+};
+
+
+window.closePaymentModal = function () {
+  document.getElementById('paymentModal').style.display = 'none';
+};
+document.getElementById('paymentModal').style.display = 'flex';
+document.getElementById('paymentModal').addEventListener('click', function (e) {
+  if (e.target.id === 'paymentModal') {
+    closePaymentModal();
+  }
+});
+
 
 </script>
 
