@@ -496,7 +496,7 @@
       <h2>New Sales Order</h2>
       <form id="salesOrderForm">
         <label for="jobOrderNumber">Job Order Number</label>
-        <input type="text" id="jobOrderNumber" readonly />
+        <input type="text" id="jobOrderNumber"/>
 
         <label for="dateBooked">Date Booked</label>
         <input type="date" id="dateBooked" required />
@@ -825,10 +825,19 @@ function getNextTicketNumber() {
     const formattedNumber = currentNumber.toString().padStart(5, '0');
     document.getElementById('jobOrderNumber').value = 'JO-' + formattedNumber;
 
-    // FORM SUBMIT (Save & Redirect)
     document.getElementById('salesOrderForm').addEventListener('submit', async function (e) {
   e.preventDefault();
 
+const joInput = document.getElementById('jobOrderNumber');
+const joValue = (joInput.value || '').trim();
+if (!joValue) {
+  alert('Please enter a Job Order Number.');
+  joInput.focus();
+  return;
+}
+
+  
+ 
 
   console.log("🚀 Submit clicked");
 
@@ -1089,6 +1098,7 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
 
 </body>
 </html>
+
 
 
 
