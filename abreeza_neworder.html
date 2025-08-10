@@ -2,7 +2,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>New Sales Order - Abreeza </title>
+  <title>New Sales Order - Abreeza</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   
   <style>
@@ -487,7 +487,7 @@
       <a href="abreeza_appointment.html">Appointments</a>
       <a href="abreeza_customerlist.html">Customers</a>
       <a href="abreeza_attendance.html">Attendance</a>
-      <a href="cdo_expenses.html">Expenses</a>
+      <a href="abreeza_expenses.html">Expenses</a>
     </nav>
   </header>
 
@@ -497,6 +497,7 @@
       <form id="salesOrderForm">
         <label for="jobOrderNumber">Job Order Number</label>
         <input type="text" id="jobOrderNumber" />
+
 
         <label for="dateBooked">Date Booked</label>
         <input type="date" id="dateBooked" required />
@@ -581,8 +582,8 @@
             <td>
               <select name="repairman">
               <option value="" disabled selected>Select Repairman</option>
-                <option>Necky Garcia</option>
-                <option>Edwin Casoy</option>
+               <option>Necky Garcia</option>
+                 <option>Edwin Casoy</option>
                 <option>Priam Gatela</option>
                 <option>Jomer Sol</option>
                 <option>Jett Villanueva</option>
@@ -933,65 +934,130 @@ document.getElementById('printBtn').addEventListener('click', () => {
 
 
     // Print Ticket
-    document.getElementById('printTicketBtn').addEventListener('click', () => {
-      const ticketSection = document.getElementById('ticketPrintSection');
-      const jobOrder = document.getElementById('jobOrderNumber').value;
-      const receiver = document.getElementById('receiver').value;
-      const branch = "Abreeza";
-      const customerName = document.getElementById('customerName').value;
-      const dateReceived = document.getElementById('dateBooked').value;
-      const completionDate = document.getElementById('completionDate').value;
-      ticketSection.innerHTML = '';
+   // Print Ticket
+// Print Ticket (with reliable yellow highlight in print)
+// Print Ticket: 4 per A4 with highlights
+document.getElementById('printTicketBtn').addEventListener('click', () => {
+  const ticketSection = document.getElementById('ticketPrintSection');
+  const jobOrder = document.getElementById('jobOrderNumber').value;
+  const receiver = document.getElementById('receiver').value;
+  const branch = "Abreeza";
+  const customerName = document.getElementById('customerName').value;
+  const dateReceived = document.getElementById('dateBooked').value;
+  const completionDate = document.getElementById('completionDate').value;
+  ticketSection.innerHTML = '';
 
-      const rows = document.querySelectorAll('#itemTable tbody tr');
-      rows.forEach((row, index) => {
-        const ticketNo = row.querySelector('input[name="ticketNo"]').value || `#${index + 1}`;
-        const itemDescription = row.querySelector('input[name="itemDescription"]').value || 'N/A';
-        const remarks = row.querySelector('input[name="remarks"]').value || 'No remarks';
-        const price = row.querySelector('input[name="price"]').value || '0.00';
-        const qty = row.querySelector('input[name="quantity"]').value || '1';
-        const repairman = row.querySelector('select[name="repairman"]').value || 'N/A';
+  const rows = document.querySelectorAll('#itemTable tbody tr');
+  rows.forEach((row, index) => {
+    const ticketNo = row.querySelector('input[name="ticketNo"]').value || `#${index + 1}`;
+    const itemDescription = row.querySelector('input[name="itemDescription"]').value || 'N/A';
+    const remarks = row.querySelector('input[name="remarks"]').value || 'No remarks';
+    const price = parseFloat(row.querySelector('input[name="price"]').value || '0').toFixed(2);
+    const qty = row.querySelector('input[name="quantity"]').value || '1';
+    const repairman = row.querySelector('select[name="repairman"]').value || 'N/A';
 
-        const ticketContent = document.createElement('div');
-        ticketContent.classList.add('ticket-item');
-        ticketContent.innerHTML = `
-          <div style="border:1px solid #333; padding: 1rem; border-radius: 10px;">
-            <h3 style="text-align: center; color: maroon;">Repair Ticket</h3>
-            <p><strong>Job Order No.:</strong> ${jobOrder}</p>
-            <p><strong>Branch:</strong> ${branch}</p>
-            <p><strong>Customer:</strong> ${customerName}</p>
-            <p><strong>Ticket No.:</strong> ${ticketNo}</p>
-            <p><strong>Description:</strong> ${itemDescription}</p>
-            <p><strong>Remark:</strong> ${remarks}</p>
-            <p><strong>Qty:</strong> ${qty}</p>
-            <p><strong>Price:</strong> ₱${price}</p>
-            <p><strong>Date Received:</strong> ${dateReceived}</p>
-            <p><strong>Completion Date:</strong> ${completionDate}</p>
-            <p><strong>Receiver:</strong> ${receiver}</p>
-            <p><strong>Repairman Assigned:</strong> ${repairman}</p>
-          </div>
-        `;
-        ticketSection.appendChild(ticketContent);
-      });
+    const ticketContent = document.createElement('div');
+    ticketContent.classList.add('ticket-item');
+    ticketContent.innerHTML = `
+      <div class="ticket-card">
+        <h3>Repair Ticket</h3>
+        <p><strong>Branch:</strong> ${branch}</p>
+        <p><strong>Customer:</strong> ${customerName}</p>
+        <p><strong>Ticket No.:</strong> ${ticketNo}</p>
+        <p><strong>Description:</strong> ${itemDescription}</p>
 
-      const printWindow = window.open('', '', 'width=800,height=600');
-      printWindow.document.write(`
-        <html>
-        <head>
-          <title>Repair Tickets</title>
-          <style>
-            body { font-family: 'Inter', sans-serif; font-size: 8pt; padding: 20px; margin: 0; }
-            .ticket-item { width: 25%; float: left; margin: 10px; page-break-inside: avoid; }
-            h3 { color: maroon; text-align: center; }
-          </style>
-        </head>
-        <body>${ticketSection.innerHTML}</body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-    });
+        <p><strong class="hl">Remarks:</strong> <span class="hl">${remarks}</span></p>
+        <p><strong>Qty:</strong> ${qty}</p>
+        <p><strong class="hl">Amount:</strong> <span class="hl">₱${price}</span></p>
+
+        <p><strong>Date Received:</strong> ${dateReceived}</p>
+        <p><strong>Completion Date:</strong> ${completionDate}</p>
+        <p><strong>Receiver:</strong> ${receiver}</p>
+        <p><strong>Repairman Assigned:</strong> ${repairman}</p>
+        <p><strong class="hl">Job Order No.:</strong> <span class="hl">${jobOrder}</span></p>
+      </div>
+    `;
+    ticketSection.appendChild(ticketContent);
+  });
+
+  // Insert a page break after every 4 tickets
+  const items = Array.from(ticketSection.querySelectorAll('.ticket-item'));
+  items.forEach((el, i) => {
+    if ((i + 1) % 4 === 0) {
+      const br = document.createElement('div');
+      br.className = 'page-break';
+      ticketSection.insertBefore(br, el.nextSibling);
+    }
+  });
+
+  const printWindow = window.open('', '', 'width=900,height=700');
+  printWindow.document.write(`
+    <html>
+    <head>
+      <title>Repair Tickets</title>
+      <style>
+        /* Make colors print */
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        @page { size: A4 portrait; margin: 12mm; }
+
+        body { font-family: 'Inter', sans-serif; padding: 0; margin: 0; }
+        .wrap { padding: 8mm; }
+
+        /* 2 columns, 2 rows per page (4 items) */
+        .ticket-item {
+          width: 48%;
+          display: inline-block;
+          vertical-align: top;
+          margin: 0 1% 8mm 1%;
+          box-sizing: border-box;
+          page-break-inside: avoid;
+        }
+
+        .ticket-card {
+          border: 1px solid #333;
+          border-radius: 8px;
+          padding: 8mm;
+          font-size: 10.5pt;              /* Slightly smaller to fit 4 per page */
+          line-height: 1.25;
+        }
+
+        h3 {
+          text-align: center;
+          color: maroon;
+          margin: 0 0 4mm 0;
+          font-size: 13pt;
+        }
+
+        p { margin: 2mm 0; }
+
+        .hl {
+          background-color: #ffeb3b !important;
+          padding: 1px 4px;
+          border-radius: 3px;
+          display: inline-block;
+        }
+
+        .page-break { page-break-after: always; }
+
+        @media print {
+          .ticket-item { width: 48%; margin: 0 1% 8mm 1%; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="wrap">${ticketSection.innerHTML}</div>
+      <script>
+        // Ensure the browser shows background graphics option to user
+        window.onload = function () {
+          window.focus();
+          window.print();
+        };
+      <\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+});
 
   }); // End DOMContentLoaded
 
@@ -1025,4 +1091,3 @@ document.getElementById('printBtn').addEventListener('click', () => {
 
 </body>
 </html>
-
