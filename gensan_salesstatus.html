@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sales Status - Greenhills</title>
+  <title>Sales Status - Gensan Branch</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * {
@@ -60,9 +60,10 @@
       transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
     .nav-buttons a:hover {
-      background-color: #f5c21d;
+      background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
+    
     .main-content { padding: 3rem; }
     h2 { color: #800000; text-align: center; margin-bottom: 1.5rem; }
     table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
@@ -103,13 +104,17 @@
       background-color: #f5c21d;
       color: #800000;
     }
+
+    .date-toolbar .date-range input { max-width: 180px; }
+@media print { #startDate, #endDate, #clearDatesBtn { display: none !important; } }
+
   </style>
 </head>
 <body>
   <header>
     <div class="logo-container">
       <img src="logo.png" alt="ERestore Logo" />
-      <h1>ERestore Leatherworks <span class="branch-name">| General Santos </span></h1>
+      <h1>ERestore Leatherworks <span class="branch-name">| General Santos</span></h1>
     </div>
     <nav class="nav-buttons">
       <a href="gensan.html">Home</a>
@@ -119,7 +124,6 @@
       <a href="gensan_customerlist.html">Customers</a>
       <a href="gensan_attendance.html">Attendance</a>
       <a href="gensan_expenses.html">Expenses</a>
-
     </nav>
   </header>
 
@@ -128,9 +132,25 @@
     <div class="filter-buttons">
       <button data-status="All" class="active" onclick="filterStatus('All')">All</button>
       <button data-status="In Progress" onclick="filterStatus('In Progress')">In Progress</button>
+      <button data-status="Claimed" onclick="filterStatus('Claimed')">Claimed</button>
       <button data-status="With Balance" onclick="filterStatus('With Balance')">With Balance</button>
       <button data-status="Finished" onclick="filterStatus('Finished')">Finished</button>
     </div>
+    <div class="date-toolbar" style="display:flex; justify-content:center; align-items:center; gap:10px; margin:0 0 12px 0; flex-wrap:wrap;">
+  <div class="date-range" style="display:flex; align-items:center; gap:4px;">
+    <input type="date" id="startDate"
+      style="padding:0.5rem 0.9rem; border-radius:1rem; border:1px solid #ccc; font-size:0.9rem;" />
+    <span style="opacity:.7;">to</span>
+    <input type="date" id="endDate"
+      style="padding:0.5rem 0.9rem; border-radius:1rem; border:1px solid #ccc; font-size:0.9rem;" />
+  </div>
+
+  <button id="clearDatesBtn"
+    style="background:#ccc; color:#333; padding:0.45rem 0.9rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;">
+    Clear Dates
+  </button>
+</div>
+
     <div class="content-box" style="overflow-x: auto;">
   <div style="max-height: 500px; overflow-y: auto;">
     <table id="statusTable">
@@ -191,6 +211,7 @@
           <td>
             <select class="status-dropdown" onchange="updateStatus('${order.jobOrderNumber}', this.value)">
               <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
               <option ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
               <option ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
             </select>
@@ -214,25 +235,53 @@
       }
     }
 
-    window.filterStatus = async function (status) {
-      document.querySelectorAll('.filter-buttons button').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.status === status) btn.classList.add('active');
-      });
+   window.filterStatus = async function (status) {
+  // Toggle active button UI
+  document.querySelectorAll('.filter-buttons button').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.status === status) btn.classList.add('active');
+  });
 
-      const snapshot = await getDocs(collection(db, "gensan_salesOrders"));
-      const storedOrders = snapshot.docs.map(doc => {
-        const data = doc.data();
-        if (!data.status) data.status = "In Progress";
-        return data;
-      });
+  // Read date range (inclusive)
+  const sdEl = document.getElementById('startDate');
+  const edEl = document.getElementById('endDate');
+  const sdVal = sdEl?.value || '';
+  const edVal = edEl?.value || '';
 
-      const filteredOrders = status === 'All'
-        ? storedOrders
-        : storedOrders.filter(order => order.status === status);
+  let startRange = null, endRange = null;
+  if (sdVal) {
+    startRange = new Date(sdVal);
+    startRange.setHours(0, 0, 0, 0);
+  }
+  if (edVal) {
+    endRange = new Date(edVal);
+    endRange.setHours(23, 59, 59, 999);
+  }
 
-      renderTable(filteredOrders);
-    }
+  // Load orders
+  const snapshot = await getDocs(collection(db, "gensan_salesOrders"));
+  const storedOrders = snapshot.docs.map(doc => {
+    const data = doc.data();
+    if (!data.status) data.status = "In Progress"; // default
+    return data;
+  });
+
+  // Status filter
+  let filtered = (status === 'All') ? storedOrders : storedOrders.filter(o => o.status === status);
+
+  // Date range filter (by dateBooked)
+  filtered = filtered.filter(o => {
+    // dateBooked expected 'YYYY-MM-DD'—safe to parse
+    const d = new Date(o.dateBooked);
+    let ok = true;
+    if (startRange) ok = ok && d >= startRange;
+    if (endRange)   ok = ok && d <= endRange;
+    return ok;
+  });
+
+  renderTable(filtered);
+};
+
 
     window.viewOrder = async function (jobOrderNumber) {
       const q = query(
@@ -271,6 +320,25 @@
     document.addEventListener('DOMContentLoaded', () => {
       filterStatus('All'); // Show all orders initially
     });
+
+    // Re-filter when dates change
+const sdEl = document.getElementById('startDate');
+const edEl = document.getElementById('endDate');
+const clearBtn = document.getElementById('clearDatesBtn');
+
+function refilter() {
+  const active = document.querySelector('.filter-buttons .active')?.dataset.status || 'All';
+  filterStatus(active);
+}
+
+sdEl.addEventListener('change', refilter);
+edEl.addEventListener('change', refilter);
+clearBtn.addEventListener('click', () => {
+  sdEl.value = '';
+  edEl.value = '';
+  refilter();
+});
+
   </script>
 </body>
 </html>
