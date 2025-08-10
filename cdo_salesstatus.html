@@ -2,10 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sales Status - CDO Branch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sales Orders - cdo </title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+
   <style>
+    .edit-btn {
+  background-color: #004080;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 1rem;
+  border: none;
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+  cursor: pointer;
+}
     * {
       box-sizing: border-box;
       font-family: 'Inter', sans-serif;
@@ -14,7 +25,9 @@
     }
     body, html {
       height: 100%;
-      background: linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)), url('bg.png') no-repeat center center fixed;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)),
+        url('bg.png') no-repeat center center fixed;
       background-size: cover;
     }
     header {
@@ -42,12 +55,24 @@
     .branch-name {
       font-size: 1.3rem;
       font-weight: 600;
+      margin-left: 0.10rem;
       color: #ffffff;
+    }
+    .main-content {
+      padding: 3rem;
+    }
+    .content-box {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 2rem;
+      box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3);
+      max-width: 2200px;
+      margin: auto;
     }
     .nav-buttons {
       display: flex;
       gap: 2rem;
-      flex-wrap: wrap;
+      align-items: center;
     }
     .nav-buttons a {
       background-color: #ffffff;
@@ -63,50 +88,188 @@
       background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
-    
-    .main-content { padding: 3rem; }
-    h2 { color: #800000; text-align: center; margin-bottom: 1.5rem; }
-    table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
-    th, td { padding: 0.75rem; border: 1px solid #ccc; text-align: center; }
-    th { background-color: #800000; color: white; }
-    select.status-dropdown {
-      padding: 0.3rem 0.5rem;
-      border-radius: 0.5rem;
-      border: 1px solid #ccc;
-    }
-    .filter-buttons {
+    h2 {
       text-align: center;
-      margin-bottom: 1rem;
+      color: #800000;
+      margin-bottom: 1.5rem;
     }
-    .filter-buttons button {
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: center;
+      vertical-align: top;
+      word-wrap: break-word;
+    }
+    td:last-child {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-width: 300px;
+    }
+    button {
       background-color: #800000;
       color: white;
-      padding: 0.5rem 1rem;
+      padding: 0.7rem 1.2rem;
       border: none;
       border-radius: 1rem;
-      margin: 0 0.3rem;
+      margin: 0.5rem;
       cursor: pointer;
       font-weight: 600;
     }
-    .filter-buttons button:hover {
-      background-color: #a60000;
-    }
-    .content-box {
-      background-color: white;
-      padding: 1.5rem;
-      border-radius: 1.5rem;
-      box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3);
-      max-width: 100%;
-      overflow-x: auto;
-      margin: auto;
-    }
-    .filter-buttons button.active {
-      background-color: #f5c21d;
-      color: #800000;
+    button:hover {
+      background-color: #500303;
     }
 
-    .date-toolbar .date-range input { max-width: 180px; }
-@media print { #startDate, #endDate, #clearDatesBtn { display: none !important; } }
+    .date-range {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* smaller gap */
+}
+
+.date-range input {
+  padding: 0.6rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  max-width: 150px; /* smaller so they fit better */
+}
+
+.date-range span {
+  font-size: 0.9rem;
+  color: #555;
+  padding: 0 2px;
+}
+
+    /* Payment modal */
+#paymentModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+
+#paymentModal .box {
+  background:#fff;
+  padding:2rem;
+  border-radius:1rem;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
+  width:320px;
+  text-align:center;
+}
+
+#paymentModal .box h3 {
+  margin-bottom:1rem;
+  color:#800000;
+}
+#paymentModal .box select,
+#paymentModal .box input[type="checkbox"] {
+  margin: 0.5rem 0;
+}
+#paymentModal .actions {
+  margin-top: 1rem;
+  display:flex;
+  justify-content:center;
+  gap:.5rem;
+}
+
+    @media print {
+  body, html {
+    background: white !important;
+    color: black;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 10pt;
+    padding: 1cm;
+  }
+
+  header,
+  .nav-buttons,
+  .action-buttons,
+  .view-images-btn,
+  #imageModal,
+  button {
+    display: none !important;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 9pt;
+    table-layout: fixed;
+  }
+
+  th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: center;
+  }
+
+  td {
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: center;
+    vertical-align: top;
+    word-wrap: break-word;
+  }
+
+  #salesOrdersTable th:nth-child(12),
+  #salesOrdersTable td:nth-child(12) {
+    display: none !important;
+  }
+
+  h2 {
+    color: #000;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  #totalSales {
+    margin-top: 1rem;
+    font-weight: bold;
+    font-size: 10pt;
+    text-align: right;
+    color: black !important;
+  }
+
+  .content-box {
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .main-content {
+    padding: 0;
+  }
+
+   #startDate, #endDate { display: none !important; }
+
+  @page {
+    margin: 1cm;
+    size: A4 portrait;
+  }
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 1rem;
+}
 
   </style>
 </head>
@@ -117,7 +280,7 @@
       <h1>ERestore Leatherworks <span class="branch-name">| Cagayan de Oro</span></h1>
     </div>
     <nav class="nav-buttons">
-      <a href="cdo.html">Home</a>
+      <a href="cdo.html">Homepage</a>
       <a href="cdo_announcement.html">Announcements</a>
       <a href="cdo_report.html">Reports</a>
       <a href="cdo_appointment.html">Appointments</a>
@@ -128,217 +291,304 @@
   </header>
 
   <div class="main-content">
-    <h2>Sales Status List</h2>
-    <div class="filter-buttons">
-      <button data-status="All" class="active" onclick="filterStatus('All')">All</button>
-      <button data-status="In Progress" onclick="filterStatus('In Progress')">In Progress</button>
-      <button data-status="Claimed" onclick="filterStatus('Claimed')">Claimed</button>
-      <button data-status="With Balance" onclick="filterStatus('With Balance')">With Balance</button>
-      <button data-status="Finished" onclick="filterStatus('Finished')">Finished</button>
-    </div>
-    <div class="date-toolbar" style="display:flex; justify-content:center; align-items:center; gap:10px; margin:0 0 12px 0; flex-wrap:wrap;">
-  <div class="date-range" style="display:flex; align-items:center; gap:4px;">
-    <input type="date" id="startDate"
-      style="padding:0.5rem 0.9rem; border-radius:1rem; border:1px solid #ccc; font-size:0.9rem;" />
-    <span style="opacity:.7;">to</span>
-    <input type="date" id="endDate"
-      style="padding:0.5rem 0.9rem; border-radius:1rem; border:1px solid #ccc; font-size:0.9rem;" />
-  </div>
+    <div class="content-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+  <input type="text" id="searchInput" placeholder="Search Job Order #"
+    style="padding: 0.6rem 1rem; border-radius: 1rem; border: 1px solid #ccc; font-size: 0.9rem; max-width: 300px;" />
 
-  <button id="clearDatesBtn"
-    style="background:#ccc; color:#333; padding:0.45rem 0.9rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;">
-    Clear Dates
-  </button>
+  <select id="timeFilter" style="padding: 0.6rem 1rem; border-radius: 1rem; border: 1px solid #ccc; font-size: 0.9rem; max-width: 200px;">
+    <option value="all">All Time</option>
+    <option value="day">Today</option>
+    <option value="week">This Week</option>
+    <option value="month">This Month</option>
+    <option value="year">This Year</option>
+  </select>
+
+ <div class="date-range">
+  <input type="date" id="startDate" />
+  <span>to</span>
+  <input type="date" id="endDate" />
 </div>
 
-    <div class="content-box" style="overflow-x: auto;">
-  <div style="max-height: 500px; overflow-y: auto;">
-    <table id="statusTable">
-        <thead>
-          <tr>
-            <th>Order #</th>
-            <th>Customer</th>
-            <th>Date Booked</th>
-            <th>Repairman</th>
-            <th>Items</th>
-            <th>Status</th>
-            <th>View</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+</div>
 
-  <div id="viewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 9999;">
-    <div style="background: white; padding: 2rem; border-radius: 1rem; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-      <button onclick="closeModal()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: #800000; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 0.5rem; cursor: pointer;">Close</button>
-      <div id="modalContent"></div>
+
+      <h2>Sales Order List</h2>
+<div class="action-buttons">
+  <button onclick="window.print()"> Print</button>
+  <button onclick="exportToCSV()"> Export to CSV</button>
+  <button onclick="resetFormFields()" style="background-color: #ccc; color: #333; padding: 0.4rem 1rem; border-radius: 0.5rem;">Reset</button>
+
+</div>
+
+<!-- ✅ Wrap the table in a scrollable div -->
+<div class="table-wrapper">
+  <table id="salesOrdersTable">
+    <thead>
+      <tr>
+        <th>Order #</th>
+        <th>Date</th>
+        <th>Customer</th>
+        <th>Contact</th>
+        <th>Email</th>
+        <th>Receiver</th>
+        <th>Repairman</th>
+        <th>Payment</th>
+        <th>Total</th>
+        <th>Balance</th>
+        <th>Completion</th>
+        <th>Items</th>
+        <th>Images</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+      <p id="totalSales" style="font-size: 1rem; font-weight: bold; color: #800000; margin-top: 1rem;">Total Sales: ₱0.00</p>
+
     </div>
   </div>
+  <div id="paymentModal">
+  <div class="box">
+    <h3>Mark as Paid</h3>
+    <label style="display:inline-flex;align-items:center;gap:.5rem;">
+      <input type="checkbox" id="markPaidCheckbox"> Paid
+    </label>
+    <br>
+    <select id="paymentMethodSelect" style="padding:0.5rem; width:100%; border-radius:0.5rem;">
+      <option value="" disabled selected>Select Payment Method</option>
+      <option value="Cash">Cash</option>
+      <option value="G-Cash">G-Cash</option>
+      <option value="Debit Card">Debit Card</option>
+      <option value="Credit Card">Credit Card</option>
+      <option value="Check">Check</option>
+      <option value="PayMaya">PayMaya</option>
+    </select>
+    <div class="actions">
+      <button id="paymentConfirmBtn" style="background:#004080;color:#fff;padding:.5rem 1rem;border-radius:1rem;border:0;cursor:pointer;">Confirm</button>
+      <button id="paymentCancelBtn" style="background:#ccc;color:#000;padding:.5rem 1rem;border-radius:1rem;border:0;cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+  <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-wrap:wrap; gap:1rem; padding:2rem;"></div>
 
  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where, limit, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
-      authDomain: "erestore-leatherworks.firebaseapp.com",
-      projectId: "erestore-leatherworks",
-      storageBucket: "erestore-leatherworks.firebasestorage.app",
-      messagingSenderId: "727698074030",
-      appId: "1:727698074030:web:58870b6be96934e71c003f"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const tableBody = document.querySelector("#statusTable tbody");
-
-    function renderTable(data) {
-      tableBody.innerHTML = "";
-      data.forEach(order => {
-        const items = order.items.map(i =>
-          `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}`
-        ).join("\n");
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${order.jobOrderNumber}</td>
-          <td>${order.customerName}</td>
-          <td>${order.dateBooked}</td>
-          <td>${order.items.map(i => i.repairman).filter(Boolean).join(", ") || 'N/A'}</td>
-          <td style="white-space: pre-wrap; text-align: left">${items}</td>
-          <td>
-            <select class="status-dropdown" onchange="updateStatus('${order.jobOrderNumber}', this.value)">
-              <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-              <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
-              <option ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
-              <option ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
-            </select>
-          </td>
-          <td><button onclick="viewOrder('${order.jobOrderNumber}')">View</button></td>
-        `;
-        tableBody.appendChild(row);
-      });
-    }
-
-    window.updateStatus = async function (jobOrderNumber, newStatus) {
-      const q = query(
-        collection(db, "cdo_salesOrders"),
-        where("jobOrderNumber", "==", jobOrderNumber),
-        limit(1)
-      );
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        await updateDoc(snapshot.docs[0].ref, { status: newStatus });
-        filterStatus(document.querySelector('.filter-buttons .active').dataset.status);
-      }
-    }
-
-   window.filterStatus = async function (status) {
-  // Toggle active button UI
-  document.querySelectorAll('.filter-buttons button').forEach(btn => {
-    btn.classList.remove('active');
-    if (btn.dataset.status === status) btn.classList.add('active');
+  async function deleteAllSalesOrders() {
+  const snapshot = await getDocs(collection(db, "cdo_salesOrders"));
+  const batchDeletes = snapshot.docs.map(doc => {
+    return doc.ref.delete();
   });
+  await Promise.all(batchDeletes);
+  alert("All sales orders have been deleted.");
+  loadSalesOrders(); // Refresh table
+}
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-  // Read date range (inclusive)
-  const sdEl = document.getElementById('startDate');
-  const edEl = document.getElementById('endDate');
-  const sdVal = sdEl?.value || '';
-  const edVal = edEl?.value || '';
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+    authDomain: "erestore-leatherworks.firebaseapp.com",
+    projectId: "erestore-leatherworks",
+    storageBucket: "erestore-leatherworks.firebasestorage.app",
+    messagingSenderId: "727698074030",
+    appId: "1:727698074030:web:58870b6be96934e71c003f"
+  };
 
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function loadSalesOrders(filter = '') {
+  const tableBody = document.querySelector('#salesOrdersTable tbody');
+  const timeFilter = document.getElementById('timeFilter').value;
+  const startDateVal = document.getElementById('startDate')?.value || '';
+  const endDateVal   = document.getElementById('endDate')?.value || '';
+  const now = new Date();
+
+  const snapshot = await getDocs(collection(db, "cdo_salesOrders"));
+  const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  // Build inclusive range (00:00:00 to 23:59:59)
   let startRange = null, endRange = null;
-  if (sdVal) {
-    startRange = new Date(sdVal);
+  if (startDateVal) {
+    startRange = new Date(startDateVal);
     startRange.setHours(0, 0, 0, 0);
   }
-  if (edVal) {
-    endRange = new Date(edVal);
+  if (endDateVal) {
+    endRange = new Date(endDateVal);
     endRange.setHours(23, 59, 59, 999);
   }
 
-  // Load orders
-  const snapshot = await getDocs(collection(db, "cdo_salesOrders"));
-  const storedOrders = snapshot.docs.map(doc => {
-    const data = doc.data();
-    if (!data.status) data.status = "In Progress"; // default
-    return data;
-  });
+  const filteredOrders = orders.filter(order => {
+    const isCdo = order.branch === "Cagayan de Oro";
+    const jobOrderStr = (order.jobOrderNumber || '').toLowerCase();
+    const matchJobOrder = jobOrderStr.includes((filter || '').toLowerCase());
 
-  // Status filter
-  let filtered = (status === 'All') ? storedOrders : storedOrders.filter(o => o.status === status);
+    // Parse order date
+    const orderDate = new Date(order.dateBooked);
 
-  // Date range filter (by dateBooked)
-  filtered = filtered.filter(o => {
-    // dateBooked expected 'YYYY-MM-DD'—safe to parse
-    const d = new Date(o.dateBooked);
-    let ok = true;
-    if (startRange) ok = ok && d >= startRange;
-    if (endRange)   ok = ok && d <= endRange;
-    return ok;
-  });
-
-  renderTable(filtered);
-};
-
-
-    window.viewOrder = async function (jobOrderNumber) {
-      const q = query(
-        collection(db, "cdo_salesOrders"),
-        where("jobOrderNumber", "==", jobOrderNumber),
-        limit(1)
-      );
-      const snapshot = await getDocs(q);
-      if (snapshot.empty) {
-        alert("Order not found.");
-        return;
-      }
-      const order = snapshot.docs[0].data();
-      const modalContent = document.getElementById('modalContent');
-      const itemsHtml = order.items.map(i =>
-        `<li>${i.quantity}x ${i.name} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}</li>`
-      ).join("");
-      modalContent.innerHTML = `
-        <h3 style="color: #800000; margin-bottom: 0.5rem;">Order #${order.jobOrderNumber}</h3>
-        <p><strong>Customer:</strong> ${order.customerName}</p>
-        <p><strong>Contact:</strong> ${order.contactNumber}</p>
-        <p><strong>Email:</strong> ${order.email || '—'}</p>
-        <p><strong>Receiver:</strong> ${order.receiver}</p>
-        <p><strong>Payment Mode:</strong> ${order.paymentMode}</p>
-        <p><strong>Status:</strong> ${order.status || 'In Progress'}</p>
-        <p><strong>Items:</strong></p>
-        <ul style="padding-left: 1.2rem;">${itemsHtml}</ul>
-      `;
-      document.getElementById('viewModal').style.display = 'flex';
+    // Apply preset time filter
+    let matchTime = true;
+    if (timeFilter === 'day') {
+      matchTime = orderDate.toDateString() === now.toDateString();
+    } else if (timeFilter === 'week') {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+      matchTime = orderDate >= startOfWeek && orderDate <= endOfWeek;
+    } else if (timeFilter === 'month') {
+      matchTime = orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear();
+    } else if (timeFilter === 'year') {
+      matchTime = orderDate.getFullYear() === now.getFullYear();
     }
 
-    window.closeModal = function () {
-      document.getElementById('viewModal').style.display = 'none';
-    }
+    // Apply date range (inclusive)
+    let inRange = true;
+    if (startRange) inRange = orderDate >= startRange;
+    if (endRange)   inRange = inRange && orderDate <= endRange;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      filterStatus('All'); // Show all orders initially
-    });
+    return isCdo && matchJobOrder && matchTime && inRange;
+  });
 
-    // Re-filter when dates change
-const sdEl = document.getElementById('startDate');
-const edEl = document.getElementById('endDate');
-const clearBtn = document.getElementById('clearDatesBtn');
+  filteredOrders.sort((a, b) => b.jobOrderNumber.localeCompare(a.jobOrderNumber));
+  tableBody.innerHTML = '';
+  let totalSales = 0;
 
-function refilter() {
-  const active = document.querySelector('.filter-buttons .active')?.dataset.status || 'All';
-  filterStatus(active);
+  filteredOrders.forEach(order => {
+    const total = parseFloat(order.totalAmount || 0);
+    const paid = parseFloat(order.amountPaid || 0);
+    const balance = parseFloat(order.balance ?? (total - paid)).toFixed(2);
+
+    const items = order.items.map(i =>
+      `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}`
+    ).join('\n');
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${order.jobOrderNumber}</td>
+      <td>${order.dateBooked}</td>
+      <td>${order.customerName}</td>
+      <td>${order.contactNumber}</td>
+      <td>${order.email || '—'}</td>
+      <td>${order.receiver}</td>
+      <td>${[...new Set(order.items.map(i => i.repairman))].join(', ')}</td>
+      <td>${order.paymentMode}</td>
+      <td>₱${total.toFixed(2)}</td>
+     <td>
+  ₱${balance}<br>
+  ${Number(balance) > 0 ? `<button class="edit-btn" onclick="editBalance('${order.id}', ${total})">Edit</button>` : ``}
+</td>
+
+      <td>${order.completionDate}</td>
+      <td style="white-space: pre-wrap; text-align: left">${items}</td>
+      <td>${order.images?.length ? `<button class='view-images-btn' onclick='showImages(${JSON.stringify(order.images)})'>View Images</button>` : ''}</td>
+    `;
+    tableBody.appendChild(row);
+    totalSales += total;
+  });
+
+  document.getElementById('totalSales').textContent = `Total Sales: ₱${totalSales.toFixed(2)}`;
 }
 
-sdEl.addEventListener('change', refilter);
-edEl.addEventListener('change', refilter);
-clearBtn.addEventListener('click', () => {
-  sdEl.value = '';
-  edEl.value = '';
-  refilter();
+function resetFormFields() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('timeFilter').value = 'all';
+  const sd = document.getElementById('startDate');
+  const ed = document.getElementById('endDate');
+  if (sd) sd.value = '';
+  if (ed) ed.value = '';
+  loadSalesOrders('');
+}
+window.resetFormFields = resetFormFields;
+
+let currentDocId = null;
+let currentTotalAmount = 0;
+
+window.editBalance = function (docId, totalAmount) {
+  currentDocId = docId;
+  currentTotalAmount = totalAmount;
+
+  // reset modal state
+  document.getElementById('markPaidCheckbox').checked = false;
+  document.getElementById('paymentMethodSelect').value = '';
+
+  // open modal
+  document.getElementById('paymentModal').style.display = 'flex';
+};
+
+// confirm + update firestore
+async function confirmPaymentUpdate() {
+  const paid = document.getElementById('markPaidCheckbox').checked;
+  const method = document.getElementById('paymentMethodSelect').value;
+
+  if (!paid) { alert("Please check 'Paid' to confirm payment."); return; }
+  if (!method) { alert("Please select a payment method."); return; }
+
+  try {
+    await updateDoc(doc(db, "cdo_salesOrders", currentDocId), {
+      amountPaid: currentTotalAmount,
+      balance: 0,
+      paymentMode: method
+    });
+    alert("✅ Payment status updated.");
+    closePaymentModal();
+    loadSalesOrders(document.getElementById('searchInput').value || '');
+  } catch (e) {
+    alert("❌ Update failed: " + e.message);
+  }
+}
+
+function closePaymentModal() {
+  document.getElementById('paymentModal').style.display = 'none';
+}
+
+// hook up modal buttons + backdrop click
+document.getElementById('paymentConfirmBtn').addEventListener('click', confirmPaymentUpdate);
+document.getElementById('paymentCancelBtn').addEventListener('click', closePaymentModal);
+document.getElementById('paymentModal').addEventListener('click', (e) => {
+  if (e.target.id === 'paymentModal') closePaymentModal();
 });
 
-  </script>
+
+  function showImages(images) {
+    const modal = document.getElementById('imageModal');
+    modal.innerHTML = images.map(url =>
+      `<img src="${url}" style="max-width:300px; max-height:300px; border-radius:1rem;" />`
+    ).join('');
+    modal.style.display = 'flex';
+
+    modal.onclick = () => {
+      modal.style.display = 'none';
+      modal.innerHTML = '';
+    };
+  }
+
+  window.showImages = showImages;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadSalesOrders();
+    document.getElementById('searchInput').addEventListener('input', function () {
+      loadSalesOrders(this.value);
+    });
+    document.getElementById('timeFilter').addEventListener('change', function () {
+      loadSalesOrders(document.getElementById('searchInput').value);
+    });
+
+   document.getElementById('startDate').addEventListener('change', function () {
+    loadSalesOrders(document.getElementById('searchInput').value);
+  });
+  document.getElementById('endDate').addEventListener('change', function () {
+    loadSalesOrders(document.getElementById('searchInput').value);
+  });resetFormFields
+  });
+
+  window.resetFormFields = resetFormFields;
+
+</script>
+
 </body>
 </html>
+
