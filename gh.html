@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Greenhills - E-Restore Leatherworks</title>
+  <title> Greenhills - E-Restore Leatherworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
 <style>
@@ -73,7 +73,7 @@
     }
 
     .nav-buttons a:hover {
-      background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
+      background: linear-gradient(135deg, #ff0909 0%, #005555 100%);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
@@ -142,7 +142,7 @@
     }
 
     .button-group a:hover {
-      background: linear-gradient(135deg, #ff0909 0%, #ffd903 100%);
+      background: linear-gradient(135deg, #ff0909 0%, #005555 100%);
       transform: scale(1.02);
     }
 
@@ -190,7 +190,58 @@
       border-bottom: 1px solid #eee;
     }
     
-  
+  /* Keep white box content within the viewport height without scrolling */
+.main-content {
+  padding: 3rem 1.5rem;         /* slightly tighter */
+  height: calc(100vh - 100px);  /* fits below header even on smaller screens */
+  overflow: hidden;             /* avoid page scroll */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.overlay {
+  padding: 3rem;                /* a bit smaller than before */
+  max-width: 720px;             /* slightly wider to fit extra buttons */
+}
+
+/* Buttons layout: compact grid so all fit nicely */
+.button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns */
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.button-group a {
+  padding: 0.9rem;              /* slightly smaller buttons */
+  border-radius: 1.5rem;
+  text-align: center;
+}
+
+/* Slightly smaller headings to save space */
+.overlay h2 {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.branch-welcome {
+  margin-bottom: 1.5rem;
+}
+
+/* If screen height is short, compress further */
+@media (max-height: 780px) {
+  .main-content { padding: 2rem 1rem; height: calc(100vh - 100px); }
+  .overlay { padding: 2rem; }
+  .overlay h2 { font-size: 1.8rem; }
+  .button-group a { padding: 0.8rem; }
+}
+
+/* If screen is narrow, switch to single column to prevent overflow */
+@media (max-width: 480px) {
+  .button-group { grid-template-columns: 1fr; }
+}
+
 
   </style>
 </head>
@@ -201,25 +252,29 @@
       <h1>ERestore Leatherworks <span class="branch-name">| Greenhills</span></h1>
     </div>
     <nav class="nav-buttons">
-      <a href="gh_announcement.html">Announcement</a>
+      <a href="gh_announcement.html">Announcements</a>
       <a href="gh_report.html">Reports</a>
       <a href="gh_appointment.html">Appointments</a>
       <a href="gh_customerlist.html">Customers</a>
       <a href="gh_attendance.html">Attendance</a>
-      <a href="gh_expenses.html">Expenses</a>
       <button class="logout-btn">Logout</button>
     </nav>
   </header>
 
   <div class="main-content">
     <div class="overlay">
-      <h2>Welcome to Greenhills</h2>
+      <h2>Welcome to SM Lanang Branch</h2>
       <p class="branch-welcome">Choose a task</p>
       <div class="button-group">
-        <a href="gh_neworder.html">New Sales Order</a>
-        <a href="gh_salesorder.html">Sales Order List</a>
-        <a href="gh_salesstatus.html">Sales Status</a>
-      </div>
+  <a href="gh_neworder.html">New Sales Order</a>
+  <a href="gh_salesorder.html">Sales Order List</a>
+  <a href="gh_salesstatus.html">Sales Status</a>
+  <a href="gh_addpurchased.html">Add Purchased Product</a>
+  <a href="gh_purchaseditems.html">Purchased Items</a>
+  <a href="gh_expenses.html">Expenses</a>
+
+</div>
+
     </div>
   </div>
 
