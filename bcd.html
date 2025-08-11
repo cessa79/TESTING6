@@ -302,9 +302,10 @@
 
   const branch = localStorage.getItem("loggedInBranch");
 
-  if ((!branch || branch.toLowerCase() !== "bacolod") && !window.location.pathname.includes("bacolod.html")) {
-    window.location.href = "bcd.html";
-  }
+if (!branch || branch.toLowerCase() !== "bacolod") {
+  window.location.href = "bcd.html";
+}
+
 
   // Logout button event listener
   document.querySelector('.logout-btn').addEventListener('click', () => {
@@ -358,3 +359,4 @@
 </script>
 </body>
 </html>
+
