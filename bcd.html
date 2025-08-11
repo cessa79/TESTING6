@@ -302,7 +302,8 @@
 
   const branch = localStorage.getItem("loggedInBranch");
 
-if (!branch || branch.toLowerCase() !== "bacolod") {
+// Prevent redirect loop if you're already on bcd.html
+if ((!branch || branch.toLowerCase() !== "bacolod") && !window.location.pathname.includes("bcd.html")) {
   window.location.href = "bcd.html";
 }
 
@@ -359,4 +360,5 @@ if (!branch || branch.toLowerCase() !== "bacolod") {
 </script>
 </body>
 </html>
+
 
