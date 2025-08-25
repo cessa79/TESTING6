@@ -1,291 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Erestore Leather Works — Purchase Receipt</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+ 
+
   <style>
-    :root {
-      --bg: #f7f7f7;
-      --paper: #ffffff;
-      --ink: #1f2937; /* slate-800 */
-      --muted: #6b7280; /* gray-500 */
-      --accent: #6b4f3b; /* leather brown */
-      --accent-ink: #ffffff;
-      --success: #16a34a;
-      --danger: #b91c1c;
-      --radius: 16px;
-    }
-
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
       margin: 0;
-      background: var(--bg);
-      color: var(--ink);
-      font: 14px/1.5 "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 0;
     }
 
-    .shell {
-      max-width: 1000px;
-      margin: 32px auto;
-      padding: 0 16px;
+    body, html {
+      height: 100%;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)),
+        url('bg.png') no-repeat center center fixed;
+      background-size: cover;
     }
 
-    .card {
-      background: var(--paper);
-      border-radius: var(--radius);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      overflow: hidden;
+    header {
+      background-color: #800000;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    /* Header */
-    .header {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 16px;
-      padding: 28px 28px 20px;
-      border-bottom: 1px solid #e5e7eb;
-      background: linear-gradient(180deg, #fff, #f9f6f4);
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
     }
-    .brand {
-      display: flex; align-items: center; gap: 14px;
+
+    .logo-container img {
+      height: 80px;
+      width: auto;
     }
-    .logo {
-      width: 56px; height: 56px; border-radius: 12px;
-      background: var(--accent);
-      display: grid; place-items: center; color: var(--accent-ink);
-      font-weight: 700; letter-spacing: 1px;
+
+    .logo-container h1 {
+      font-size: 2rem;
+      font-weight: 700;
     }
-    .brand h1 { margin: 0; font-size: 20px; }
-    .brand p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
 
-    .actions { display: flex; gap: 10px; align-items: start; }
-    .btn {
-      border: 0; padding: 10px 14px; border-radius: 999px; cursor: pointer;
-      font-weight: 600; background: #e5e7eb; color: #111827;
+    .branch-name {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-left: 0.10rem;
+      color: #ffffff;
     }
-    .btn.primary { background: var(--accent); color: var(--accent-ink); }
-    .btn.outline { background: transparent; border: 1px solid #d1d5db; }
 
-    /* Meta */
-    .meta-wrap { display: grid; gap: 20px; padding: 20px 28px; }
-    .meta {
-      display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 16px;
+    .nav-buttons {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
     }
-    .panel { padding: 16px; border: 1px solid #eee; border-radius: 12px; }
-    .panel h3 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-    .kv { margin: 4px 0; display: grid; grid-template-columns: 120px 1fr; gap: 10px; }
-    .kv b { color: #111827; }
 
-    /* Items table */
-    .table-wrap { padding: 0 28px 24px; }
-    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 12px; }
-    thead th {
-      background: #f3f4f6; color: #111827; text-align: left; font-size: 12px; letter-spacing: .04em;
-      padding: 12px; text-transform: uppercase; border-bottom: 1px solid #e5e7eb;
+    .nav-buttons a {
+      background-color: #ffffff;
+      color: #800000;
+      padding: 0.6rem 1.3rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
-    tbody td { padding: 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
-    tbody tr:last-child td { border-bottom: 0; }
-    .right { text-align: right; }
-    .muted { color: var(--muted); font-size: 12px; }
 
-    /* Totals */
-    .totals { display: grid; grid-template-columns: 1fr minmax(260px, 360px); gap: 16px; padding: 8px 28px 28px; }
-    .total-card { padding: 16px; border: 1px solid #eee; border-radius: 12px; }
-    .total-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin: 8px 0; }
-    .grand { font-size: 18px; font-weight: 800; color: var(--accent); }
-
-    /* Notes */
-    .notes { padding: 0 28px 28px; display: grid; gap: 12px; }
-    .note { padding: 12px 14px; border-radius: 12px; background: #fff7ed; border: 1px solid #fed7aa; }
-
-    /* Footer */
-    .footer { padding: 18px 28px 26px; background: #fafafa; color: var(--muted); font-size: 12px; text-align: center; border-top: 1px solid #eee; }
-
-    /* Print styles */
-    @media print {
-      body { background: #fff; }
-      .shell { margin: 0; padding: 0; }
-      .actions { display: none !important; }
-      .card { box-shadow: none; border-radius: 0; }
-      .header { padding: 0 0 10px; }
+    .nav-buttons a:hover {
+      background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
+
+    .main-content {
+      padding: 4rem 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: calc(100vh - 80px);
+      text-align: center;
+    }
+
+    .main-content h2 {
+      font-size: 2.2rem;
+      color: #800000;
+      margin-bottom: 2rem;
+    }
+
+    .main-content p {
+      font-size: 1.2rem;
+      color: #800000;
+      margin-bottom: 2rem;
+    }
+
+    .button-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.button-group a {
+  background-color: #800000;
+  color: white;
+  padding: 1rem;
+  border-radius: 1.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s;
+}
+
+.button-group a:hover {
+  background: linear-gradient(135deg, #ff0909 0%, #ffd903 100%);
+  transform: scale(1.05);
+}
+
+    .footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: #800000;
+      color: white;
+      text-align: center;
+      padding: 1rem 0;
+    }
+
   </style>
 </head>
 <body>
-  <div class="shell">
-    <div class="card" id="invoice">
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="E-Restore Logo" />
+      <h1>ERestore Leatherworks <span class="branch-name">| Admin Dashboard</span></h1>
+    </div>
+  </header>
 
-      <div class="header">
-        <div class="brand">
-          <div class="logo" aria-label="Brand logo">ELW</div>
-          <div>
-            <h1>Erestore Leather Works</h1>
-            <p>Premium repairs • bespoke leather care • handcrafted goods</p>
-          </div>
-        </div>
-        <div class="actions">
-          <button class="btn outline" onclick="window.print()">Print</button>
-          <button class="btn primary" id="downloadBtn">Download PDF</button>
-        </div>
-      </div>
-
-      <div class="meta-wrap">
-        <div class="meta">
-          <div class="panel">
-            <h3>Receipt</h3>
-            <div class="kv"><span>Receipt No.</span><b id="invNo">ELW-2025-0081</b></div>
-            <div class="kv"><span>Date</span><b id="invDate">Aug 25, 2025</b></div>
-            <div class="kv"><span>Order No.</span><b id="orderNo">ORD-3412</b></div>
-            <div class="kv"><span>Status</span><b id="status">Paid</b></div>
-          </div>
-          <div class="panel">
-            <h3>Customer</h3>
-            <div class="kv"><span>Name</span><b id="custName">Juan Dela Cruz</b></div>
-            <div class="kv"><span>Email</span><b id="custEmail">juan@example.com</b></div>
-            <div class="kv"><span>Phone</span><b id="custPhone">+63 912 345 6789</b></div>
-            <div class="kv"><span>Billing</span><b id="custAddr">123 Mabini St., Vigan City, Ilocos Sur</b></div>
-          </div>
-          <div class="panel">
-            <h3>Payment</h3>
-            <div class="kv"><span>Method</span><b id="payMethod">GCash</b></div>
-            <div class="kv"><span>Txn Ref</span><b id="payRef">GC-9X18Z2</b></div>
-            <div class="kv"><span>Cashier</span><b id="cashier">M. Santos</b></div>
-            <div class="kv"><span>Branch</span><b id="branch">ELW - Main Workshop</b></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table aria-label="Purchased items">
-          <thead>
-            <tr>
-              <th style="width: 42%">Item</th>
-              <th>SKU</th>
-              <th>Color</th>
-              <th class="right">Qty</th>
-              <th class="right">Unit Price</th>
-              <th class="right">Discount</th>
-              <th class="right">Line Total</th>
-            </tr>
-          </thead>
-          <tbody id="itemRows">
-            <tr>
-              <td>
-                Heritage Leather Balm (150ml)
-                <div class="muted">Care & Maintenance • All-natural blend</div>
-              </td>
-              <td>ELW-BALM-150</td>
-              <td>Neutral</td>
-              <td class="right">2</td>
-              <td class="right">₱450.00</td>
-              <td class="right">—</td>
-              <td class="right">₱900.00</td>
-            </tr>
-            <tr>
-              <td>
-                Stitch & Edge Restore Service (Wallet)
-                <div class="muted">Service • 3–5 days lead time</div>
-              </td>
-              <td>ELW-SVC-WLT</td>
-              <td>—</td>
-              <td class="right">1</td>
-              <td class="right">₱1,200.00</td>
-              <td class="right">₱-120.00</td>
-              <td class="right">₱1,080.00</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="totals">
-        <div class="total-card">
-          <div class="total-row"><span>Notes</span><span></span></div>
-          <p class="muted" id="notes">
-            Thank you for supporting local craftsmanship. Services include a 30-day workmanship guarantee. For care products, unopened returns are accepted within 7 days with receipt.
-          </p>
-        </div>
-        <div class="total-card" aria-label="Totals">
-          <div class="total-row"><span>Subtotal</span><b id="subtotal">₱1,980.00</b></div>
-          <div class="total-row"><span>Tax (12% VAT)</span><b id="tax">₱237.60</b></div>
-          <div class="total-row"><span>Shipping</span><b id="ship">₱0.00</b></div>
-          <hr style="border:0; border-top:1px solid #eee; margin: 10px 0;" />
-          <div class="total-row grand"><span>Total</span><span id="grand">₱2,217.60</span></div>
-          <div class="total-row"><span>Amount Paid</span><b class="" id="paid">₱2,217.60</b></div>
-          <div class="total-row"><span>Balance</span><b id="due">₱0.00</b></div>
-        </div>
-      </div>
-
-      <div class="notes">
-        <div class="note">
-          <strong>Leather Care Tip:</strong> Test products on a hidden area first. Avoid direct sunlight and heat; store in a breathable dust bag.
-        </div>
-      </div>
-
-      <div class="footer">
-        © <span id="year"></span> Erestore Leather Works • 123 Mabini St., Vigan City • +63 900 000 0000 • hello@erestoreleatherworks.ph
-      </div>
-
+  <div class="main-content">
+    <h2>Welcome to E-Restore Leatherworks</h2>
+    <p>Our leatherworks and services are designed to help you restore and preserve your beloved items.</p>
+    
+    <div class="button-group">
+      <a href="admin_salesorder.html">View Sales Orders</a>
+      <a href="admin_salesstatus.html">Check Sales Status</a>
+      <a href="admin_announcement.html">View Announcements</a>
+      <a href="admin_report.html">View Reports</a>
+      <a href="admin_appointment.html">Appointments</a>
+      <a href="admin_customerlist.html">Customer List</a>
+      <a href="admin_attendance.html">Attendance</a>
+      <a href="admin_expenses.html">Expenses</a>
+      <a href="index.html">Log out</a>
     </div>
   </div>
+  <div class="announcement-sidebar" id="announcementSidebar">
+    <button id="dismissAnnouncement" style="position: absolute; top: 0.5rem; right: 0.8rem; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #7c2100;">✖</button>
+    <h3>Announcement</h3>
+    <ul id="sidebarAnnouncementList"></ul>
+  </div>
 
-  <script>
-    // Set footer year
-    document.getElementById('year').textContent = new Date().getFullYear();
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-    // Optional: quick JSON-to-receipt loader for dynamic use
-    // Paste an object into sessionStorage under key "elw_receipt" and reload.
-    try {
-      const data = JSON.parse(sessionStorage.getItem('elw_receipt') || 'null');
-      if (data) {
-        const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-        set('invNo', data.receiptNo || '');
-        set('invDate', data.date || '');
-        set('orderNo', data.orderNo || '');
-        set('status', data.status || '');
-        set('custName', data.customer?.name || '');
-        set('custEmail', data.customer?.email || '');
-        set('custPhone', data.customer?.phone || '');
-        set('custAddr', data.customer?.address || '');
-        set('payMethod', data.payment?.method || '');
-        set('payRef', data.payment?.ref || '');
-        set('cashier', data.payment?.cashier || '');
-        set('branch', data.payment?.branch || '');
-        set('subtotal', data.totals?.subtotal || '');
-        set('tax', data.totals?.tax || '');
-        set('ship', data.totals?.shipping || '');
-        set('grand', data.totals?.grand || '');
-        set('paid', data.totals?.paid || '');
-        set('due', data.totals?.due || '');
-        set('notes', data.notes || '');
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+    authDomain: "erestore-leatherworks.firebaseapp.com",
+    projectId: "erestore-leatherworks",
+    storageBucket: "erestore-leatherworks.firebasestorage.app",
+    messagingSenderId: "727698074030",
+    appId: "1:727698074030:web:58870b6be96934e71c003f"
+  };
 
-        if (Array.isArray(data.items)) {
-          const tbody = document.getElementById('itemRows');
-          tbody.innerHTML = '';
-          data.items.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${row.title || ''}<div class="muted">${row.subtitle || ''}</div></td>
-              <td>${row.sku || '—'}</td>
-              <td>${row.color || '—'}</td>
-              <td class="right">${row.qty ?? ''}</td>
-              <td class="right">${row.unit || ''}</td>
-              <td class="right">${row.discount || '—'}</td>
-              <td class="right">${row.total || ''}</td>
-            `;
-            tbody.appendChild(tr);
-          });
-        }
-      }
-    } catch (e) { /* ignore */ }
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const branch = localStorage.getItem("loggedInBranch");
 
-    // Basic client-side PDF download via print dialog
-    document.getElementById('downloadBtn').addEventListener('click', () => {
-      window.print();
+  if ((!branch || branch.toLowerCase() !== "admin") && !window.location.pathname.includes("admin.html")) {
+    window.location.href = "admin.html";
+  }
+
+  function logout() {
+    localStorage.removeItem("loggedInBranch");
+    window.location.href = "index.html";
+  }
+
+  const sidebarList = document.getElementById('sidebarAnnouncementList');
+  const sidebarContainer = document.getElementById('announcementSidebar');
+
+  // 🔄 FETCH ANNOUNCEMENTS FROM FIRESTORE INSTEAD OF LOCALSTORAGE
+  db.collection("announcements").orderBy("date", "desc").limit(5).get().then(snapshot => {
+    sidebarList.innerHTML = '';
+
+    if (snapshot.empty) {
+      const li = document.createElement('li');
+      li.textContent = "No announcements available.";
+      sidebarList.appendChild(li);
+      return;
+    }
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const li = document.createElement('li');
+      li.textContent = `${data.date}: ${data.text}`;
+      sidebarList.appendChild(li);
     });
-  </script>
+
+    // ✨ Show sidebar after a delay
+    setTimeout(() => {
+      sidebarContainer.style.display = 'block';
+      sidebarContainer.classList.add('show');
+
+      setTimeout(() => {
+        sidebarContainer.classList.remove('show');
+        sidebarContainer.classList.add('fade-out');
+
+        setTimeout(() => {
+          sidebarContainer.style.display = 'none';
+          sidebarContainer.classList.remove('fade-out');
+        }, 2000);
+      }, 15000);
+    }, 5000);
+  });
+
+  // ❌ Hide sidebar on dismiss
+  document.getElementById('dismissAnnouncement').addEventListener('click', () => {
+    sidebarContainer.classList.remove('show');
+    sidebarContainer.style.display = 'none';
+  });
+</script>
+
+
+  <div class="footer">
+    <p>© 2025 E-Restore Leatherworks | All Rights Reserved</p>
+  </div>
 </body>
-</html>
-
-
+</html> 
