@@ -442,13 +442,17 @@
     });
 
     // ✅ Fix total sales (sum of totals, not balances)
-    const total = filtered.reduce((sum, o) => {
-      const orderTotal = (o.items || []).reduce((s, i) => s + (parseFloat(i.quantity || 0) * parseFloat(i.price || 0)), 0);
-      return sum + orderTotal;
-    }, 0);
+    // ✅ Compute totals separately
+const totals = filtered.reduce((acc, o) => {
+  const orderTotal = (o.items || []).reduce((s, i) => s + (parseFloat(i.quantity || 0) * parseFloat(i.price || 0)), 0);
+  acc.balance += parseFloat(o.balance || 0);
+  acc.amount += orderTotal;
+  return acc;
+}, { balance: 0, amount: 0 });
 
-    document.getElementById('totalSales').textContent = `Total Sales: ₱${total.toFixed(2)}`;
-  }
+// ✅ Show them
+document.getElementById('totalSales').textContent =
+  `Total Balance: ₱${totals.balance.toFixed(2)} | Total Amount: ₱${totals.amount.toFixed(2)}`;
 
   // ✅ Filters & events
   document.getElementById('timeFilter').addEventListener('change', () => {
@@ -512,3 +516,4 @@
 
 </body>
 </html>
+
