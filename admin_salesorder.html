@@ -311,147 +311,203 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
-      authDomain: "erestore-leatherworks.firebaseapp.com",
-      projectId: "erestore-leatherworks",
-      storageBucket: "erestore-leatherworks.appspot.com",
-      messagingSenderId: "727698074030",
-      appId: "1:727698074030:web:58870b6be96934e71c003f"
-    };
+  // ✅ Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57qjEXLqEeKpJsg",
+    authDomain: "erestore-leatherworks.firebaseapp.com",
+    projectId: "erestore-leatherworks",
+    storageBucket: "erestore-leatherworks.appspot.com",
+    messagingSenderId: "727698074030",
+    appId: "1:727698074030:web:58870b6be96934e71c003f"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    window.showImages = function(imageList) {
-      const modal = document.getElementById('imageModal');
-      modal.innerHTML = '<button onclick="document.getElementById(\'imageModal\').style.display=\'none\'">Close</button>';
-      imageList.forEach(src => {
-        const img = document.createElement('img');
-        img.src = src;
-        img.style.maxWidth = '300px';
-        img.style.maxHeight = '300px';
-        modal.appendChild(img);
+  // ✅ Cache orders so we don’t fetch every time
+  let cachedOrders = [];
+
+  // ✅ Format Firestore Timestamp or string into readable date
+  function formatDate(d) {
+    if (!d) return '---';
+    const date = d?.toDate ? d.toDate() : new Date(d);
+    return date.toLocaleDateString('en-PH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  // ✅ Show images modal
+  window.showImages = function(imageList) {
+    const modal = document.getElementById('imageModal');
+    modal.innerHTML = '<button onclick="document.getElementById(\'imageModal\').style.display=\'none\'">Close</button>';
+    imageList.forEach(src => {
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.maxWidth = '300px';
+      img.style.maxHeight = '300px';
+      modal.appendChild(img);
+    });
+    modal.style.display = 'flex';
+  };
+
+  // ✅ Fetch orders per branch
+  async function fetchBranchOrders(branchKey) {
+    const snapshot = await getDocs(collection(db, branchKey + '_salesOrders'));
+    return snapshot.docs.map(doc => ({ ...doc.data(), branch: branchKey }));
+  }
+
+  // ✅ Fetch all branches
+  async function fetchAllBranchesOrders() {
+    const branchKeys = ['gh', 'abreeza', 'bcd', 'cdo', 'gensan', 'lanang'];
+    const all = await Promise.all(branchKeys.map(fetchBranchOrders));
+    return all.flat();
+  }
+
+  // ✅ Load orders once
+  async function loadOrders() {
+    cachedOrders = await fetchAllBranchesOrders();
+    filterByDate(); // render table first time
+  }
+
+  // ✅ Filtering & rendering
+  async function filterByDate() {
+    const allOrders = cachedOrders;
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const branch = document.getElementById('branchFilter').value;
+
+    const filtered = allOrders
+      .filter(order => {
+        const jobOrder = (order.jobOrderNumber || '').toLowerCase();
+        const matchesSearch = jobOrder.includes(search);
+        const matchesBranch = branch === 'all' || order.branch === branch;
+
+        // ✅ Compare dates properly
+        const orderDate = order.dateBooked?.toDate ? order.dateBooked.toDate() : new Date(order.dateBooked);
+        const startDate = start ? new Date(start) : null;
+        const endDate = end ? new Date(end) : null;
+
+        const matchesDate =
+          (!startDate || orderDate >= startDate) &&
+          (!endDate || orderDate <= endDate);
+
+        return matchesSearch && matchesBranch && matchesDate;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.dateBooked?.toDate ? a.dateBooked.toDate() : a.dateBooked || '2000-01-01');
+        const dateB = new Date(b.dateBooked?.toDate ? b.dateBooked.toDate() : b.dateBooked || '2000-01-01');
+        return dateB - dateA;
       });
-      modal.style.display = 'flex';
-    };
 
-    async function fetchBranchOrders(branchKey) {
-      const snapshot = await getDocs(collection(db, branchKey + '_salesOrders'));
-      return snapshot.docs.map(doc => ({ ...doc.data(), branch: branchKey }));
-    }
+    const tableBody = document.querySelector('#salesOrdersTable tbody');
+    tableBody.innerHTML = '';
 
-    async function fetchAllBranchesOrders() {
-      const branchKeys = ['gh', 'abreeza', 'bcd', 'cdo', 'gensan', 'lanang'];
-      const all = await Promise.all(branchKeys.map(fetchBranchOrders));
-      return all.flat();
-    }
+    filtered.forEach(order => {
+      const items = (order.items || []).map(i => 
+        `• Ticket: ${i.ticketNo || '---'} | ${i.itemDescription || '---'} | Qty: ${i.quantity || '-'} | Price: ₱${i.price || '0.00'}${i.remarks ? ' - ' + i.remarks : ''}`
+      ).join('\n');
 
-    async function filterByDate() {
-      const allOrders = await fetchAllBranchesOrders();
-      const start = document.getElementById('startDate').value;
-      const end = document.getElementById('endDate').value;
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      const branch = document.getElementById('branchFilter').value;
+      const repairmen = [...new Set((order.items || []).map(i => i.repairman).filter(Boolean))].join(', ');
 
-     const filtered = allOrders
-  .filter(order => {
-    const jobOrder = (order.jobOrderNumber || '').toLowerCase();
-    const matchesSearch = jobOrder.includes(search);
-    const matchesBranch = branch === 'all' || order.branch === branch;
-    const matchesDate = (!start || order.dateBooked >= start) && (!end || order.dateBooked <= end);
-    return matchesSearch && matchesBranch && matchesDate;
-  })
-  
-  .sort((a, b) => {
-  const dateA = new Date(a.dateBooked?.toDate ? a.dateBooked.toDate() : a.dateBooked || '2000-01-01');
-  const dateB = new Date(b.dateBooked?.toDate ? b.dateBooked.toDate() : b.dateBooked || '2000-01-01');
-  return dateB - dateA;
-});
-
-
-
-      const tableBody = document.querySelector('#salesOrdersTable tbody');
-      tableBody.innerHTML = '';
-
-      filtered.forEach(order => {
-        const items = (order.items || []).map(i => `• Ticket: ${i.ticketNo || '---'} | ${i.itemDescription || '---'} | Qty: ${i.quantity || '-'} | Price: ₱${i.price || '0.00'}${i.remarks ? ' - ' + i.remarks : ''}`).join('\n');
-        const repairmen = [...new Set((order.items || []).map(i => i.repairman).filter(Boolean))].join(', ');
-        const row = document.createElement('tr');
-        const totalAmount = (order.items || []).reduce((sum, i) => {
-       const qty = parseFloat(i.quantity || 0);
+      const totalAmount = (order.items || []).reduce((sum, i) => {
+        const qty = parseFloat(i.quantity || 0);
         const price = parseFloat(i.price || 0);
         return sum + (qty * price);
-        }, 0);
+      }, 0);
 
-        row.innerHTML = `
-          <td>${order.jobOrderNumber}</td>
-          <td>${order.branch}</td>
-          <td>${order.dateBooked}</td>
-          <td>${order.customerName}</td>
-          <td>${order.contactNumber}</td>
-          <td>${order.email || '---'}</td>
-          <td>${order.receiver}</td>
-          <td>${repairmen}</td>
-          <td>${order.paymentMode}</td>
-          <td>₱${order.balance}</td>
-           <td>₱${totalAmount.toFixed(2)}</td>
-          <td>${order.completionDate}</td>
-          <td style="white-space: pre-wrap; text-align: left">${items}</td>
-          <td>${order.images?.length ? `<button onclick='showImages(${JSON.stringify(order.images)})'>View Images</button>` : ''}</td>
-        `;
-        tableBody.appendChild(row);
-      });
-
-      const total = filtered.reduce((sum, o) => sum + parseFloat(o.balance || 0), 0);
-      document.getElementById('totalSales').textContent = `Total Sales: ₱${total.toFixed(2)}`;
-    }
-
-    document.getElementById('timeFilter').addEventListener('change', () => {
-      const period = document.getElementById('timeFilter').value;
-      const today = new Date();
-      let startDate = '';
-
-      if (period === 'day') startDate = new Date();
-      else if (period === 'week') startDate = new Date(today.setDate(today.getDate() - 7));
-      else if (period === 'month') startDate = new Date(today.setMonth(today.getMonth() - 1));
-      else if (period === 'year') startDate = new Date(today.setFullYear(today.getFullYear() - 1));
-
-      if (startDate) {
-        document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
-        document.getElementById('endDate').value = new Date().toISOString().split('T')[0];
-      } else {
-        document.getElementById('startDate').value = '';
-        document.getElementById('endDate').value = '';
-      }
-
-      filterByDate();
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${order.jobOrderNumber}</td>
+        <td>${order.branch}</td>
+        <td>${formatDate(order.dateBooked)}</td>
+        <td>${order.customerName}</td>
+        <td>${order.contactNumber}</td>
+        <td>${order.email || '---'}</td>
+        <td>${order.receiver}</td>
+        <td>${repairmen}</td>
+        <td>${order.paymentMode}</td>
+        <td>₱${order.balance}</td>
+        <td>₱${totalAmount.toFixed(2)}</td>
+        <td>${formatDate(order.completionDate)}</td>
+        <td style="white-space: pre-wrap; text-align: left">${items}</td>
+        <td>${order.images?.length ? `<button onclick='showImages(${JSON.stringify(order.images)})'>View Images</button>` : ''}</td>
+      `;
+      tableBody.appendChild(row);
     });
 
-    document.getElementById('searchInput').addEventListener('input', filterByDate);
-    document.getElementById('branchFilter').addEventListener('change', filterByDate);
-    document.getElementById('startDate').addEventListener('change', filterByDate);
-    document.getElementById('endDate').addEventListener('change', filterByDate);
+    // ✅ Fix total sales (sum of totals, not balances)
+    const total = filtered.reduce((sum, o) => {
+      const orderTotal = (o.items || []).reduce((s, i) => s + (parseFloat(i.quantity || 0) * parseFloat(i.price || 0)), 0);
+      return sum + orderTotal;
+    }, 0);
 
-    document.addEventListener('DOMContentLoaded', filterByDate);
+    document.getElementById('totalSales').textContent = `Total Sales: ₱${total.toFixed(2)}`;
+  }
 
-    window.exportToCSV = function() {
-      const rows = [['Order #', 'Branch', 'Date', 'Customer', 'Contact', 'Email', 'Receiver', 'Repairman', 'Payment', 'Balance', 'Completion']];
-      document.querySelectorAll('#salesOrdersTable tbody tr').forEach(tr => {
-        const cells = tr.querySelectorAll('td');
-        rows.push(Array.from(cells).slice(0, 11).map(c => `"${c.textContent.trim()}"`));
-      });
-      const csv = rows.map(e => e.join(',')).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.setAttribute('download', 'sales_orders.csv');
-      link.click();
-    };
-  </script>
+  // ✅ Filters & events
+  document.getElementById('timeFilter').addEventListener('change', () => {
+    const period = document.getElementById('timeFilter').value;
+    const today = new Date();
+    let startDate = '';
+
+    if (period === 'day') startDate = new Date();
+    else if (period === 'week') startDate = new Date(today.setDate(today.getDate() - 7));
+    else if (period === 'month') startDate = new Date(today.setMonth(today.getMonth() - 1));
+    else if (period === 'year') startDate = new Date(today.setFullYear(today.getFullYear() - 1));
+
+    if (startDate) {
+      document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+      document.getElementById('endDate').value = new Date().toISOString().split('T')[0];
+    } else {
+      document.getElementById('startDate').value = '';
+      document.getElementById('endDate').value = '';
+    }
+
+    filterByDate();
+  });
+
+  document.getElementById('searchInput').addEventListener('input', filterByDate);
+  document.getElementById('branchFilter').addEventListener('change', filterByDate);
+  document.getElementById('startDate').addEventListener('change', filterByDate);
+  document.getElementById('endDate').addEventListener('change', filterByDate);
+
+  // ✅ Load once at startup
+  document.addEventListener('DOMContentLoaded', loadOrders);
+
+  // ✅ Export CSV with items
+  window.exportToCSV = function() {
+    const rows = [[
+      'Order #', 'Branch', 'Date', 'Customer', 'Contact', 'Email',
+      'Receiver', 'Repairman', 'Payment', 'Balance', 'Total Amount',
+      'Completion', 'Items'
+    ]];
+
+    document.querySelectorAll('#salesOrdersTable tbody tr').forEach(tr => {
+      const cells = tr.querySelectorAll('td');
+      const rowData = Array.from(cells).slice(0, 12).map(c => `"${c.textContent.trim()}"`);
+
+      // ✅ Add items column
+      const itemsCell = cells[12]?.textContent.trim() || '';
+      rowData.push(`"${itemsCell}"`);
+
+      rows.push(rowData);
+    });
+
+    const csv = rows.map(e => e.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'sales_orders.csv');
+    link.click();
+  };
+</script>
+
 
 
 </body>
