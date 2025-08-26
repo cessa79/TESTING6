@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sold Items - Greenhills</title>
+  <title>Selling Items - E-Restore Leatherworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
+    /* Base */
     * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
     body, html {
       height: 100%;
@@ -15,6 +16,7 @@
       background-size: cover;
     }
 
+    /* Header */
     header {
       background-color: #800000;
       color: white;
@@ -44,85 +46,57 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
-    .main-content {
-      padding: 3rem;
-      height: calc(100vh - 112px);
-      display: flex;
-      flex-direction: column;
-    }
+    /* Page */
+    .main-content { padding: 3rem; }
     .form-container {
       background-color: white;
       border-radius: 2rem;
-      padding: 1.5rem;
+      padding: 2rem;
       box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3);
+      max-width: 1200px;
+      margin: auto;
+    }
+    h2 { color: #800000; text-align: center; margin-bottom: 1rem; }
+    label { font-weight: 600; display: block; margin-top: 1rem; }
+    input, select {
       width: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    h2 { color: #800000; text-align: center; margin-bottom: 0.75rem; }
-
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      margin-bottom: 0.75rem;
-    }
-    .filters {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .filters input {
-      padding: 0.5rem 0.9rem;
-      border-radius: 1rem;
+      padding: 0.6rem;
+      border-radius: 0.5rem;
       border: 1px solid #ccc;
-      font-size: 0.9rem;
+      margin-top: 0.3rem;
     }
-    .btn-light {
-      background:#ccc; color:#333; padding:0.5rem 0.9rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;
-    }
-    .btn-light:hover { filter: brightness(0.95); }
-    .btn-action { background:#800000; color:#fff; padding:0.4rem 0.8rem; border:none; border-radius:0.5rem; cursor:pointer; }
-    .btn-action:hover { background:#a00000; }
 
-    .table-wrapper {
-      border: 1px solid #ddd;
-      border-radius: 1rem;
-      overflow: hidden;
-      background: #fff;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      flex: 1 1 auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    thead th {
-      position: sticky;
-      top: 0;
-      background: #800000;
-      color: #fff;
-      z-index: 1;
-    }
+    table { width: 100%; margin-top: 2rem; border-collapse: collapse; }
     th, td { border: 1px solid #ccc; padding: 0.6rem; text-align: center; }
-    td.items-list { text-align: left; }
-    td.no-data { text-align: center; font-style: italic; color: #666; }
+    th { background: #fafafa; }
 
-    .table-scroll {
-      overflow-y: auto;
-      max-height: 300px; /* scroll only inside table */
+    .button-group {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
     }
+    button {
+      padding: 0.7rem 1.5rem;
+      border-radius: 1rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      background-color: #800000;
+      color: white;
+    }
+    button:hover { background-color: #500303; }
 
-    @media (max-width: 640px) {
-      .main-content { padding: 1.5rem; }
-      .form-container { border-radius: 1.25rem; padding: 1rem; }
-      .logo-container h1 { font-size: 1.6rem; }
+    .muted { color: #666; font-size: .9rem; }
+
+    /* Receipt Preview */
+    .receipt-preview {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      border: 1px solid #333;
+      background: #f9f9f9;
+      display: none;
     }
   </style>
 </head>
@@ -145,167 +119,233 @@
   </header>
 
   <div class="main-content">
-    <!-- Only filtered sales -->
     <div class="form-container">
-      <h2>Sold Items Record</h2>
+      <h2>Sell Items</h2>
+      <form id="sellForm">
+        <label for="date">Transaction Date</label>
+        <input type="date" id="date" required>
 
-      <div class="toolbar">
-        <div class="filters">
-          <input type="date" id="startDate" />
-          <span style="opacity:.7;">to</span>
-          <input type="date" id="endDate" />
-          <input type="text" id="searchCustomer" placeholder="Search customer name..." />
-          <button id="clearFiltersBtn" class="btn-light">Clear</button>
-        </div>
-      </div>
+        <label for="customer">Customer Name</label>
+        <input type="text" id="customer" required placeholder="Walk-in / Name">
 
-      <div class="table-wrapper">
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Items</th>
-                <th>Grand Total (₱)</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="soldTableBody"></tbody>
-          </table>
+        <table id="sellTable">
+          <thead>
+            <tr>
+              <th style="min-width:240px;">Item Description</th>
+              <th>Quantity</th>
+              <th>Unit Price (₱)</th>
+              <th>Total (₱)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="button-group">
+          <button type="button" id="addItem">+ Add Item</button>
+          <button type="submit">Submit Sale</button>
         </div>
+
+        <h3 style="text-align:right; margin-top:1rem;">Grand Total: ₱<span id="grandTotal">0.00</span></h3>
+        <p class="muted" style="text-align:right;">Prices auto-fill for known items. You can override them.</p>
+      </form>
+
+      <!-- Receipt Preview -->
+      <div id="receiptPreview" class="receipt-preview"></div>
+      <div class="button-group" style="justify-content:flex-start;">
+        <button type="button" id="printBtn" style="display:none;">🖨 Print Receipt</button>
       </div>
     </div>
   </div>
 
-  <script>
-    const tableBody = document.getElementById('soldTableBody');
-    const sdEl = document.getElementById('startDate');
-    const edEl = document.getElementById('endDate');
-    const searchEl = document.getElementById('searchCustomer');
-    const clearBtn = document.getElementById('clearFiltersBtn');
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-    const sales = JSON.parse(localStorage.getItem('gh_soldItems') || '[]');
+    const firebaseConfig = {
+      apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+      authDomain: "erestore-leatherworks.firebaseapp.com",
+      projectId: "erestore-leatherworks",
+      storageBucket: "erestore-leatherworks.firebasestorage.app",
+      messagingSenderId: "727698074030",
+      appId: "1:727698074030:web:58870b6be96934e71c003f"
+    };
 
-    function inRange(dateStr, startRange, endRange) {
-      if (!dateStr) return false;
-      const d = new Date(dateStr);
-      if (isNaN(d)) return false;
-      let ok = true;
-      if (startRange) ok = ok && d >= startRange;
-      if (endRange)   ok = ok && d <= endRange;
-      return ok;
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    const tableBody    = document.querySelector('#sellTable tbody');
+    const grandTotalEl = document.getElementById('grandTotal');
+    const addItemBtn   = document.getElementById('addItem');
+    const sellForm     = document.getElementById('sellForm');
+    const receiptDiv   = document.getElementById('receiptPreview');
+    const printBtn     = document.getElementById('printBtn');
+
+    const ITEM_PRICES = {
+      "Leather Cream Conditioner": 449,
+      "Horse Hair Brush": 249,
+      "All Purpose Cleaner": 249,
+      "Bundle Set": 799
+    };
+
+    function calculateTotals() {
+      let total = 0;
+      tableBody.querySelectorAll('tr').forEach(row => {
+        const qty   = parseFloat(row.querySelector('.qty')?.value)   || 0;
+        const price = parseFloat(row.querySelector('.price')?.value) || 0;
+        const rowTotal = qty * price;
+        row.querySelector('.total').textContent = rowTotal.toFixed(2);
+        total += rowTotal;
+      });
+      grandTotalEl.textContent = total.toFixed(2);
     }
 
-    function renderTable(list, target) {
-      if (!list.length) {
-        target.innerHTML = '<tr><td colspan="5" class="no-data">No sales recorded yet.</td></tr>';
-        return;
-      }
-      target.innerHTML = '';
-      list.forEach((sale, index) => {
-        const itemList = (sale.items || []).map(i =>
-          `• ${i.desc ?? i.description} (x${i.qty ?? i.quantity}) - ₱${(i.total ?? i.lineTotal ?? 0).toFixed(2)}`
-        ).join('<br>');
+    function addRow() {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>
+          <select class="desc" required>
+            <option value="" disabled selected>Select Item</option>
+            <option value="Leather Cream Conditioner">Leather Cream Conditioner</option>
+            <option value="Horse Hair Brush">Horse Hair Brush</option>
+            <option value="All Purpose Cleaner">All Purpose Cleaner</option>
+            <option value="Bundle Set">Bundle Set</option>
+          </select>
+        </td>
+        <td><input type="number" class="qty" min="1" value="1" required></td>
+        <td><input type="number" class="price" min="0" step="0.01" required></td>
+        <td class="total">0.00</td>
+        <td><button type="button" class="removeRow">Remove</button></td>
+      `;
 
-        const row = document.createElement('tr');
-        const grand = Number(sale.grandTotal ?? 0);
-        row.innerHTML = `
-          <td>${sale.date || '—'}</td>
-          <td>${sale.customer || '—'}</td>
-          <td class="items-list">${itemList || '—'}</td>
-          <td>₱${grand.toFixed(2)}</td>
-          <td><button class="btn-action" onclick="printReceipt(${index})">Receipt</button></td>
+      const select     = row.querySelector('.desc');
+      const priceInput = row.querySelector('.price');
+
+      select.addEventListener('change', () => {
+        const selected = select.value;
+        if (ITEM_PRICES[selected] != null) {
+          priceInput.value = ITEM_PRICES[selected];
+          calculateTotals();
+        }
+      });
+
+      row.querySelectorAll('input, select').forEach(input =>
+        input.addEventListener('input', calculateTotals)
+      );
+
+      row.querySelector('.removeRow').addEventListener('click', () => {
+        row.remove();
+        calculateTotals();
+      });
+
+      tableBody.appendChild(row);
+      calculateTotals();
+    }
+
+    addItemBtn.addEventListener('click', addRow);
+
+    sellForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const customer = document.getElementById('customer').value.trim();
+      const date     = document.getElementById('date').value;
+
+      if (!customer) { alert('Please enter a customer name.'); return; }
+      if (!date)     { alert('Please select a transaction date.'); return; }
+
+      const items = [];
+      const rows = tableBody.querySelectorAll('tr');
+      if (!rows.length) { alert('Please add at least one item.'); return; }
+
+      rows.forEach(row => {
+        const desc  = row.querySelector('.desc').value;
+        const qty   = parseFloat(row.querySelector('.qty').value) || 0;
+        const price = parseFloat(row.querySelector('.price').value) || 0;
+        const total = qty * price;
+        items.push({ description: desc, quantity: qty, unitPrice: price, lineTotal: total });
+      });
+
+      const grandTotal = parseFloat(grandTotalEl.textContent) || 0;
+
+      const payload = {
+        branch: "Greenhills",
+        date,
+        customer,
+        items,
+        grandTotal,
+        createdAt: serverTimestamp(),
+      };
+
+      try {
+        await addDoc(collection(db, "gh_soldItems"), payload);
+        alert("✅ Sale submitted to Firestore!");
+
+        let itemsHtml = items.map(i => `
+          <tr>
+            <td>${i.description}</td>
+            <td>${i.quantity}</td>
+            <td>₱${i.unitPrice.toFixed(2)}</td>
+            <td>₱${i.lineTotal.toFixed(2)}</td>
+          </tr>
+        `).join("");
+
+        receiptDiv.innerHTML = `
+          <div class="receipt-container">
+            <h3 style="text-align:center;">E-Restore Leatherworks - Greenhills</h3>
+            <p><strong>Date:</strong> ${date}</p>
+            <p><strong>Customer:</strong> ${customer}</p>
+            <table style="width:100%; border-collapse:collapse; margin-top:10px;" border="1">
+              <tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+              ${itemsHtml}
+            </table>
+            <h3 style="text-align:right; margin-top:10px;">Grand Total: ₱${grandTotal.toFixed(2)}</h3>
+            <p style="text-align:center; margin-top:20px;">Thank you for your purchase!</p>
+          </div>
         `;
-        target.appendChild(row);
-      });
-    }
+        receiptDiv.style.display = "block";
+        printBtn.style.display = "inline-block";
 
-    function applyFilters() {
-      const sdVal = sdEl.value;
-      const edVal = edEl.value;
-      const searchVal = searchEl.value.trim().toLowerCase();
-      let startRange = null, endRange = null;
+        sellForm.reset();
+        tableBody.innerHTML = '';
+        addRow();
+        calculateTotals();
+      } catch (err) {
+        console.error(err);
+        alert("❌ Failed to submit sale. Please try again.");
+      }
+    });
 
-      if (sdVal) { startRange = new Date(sdVal); startRange.setHours(0,0,0,0); }
-      if (edVal) { endRange   = new Date(edVal); endRange.setHours(23,59,59,999); }
-
-      const filtered = sales.filter(s => {
-        const matchDate = inRange(s.date, startRange, endRange);
-        const matchCustomer = !searchVal || (s.customer || '').toLowerCase().includes(searchVal);
-        return matchDate && matchCustomer;
-      });
-
-      renderTable(filtered.length ? filtered : [], tableBody);
-    }
-
-    function printReceipt(index) {
-      const sale = sales[index];
-      if (!sale) return;
-
-      const itemList = (sale.items || []).map(i =>
-        `• ${i.desc ?? i.description} (x${i.qty ?? i.quantity}) - ₱${(i.total ?? i.lineTotal ?? 0).toFixed(2)}`
-      ).join('<br>');
-
-      const html = `
+    /* Print button */
+    printBtn.addEventListener('click', () => {
+      const receiptContent = receiptDiv.innerHTML;
+      const w = window.open('', '_blank', 'width=1000,height=800,scrollbars=no');
+      w.document.write(`
         <html>
           <head>
             <title>Receipt</title>
             <style>
-              body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-              .receipt-container {
-                width: 100%;
-                height: 50%;
-                padding: 20px;
-                box-sizing: border-box;
-              }
-              h2 { text-align: center; color: #800000; margin-top: 0; }
-              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-              th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-              .total { font-weight: bold; text-align: right; }
-
+              body { font-family: Arial, sans-serif; margin:0; padding:20px; display:flex; justify-content:center; align-items:center; height:100vh; }
+              .receipt-container { width:80%; border:1px solid #000; padding:15px; }
+              table { width:100%; border-collapse: collapse; margin-top:10px; }
+              th, td { border:1px solid #000; padding:4px; text-align:center; }
+              h3 { margin:5px 0; }
               @media print {
-                @page { size: A4 portrait; margin: 1cm; }
-                .receipt-container { height: 50vh; page-break-after: avoid; }
+                @page { size: A5 portrait; margin: 10mm; }
+                body { display:block; height:auto; padding:0; }
+                .receipt-container { width:100%; border:none; }
               }
             </style>
           </head>
-          <body>
-            <div class="receipt-container">
-              <h2>ERestore Leatherworks - Greenhills</h2>
-              <p><strong>Date:</strong> ${sale.date}</p>
-              <p><strong>Customer:</strong> ${sale.customer}</p>
-              <table>
-                <tr><th>Items</th></tr>
-                <tr><td>${itemList}</td></tr>
-              </table>
-              <p class="total">Grand Total: ₱${Number(sale.grandTotal ?? 0).toFixed(2)}</p>
-              <p style="text-align:center; margin-top:30px;">Thank you for your purchase!</p>
-            </div>
-          </body>
+          <body>${receiptContent}</body>
         </html>
-      `;
-
-      const w = window.open('', '_blank', 'width=700,height=800');
-      w.document.open();
-      w.document.write(html);
+      `);
       w.document.close();
       w.focus();
-      setTimeout(() => w.print(), 300);
-    }
-
-    sdEl.addEventListener('change', applyFilters);
-    edEl.addEventListener('change', applyFilters);
-    searchEl.addEventListener('input', applyFilters);
-    clearBtn.addEventListener('click', () => {
-      sdEl.value = '';
-      edEl.value = '';
-      searchEl.value = '';
-      applyFilters();
+      w.print();
     });
 
-    // initial render
-    renderTable(sales, tableBody);
+    addRow();
   </script>
+
 </body>
 </html>
