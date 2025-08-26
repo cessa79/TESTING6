@@ -48,17 +48,14 @@
       padding: 3rem;
       height: calc(100vh - 112px);
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column;
     }
     .form-container {
       background-color: white;
       border-radius: 2rem;
       padding: 1.5rem;
       box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3);
-      max-width: 1200px;
       width: 100%;
-      height: 100%;
       display: flex;
       flex-direction: column;
     }
@@ -89,6 +86,8 @@
       background:#ccc; color:#333; padding:0.5rem 0.9rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;
     }
     .btn-light:hover { filter: brightness(0.95); }
+    .btn-action { background:#800000; color:#fff; padding:0.4rem 0.8rem; border:none; border-radius:0.5rem; cursor:pointer; }
+    .btn-action:hover { background:#a00000; }
 
     .table-wrapper {
       border: 1px solid #ddd;
@@ -117,7 +116,7 @@
 
     .table-scroll {
       overflow-y: auto;
-      max-height: 100%;
+      max-height: 300px; /* scroll only inside table */
     }
 
     @media (max-width: 640px) {
@@ -146,6 +145,7 @@
   </header>
 
   <div class="main-content">
+    <!-- Only filtered sales -->
     <div class="form-container">
       <h2>Sold Items Record</h2>
 
@@ -164,10 +164,11 @@
           <table>
             <thead>
               <tr>
-                <th style="min-width:110px;">Date</th>
-                <th style="min-width:160px;">Customer</th>
+                <th>Date</th>
+                <th>Customer</th>
                 <th>Items</th>
-                <th style="min-width:140px;">Grand Total (₱)</th>
+                <th>Grand Total (₱)</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="soldTableBody"></tbody>
@@ -196,13 +197,13 @@
       return ok;
     }
 
-    function renderTable(list) {
+    function renderTable(list, target) {
       if (!list.length) {
-        tableBody.innerHTML = '<tr><td colspan="4" class="no-data">No sales recorded yet.</td></tr>';
+        target.innerHTML = '<tr><td colspan="5" class="no-data">No sales recorded yet.</td></tr>';
         return;
       }
-      tableBody.innerHTML = '';
-      list.forEach(sale => {
+      target.innerHTML = '';
+      list.forEach((sale, index) => {
         const itemList = (sale.items || []).map(i =>
           `• ${i.desc ?? i.description} (x${i.qty ?? i.quantity}) - ₱${(i.total ?? i.lineTotal ?? 0).toFixed(2)}`
         ).join('<br>');
@@ -214,8 +215,9 @@
           <td>${sale.customer || '—'}</td>
           <td class="items-list">${itemList || '—'}</td>
           <td>₱${grand.toFixed(2)}</td>
+          <td><button class="btn-action" onclick="printReceipt(${index})">Receipt</button></td>
         `;
-        tableBody.appendChild(row);
+        target.appendChild(row);
       });
     }
 
@@ -234,7 +236,62 @@
         return matchDate && matchCustomer;
       });
 
-      renderTable(filtered.length ? filtered : []);
+      renderTable(filtered.length ? filtered : [], tableBody);
+    }
+
+    function printReceipt(index) {
+      const sale = sales[index];
+      if (!sale) return;
+
+      const itemList = (sale.items || []).map(i =>
+        `• ${i.desc ?? i.description} (x${i.qty ?? i.quantity}) - ₱${(i.total ?? i.lineTotal ?? 0).toFixed(2)}`
+      ).join('<br>');
+
+      const html = `
+        <html>
+          <head>
+            <title>Receipt</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+              .receipt-container {
+                width: 100%;
+                height: 50%;
+                padding: 20px;
+                box-sizing: border-box;
+              }
+              h2 { text-align: center; color: #800000; margin-top: 0; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+              .total { font-weight: bold; text-align: right; }
+
+              @media print {
+                @page { size: A4 portrait; margin: 1cm; }
+                .receipt-container { height: 50vh; page-break-after: avoid; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="receipt-container">
+              <h2>ERestore Leatherworks - Greenhills</h2>
+              <p><strong>Date:</strong> ${sale.date}</p>
+              <p><strong>Customer:</strong> ${sale.customer}</p>
+              <table>
+                <tr><th>Items</th></tr>
+                <tr><td>${itemList}</td></tr>
+              </table>
+              <p class="total">Grand Total: ₱${Number(sale.grandTotal ?? 0).toFixed(2)}</p>
+              <p style="text-align:center; margin-top:30px;">Thank you for your purchase!</p>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const w = window.open('', '_blank', 'width=700,height=800');
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+      w.focus();
+      setTimeout(() => w.print(), 300);
     }
 
     sdEl.addEventListener('change', applyFilters);
@@ -247,8 +304,8 @@
       applyFilters();
     });
 
-    renderTable(sales);
+    // initial render
+    renderTable(sales, tableBody);
   </script>
-
 </body>
 </html>
