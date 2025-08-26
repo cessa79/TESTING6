@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Selling Items - General Santos</title>
+  <title>Selling Items - E-Restore Leatherworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     /* Base */
@@ -16,7 +16,7 @@
       background-size: cover;
     }
 
-    /* Header (matches your other pages) */
+    /* Header */
     header {
       background-color: #800000;
       color: white;
@@ -89,6 +89,15 @@
     button:hover { background-color: #500303; }
 
     .muted { color: #666; font-size: .9rem; }
+
+    /* Receipt Preview */
+    .receipt-preview {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      border: 1px solid #333;
+      background: #f9f9f9;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -96,17 +105,16 @@
   <header>
     <div class="logo-container">
       <img src="logo.png" alt="ERestore Logo">
-      <h1>ERestore Leatherworks <span class="branch-name">| General Santos</span></h1>
+      <h1>ERestore Leatherworks <span class="branch-name">| General Santos </span></h1>
     </div>
     <nav class="nav-buttons">
-     <a href="gensan.html">Homepage</a>
+      <a href="gensan.html">Homepage</a>
       <a href="gensan_announcement.html">Announcements</a>
       <a href="gensan_report.html">Reports</a>
       <a href="gensan_appointment.html">Appointments</a>
       <a href="gensan_customerlist.html">Customers</a>
       <a href="gensan_attendance.html">Attendance</a>
       <a href="gensan_expenses.html">Expenses</a>
-    </nav>
     </nav>
   </header>
 
@@ -141,11 +149,16 @@
         <h3 style="text-align:right; margin-top:1rem;">Grand Total: ₱<span id="grandTotal">0.00</span></h3>
         <p class="muted" style="text-align:right;">Prices auto-fill for known items. You can override them.</p>
       </form>
+
+      <!-- Receipt Preview -->
+      <div id="receiptPreview" class="receipt-preview"></div>
+      <div class="button-group" style="justify-content:flex-start;">
+        <button type="button" id="printBtn" style="display:none;">🖨 Print Receipt</button>
+      </div>
     </div>
   </div>
 
   <script type="module">
-    /* Firestore (v9 modular) */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
@@ -161,13 +174,13 @@
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
 
-    /* Elements & state */
-    const tableBody   = document.querySelector('#sellTable tbody');
+    const tableBody    = document.querySelector('#sellTable tbody');
     const grandTotalEl = document.getElementById('grandTotal');
-    const addItemBtn  = document.getElementById('addItem');
-    const sellForm    = document.getElementById('sellForm');
+    const addItemBtn   = document.getElementById('addItem');
+    const sellForm     = document.getElementById('sellForm');
+    const receiptDiv   = document.getElementById('receiptPreview');
+    const printBtn     = document.getElementById('printBtn');
 
-    /* Default price list */
     const ITEM_PRICES = {
       "Leather Cream Conditioner": 449,
       "Horse Hair Brush": 249,
@@ -256,22 +269,45 @@
 
       const payload = {
         branch: "General Santos",
-        date,                       // 'YYYY-MM-DD' from <input type="date">
+        date,
         customer,
         items,
         grandTotal,
         createdAt: serverTimestamp(),
-        // Optional fields for future filtering/reporting:
-        // paymentMode: "Cash" | "GCash" | etc.
       };
 
       try {
         await addDoc(collection(db, "gensan_soldItems"), payload);
         alert("✅ Sale submitted to Firestore!");
-        // Reset form
+
+        let itemsHtml = items.map(i => `
+          <tr>
+            <td>${i.description}</td>
+            <td>${i.quantity}</td>
+            <td>₱${i.unitPrice.toFixed(2)}</td>
+            <td>₱${i.lineTotal.toFixed(2)}</td>
+          </tr>
+        `).join("");
+
+        receiptDiv.innerHTML = `
+          <div class="receipt-container">
+            <h3 style="text-align:center;">E-Restore Leatherworks - Greenhills</h3>
+            <p><strong>Date:</strong> ${date}</p>
+            <p><strong>Customer:</strong> ${customer}</p>
+            <table style="width:100%; border-collapse:collapse; margin-top:10px;" border="1">
+              <tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+              ${itemsHtml}
+            </table>
+            <h3 style="text-align:right; margin-top:10px;">Grand Total: ₱${grandTotal.toFixed(2)}</h3>
+            <p style="text-align:center; margin-top:20px;">Thank you for your purchase!</p>
+          </div>
+        `;
+        receiptDiv.style.display = "block";
+        printBtn.style.display = "inline-block";
+
         sellForm.reset();
         tableBody.innerHTML = '';
-        addRow(); // add a fresh row
+        addRow();
         calculateTotals();
       } catch (err) {
         console.error(err);
@@ -279,9 +315,39 @@
       }
     });
 
-    /* Initialize with one row */
+    /* Print button */
+    printBtn.addEventListener('click', () => {
+      const receiptContent = receiptDiv.innerHTML;
+      const w = window.open('', '_blank', 'width=1000,height=800,scrollbars=no');
+      w.document.write(`
+        <html>
+          <head>
+            <title>Receipt</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin:0; padding:20px; display:flex; justify-content:center; align-items:center; height:100vh; }
+              .receipt-container { width:80%; border:1px solid #000; padding:15px; }
+              table { width:100%; border-collapse: collapse; margin-top:10px; }
+              th, td { border:1px solid #000; padding:4px; text-align:center; }
+              h3 { margin:5px 0; }
+              @media print {
+                @page { size: A5 portrait; margin: 10mm; }
+                body { display:block; height:auto; padding:0; }
+                .receipt-container { width:100%; border:none; }
+              }
+            </style>
+          </head>
+          <body>${receiptContent}</body>
+        </html>
+      `);
+      w.document.close();
+      w.focus();
+      w.print();
+    });
+
     addRow();
   </script>
 
 </body>
 </html>
+
+
