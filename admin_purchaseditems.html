@@ -177,81 +177,130 @@
     </div>
   </div>
 
-  <script>
-    const tableBody = document.getElementById('soldTableBody');
-    const sdEl = document.getElementById('startDate');
-    const edEl = document.getElementById('endDate');
-    const searchEl = document.getElementById('searchCustomer');
-    const clearBtn = document.getElementById('clearFiltersBtn');
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-    const sales = JSON.parse(localStorage.getItem('abreeza_soldItems') || '[]');
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+    authDomain: "erestore-leatherworks.firebaseapp.com",
+    projectId: "erestore-leatherworks",
+    storageBucket: "erestore-leatherworks.firebasestorage.app",
+    messagingSenderId: "727698074030",
+    appId: "1:727698074030:web:58870b6be96934e71c003f"
+  };
 
-    function inRange(dateStr, startRange, endRange) {
-      if (!dateStr) return false;
-      const d = new Date(dateStr);
-      if (isNaN(d)) return false;
-      let ok = true;
-      if (startRange) ok = ok && d >= startRange;
-      if (endRange)   ok = ok && d <= endRange;
-      return ok;
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  const tableBody = document.getElementById('purchasedTableBody');
+  const sdEl = document.getElementById('startDate');
+  const edEl = document.getElementById('endDate');
+  const searchEl = document.getElementById('searchSupplier');
+  const clearBtn = document.getElementById('clearFiltersBtn');
+
+  // 🔥 Branch collections
+  const branchCollections = [
+    "abreeza_soldItems",
+    "gh_soldItems",
+    "lanang_soldItems",
+    "bcd_purchasedItems"
+        "gensan_soldItems",
+        "cdo_soldItems",
+
+
+    // 👉 Add more branch collections here as needed
+  ];
+
+  let purchases = []; // holds merged data
+
+  function inRange(dateStr, startRange, endRange) {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    if (isNaN(d)) return false;
+    let ok = true;
+    if (startRange) ok = ok && d >= startRange;
+    if (endRange)   ok = ok && d <= endRange;
+    return ok;
+  }
+
+  function renderTable(list) {
+    if (!list.length) {
+      tableBody.innerHTML = '<tr><td colspan="4" class="no-data">No purchases recorded yet.</td></tr>';
+      return;
     }
+    tableBody.innerHTML = '';
+    list.forEach(p => {
+      const itemList = (p.items || []).map(i =>
+        `• ${i.desc ?? i.description} (x${i.qty ?? i.quantity}) - ₱${(i.total ?? i.lineTotal ?? 0).toFixed(2)}`
+      ).join('<br>');
 
-    function renderTable(list) {
-      if (!list.length) {
-        tableBody.innerHTML = '<tr><td colspan="4" class="no-data">No sales recorded yet.</td></tr>';
-        return;
-      }
-      tableBody.innerHTML = '';
-      list.forEach(sale => {
-        const itemList = (sale.items || []).map(i =>
-          `• ${i.desc ?? i.description} (x${i.qty ?? i.quantity}) - ₱${(i.total ?? i.lineTotal ?? 0).toFixed(2)}`
-        ).join('<br>');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${p.date || '—'}</td>
+        <td>${p.supplier || '—'} <br><small style="color:#800000;">(${p.branch || '—'})</small></td>
+        <td class="items-list">${itemList || '—'}</td>
+        <td>₱${(Number(p.totalCost ?? 0)).toFixed(2)}</td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
 
-        const row = document.createElement('tr');
-        const grand = Number(sale.grandTotal ?? 0);
-        row.innerHTML = `
-          <td>${sale.date || '—'}</td>
-          <td>${sale.customer || '—'}</td>
-          <td class="items-list">${itemList || '—'}</td>
-          <td>₱${grand.toFixed(2)}</td>
-        `;
-        tableBody.appendChild(row);
-      });
-    }
+  function applyFilters() {
+    const sdVal = sdEl.value;
+    const edVal = edEl.value;
+    const searchVal = searchEl.value.trim().toLowerCase();
+    let startRange = null, endRange = null;
 
-    function applyFilters() {
-      const sdVal = sdEl.value;
-      const edVal = edEl.value;
-      const searchVal = searchEl.value.trim().toLowerCase();
-      let startRange = null, endRange = null;
+    if (sdVal) { startRange = new Date(sdVal); startRange.setHours(0,0,0,0); }
+    if (edVal) { endRange   = new Date(edVal); endRange.setHours(23,59,59,999); }
 
-      if (sdVal) { startRange = new Date(sdVal); startRange.setHours(0,0,0,0); }
-      if (edVal) { endRange   = new Date(edVal); endRange.setHours(23,59,59,999); }
-
-      const filtered = sales.filter(s => {
-        const matchDate = inRange(s.date, startRange, endRange);
-        const matchCustomer = !searchVal || (s.customer || '').toLowerCase().includes(searchVal);
-        return matchDate && matchCustomer;
-      });
-
-      renderTable(filtered.length ? filtered : []);
-    }
-
-    sdEl.addEventListener('change', applyFilters);
-    edEl.addEventListener('change', applyFilters);
-    searchEl.addEventListener('input', applyFilters);
-    clearBtn.addEventListener('click', () => {
-      sdEl.value = '';
-      edEl.value = '';
-      searchEl.value = '';
-      applyFilters();
+    const filtered = purchases.filter(p => {
+      const matchDate = inRange(p.date, startRange, endRange);
+      const matchSupplier = !searchVal || (p.supplier || '').toLowerCase().includes(searchVal);
+      return matchDate && matchSupplier;
     });
 
-    renderTable(sales);
-  </script>
+    renderTable(filtered.length ? filtered : []);
+  }
+
+  // Event bindings
+  sdEl.addEventListener('change', applyFilters);
+  edEl.addEventListener('change', applyFilters);
+  searchEl.addEventListener('input', applyFilters);
+  clearBtn.addEventListener('click', () => {
+    sdEl.value = '';
+    edEl.value = '';
+    searchEl.value = '';
+    applyFilters();
+  });
+
+  // 🔥 Fetch all branches
+  async function loadPurchases() {
+    purchases = [];
+    try {
+      for (const branch of branchCollections) {
+        const snap = await getDocs(collection(db, branch));
+        snap.forEach(doc => {
+          purchases.push({ ...doc.data(), branch });
+        });
+      }
+      // Sort by date (latest first)
+      purchases.sort((a, b) => new Date(b.date) - new Date(a.date));
+      renderTable(purchases);
+    } catch (err) {
+      console.error("Error loading purchases:", err);
+      tableBody.innerHTML = '<tr><td colspan="4" class="no-data">Failed to load purchases.</td></tr>';
+    }
+  }
+
+  loadPurchases();
+</script>
 
 </body>
 </html>
+
 
 
 
