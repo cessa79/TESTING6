@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sales Orders - Cagayan De Oro </title>
+  <title>Sales Orders - Cagayan de Oro </title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
@@ -277,7 +277,7 @@
   <header>
     <div class="logo-container">
       <img src="logo.png" alt="ERestore Logo" />
-      <h1>ERestore Leatherworks <span class="branch-name">| Cagayan de Oro</span></h1>
+      <h1>ERestore Leatherworks <span class="branch-name">| Cagayan de Oro </span></h1>
     </div>
     <nav class="nav-buttons">
       <a href="cdo.html">Homepage</a>
@@ -421,7 +421,7 @@
   }
 
   const filteredOrders = orders.filter(order => {
-    const isCdo = order.branch === "Cagayan De Oro";
+    const isGreenhills = order.branch === "Cagayan de Oro";
     const jobOrderStr = (order.jobOrderNumber || '').toLowerCase();
     const matchJobOrder = jobOrderStr.includes((filter || '').toLowerCase());
 
@@ -529,7 +529,7 @@ async function confirmPaymentUpdate() {
   if (!method) { alert("Please select a payment method."); return; }
 
   try {
-    await updateDoc(doc(db, "cdo_salesOrders", currentDocId), {
+    await updateDoc(doc(db, "gh_salesOrders", currentDocId), {
       amountPaid: currentTotalAmount,
       balance: 0,
       paymentMode: method
@@ -632,7 +632,7 @@ document.getElementById('paymentModal').addEventListener('click', (e) => {
         </style>
       </head>
       <body>
-        <h2>ERestore Leatherworks - Cagayan De Oro</h2>
+        <h2>ERestore Leatherworks - Cagayan de Oro </h2>
         <p><strong>Job Order:</strong> ${order.jobOrderNumber}</p>
         <p><strong>Date:</strong> ${order.date}</p>
         <p><strong>Customer:</strong> ${order.customer}</p>
