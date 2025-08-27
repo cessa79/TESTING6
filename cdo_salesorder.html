@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sales Orders - Cagayan de Oro </title>
+  <title>Sales Orders - cdo </title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
@@ -277,7 +277,7 @@
   <header>
     <div class="logo-container">
       <img src="logo.png" alt="ERestore Logo" />
-      <h1>ERestore Leatherworks <span class="branch-name">| Cagayan de Oro </span></h1>
+      <h1>ERestore Leatherworks <span class="branch-name">| Cagayan de Oro</span></h1>
     </div>
     <nav class="nav-buttons">
       <a href="cdo.html">Homepage</a>
@@ -318,7 +318,6 @@
   <button onclick="window.print()"> Print</button>
   <button onclick="exportToCSV()"> Export to CSV</button>
   <button onclick="resetFormFields()" style="background-color: #ccc; color: #333; padding: 0.4rem 1rem; border-radius: 0.5rem;">Reset</button>
- <button onclick="openReceipt()">Receipt</button>
 
 </div>
 
@@ -421,7 +420,7 @@
   }
 
   const filteredOrders = orders.filter(order => {
-    const isGreenhills = order.branch === "Cagayan de Oro";
+    const isCdo = order.branch === "Cagayan de Oro";
     const jobOrderStr = (order.jobOrderNumber || '').toLowerCase();
     const matchJobOrder = jobOrderStr.includes((filter || '').toLowerCase());
 
@@ -529,7 +528,7 @@ async function confirmPaymentUpdate() {
   if (!method) { alert("Please select a payment method."); return; }
 
   try {
-    await updateDoc(doc(db, "gh_salesOrders", currentDocId), {
+    await updateDoc(doc(db, "cdo_salesOrders", currentDocId), {
       amountPaid: currentTotalAmount,
       balance: 0,
       paymentMode: method
@@ -587,84 +586,9 @@ document.getElementById('paymentModal').addEventListener('click', (e) => {
   });
 
   window.resetFormFields = resetFormFields;
- window.openReceipt = function () {
-  const jobOrderId = document.getElementById("searchInput").value.trim();
-  if (!jobOrderId) {
-    alert("Please enter a Job Order # in the search box first.");
-    return;
-  }
-
-  const rows = Array.from(document.querySelectorAll("#salesOrdersTable tbody tr"));
-  const match = rows.find(r => r.cells[0].innerText === jobOrderId);
-
-  if (!match) {
-    alert("Job Order not found in the list.");
-    return;
-  }
-
-  // Extract data from table row
-  const order = {
-    jobOrderNumber: match.cells[0].innerText,
-    date: match.cells[1].innerText,
-    customer: match.cells[2].innerText,
-    contact: match.cells[3].innerText,
-    email: match.cells[4].innerText,
-    receiver: match.cells[5].innerText,
-    repairman: match.cells[6].innerText,
-    paymentMode: match.cells[7].innerText,
-    total: match.cells[8].innerText,
-    balance: match.cells[9].innerText,
-    completion: match.cells[10].innerText,
-    items: match.cells[11].innerText
-  };
-
-  // Build receipt HTML
-  const receiptHtml = `
-    <html>
-      <head>
-        <title>Receipt - ${order.jobOrderNumber}</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          h2 { text-align: center; color: #800000; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
-          .total { font-weight: bold; text-align: right; }
-        </style>
-      </head>
-      <body>
-        <h2>ERestore Leatherworks - Cagayan de Oro </h2>
-        <p><strong>Job Order:</strong> ${order.jobOrderNumber}</p>
-        <p><strong>Date:</strong> ${order.date}</p>
-        <p><strong>Customer:</strong> ${order.customer}</p>
-        <p><strong>Contact:</strong> ${order.contact}</p>
-        <p><strong>Email:</strong> ${order.email}</p>
-        <p><strong>Receiver:</strong> ${order.receiver}</p>
-        <p><strong>Repairman:</strong> ${order.repairman}</p>
-
-        <table>
-          <tr><th>Items</th></tr>
-          <tr><td style="white-space:pre-wrap">${order.items}</td></tr>
-        </table>
-
-        <p class="total">Total: ${order.total}</p>
-        <p class="total">Balance: ${order.balance}</p>
-        <p><strong>Payment Mode:</strong> ${order.paymentMode}</p>
-        <p><strong>Completion Date:</strong> ${order.completion}</p>
-
-        <p style="text-align:center; margin-top:30px;">Thank you for your order!</p>
-      </body>
-    </html>
-  `;
-
-  const receiptWindow = window.open('', '_blank', 'width=700,height=800');
-  receiptWindow.document.open();
-  receiptWindow.document.write(receiptHtml);
-  receiptWindow.document.close();
-  receiptWindow.focus();
-  setTimeout(() => receiptWindow.print(), 300);
-};
 
 </script>
 
 </body>
 </html>
+
