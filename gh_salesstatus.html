@@ -209,7 +209,9 @@
           <td>${order.items.map(i => i.repairman).filter(Boolean).join(", ") || 'N/A'}</td>
           <td style="white-space: pre-wrap; text-align: left">${items}</td>
           <td>
-            <select class="status-dropdown" onchange="updateStatus('${order.jobOrderNumber}', this.value)">
+            <select class="status-dropdown" 
+              onchange="updateStatus('${order.jobOrderNumber}', this.value)"
+              ${order.status === 'Claimed' ? 'disabled' : ''}>
               <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
               <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
               <option ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
@@ -271,7 +273,6 @@
 
   // Date range filter (by dateBooked)
   filtered = filtered.filter(o => {
-    // dateBooked expected 'YYYY-MM-DD'—safe to parse
     const d = new Date(o.dateBooked);
     let ok = true;
     if (startRange) ok = ok && d >= startRange;
