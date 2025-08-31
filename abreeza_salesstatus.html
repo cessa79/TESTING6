@@ -74,6 +74,10 @@
       border-radius: 0.5rem;
       border: 1px solid #ccc;
     }
+    .status-claimed {
+      font-weight: bold;
+      color: green;
+    }
     .filter-buttons {
       text-align: center;
       margin-bottom: 1rem;
@@ -201,6 +205,17 @@
           `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}`
         ).join("\n");
 
+        const statusCell = (order.status === 'Claimed')
+          ? `<span class="status-claimed">Claimed</span>`
+          : `
+            <select class="status-dropdown" onchange="updateStatus('${order.jobOrderNumber}', this.value)">
+              <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
+              <option ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
+              <option ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
+            </select>
+          `;
+
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${order.jobOrderNumber}</td>
@@ -208,14 +223,7 @@
           <td>${order.dateBooked}</td>
           <td>${order.items.map(i => i.repairman).filter(Boolean).join(", ") || 'N/A'}</td>
           <td style="white-space: pre-wrap; text-align: left">${items}</td>
-          <td>
-            <select class="status-dropdown" onchange="updateStatus('${order.jobOrderNumber}', this.value)">
-              <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-              <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
-              <option ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
-              <option ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
-            </select>
-          </td>
+          <td>${statusCell}</td>
           <td><button onclick="viewOrder('${order.jobOrderNumber}')">View</button></td>
         `;
         tableBody.appendChild(row);
@@ -236,13 +244,11 @@
     }
 
    window.filterStatus = async function (status) {
-  // Toggle active button UI
   document.querySelectorAll('.filter-buttons button').forEach(btn => {
     btn.classList.remove('active');
     if (btn.dataset.status === status) btn.classList.add('active');
   });
 
-  // Read date range (inclusive)
   const sdEl = document.getElementById('startDate');
   const edEl = document.getElementById('endDate');
   const sdVal = sdEl?.value || '';
@@ -258,20 +264,16 @@
     endRange.setHours(23, 59, 59, 999);
   }
 
-  // Load orders
   const snapshot = await getDocs(collection(db, "abreeza_salesOrders"));
   const storedOrders = snapshot.docs.map(doc => {
     const data = doc.data();
-    if (!data.status) data.status = "In Progress"; // default
+    if (!data.status) data.status = "In Progress";
     return data;
   });
 
-  // Status filter
   let filtered = (status === 'All') ? storedOrders : storedOrders.filter(o => o.status === status);
 
-  // Date range filter (by dateBooked)
   filtered = filtered.filter(o => {
-    // dateBooked expected 'YYYY-MM-DD'—safe to parse
     const d = new Date(o.dateBooked);
     let ok = true;
     if (startRange) ok = ok && d >= startRange;
@@ -281,7 +283,6 @@
 
   renderTable(filtered);
 };
-
 
     window.viewOrder = async function (jobOrderNumber) {
       const q = query(
@@ -318,10 +319,9 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      filterStatus('All'); // Show all orders initially
+      filterStatus('All');
     });
 
-    // Re-filter when dates change
 const sdEl = document.getElementById('startDate');
 const edEl = document.getElementById('endDate');
 const clearBtn = document.getElementById('clearDatesBtn');
