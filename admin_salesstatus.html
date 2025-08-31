@@ -109,6 +109,7 @@
       <button onclick="filterStatus('In Progress')">In Progress</button>
       <button onclick="filterStatus('With Balance')">With Balance</button>
       <button onclick="filterStatus('Finished')">Finished</button>
+      <button onclick="filterStatus('Claimed')">Claimed</button>
     </div>
 
     <!-- Branch + Date + Clear -->
@@ -227,34 +228,9 @@
           <td>${order.dateBooked || '—'}</td>
           <td>${repairmen || '—'}</td>
           <td style="white-space: pre-wrap; text-align: left">${items}</td>
-          <td>
-            <select class="status-dropdown" data-docid="${order.docId}" data-collection="${order.collection}">
-              <option value="In Progress" ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-              <option value="With Balance" ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
-              <option value="Finished" ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
-            </select>
-          </td>
+          <td>${order.status || 'In Progress'}${order.claimed ? ' ✅ Claimed' : ''}</td>
         `;
         tableBody.appendChild(row);
-      });
-
-      document.querySelectorAll('.status-dropdown').forEach(select => {
-        select.addEventListener('change', async function () {
-          const docId = this.dataset.docid;
-          const collection = this.dataset.collection;
-          const newStatus = this.value;
-
-          const docRef = doc(db, collection, docId);
-          await updateDoc(docRef, { status: newStatus });
-
-          allOrders.forEach(o => {
-            if (o.docId === docId && o.collection === collection) {
-              o.status = newStatus;
-            }
-          });
-
-          applyFilters();
-        });
       });
 
       document.getElementById("totalsDisplay").innerText = 
@@ -272,8 +248,13 @@
       }
 
       // Status filter
-      if (currentStatus !== "All") {
+      if (currentStatus !== "All" && currentStatus !== "Claimed") {
         filtered = filtered.filter(order => order.status === currentStatus);
+      }
+
+      // Claimed filter
+      if (currentStatus === "Claimed") {
+        filtered = filtered.filter(order => order.claimed === true);
       }
 
       // Search filter
