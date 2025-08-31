@@ -2,58 +2,222 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sales Monitoring</title>
-  <script type="module">
-    // Firebase SDK imports
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales Status - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+    body, html { height: 100%; background: linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)), url('bg.png') no-repeat center center fixed; background-size: cover; }
 
-    // Firebase config
+    header {
+      background-color: #800000; color: white; padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo-container { display: flex; align-items: center; gap: 2rem; }
+    .logo-container img { height: 80px; width: auto; }
+    .logo-container h1 { font-size: 2rem; font-weight: 700; }
+    .branch-name { font-size: 1.3rem; font-weight: 600; margin-left: 0.10rem; color: #ffffff; }
+
+    .nav-buttons { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .nav-buttons a {
+      background-color: #ffffff; color: #800000; padding: 0.6rem 1.3rem;
+      border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.95rem;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .nav-buttons a:hover { background-color: #f5c21d; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+
+    .main-content { padding: 3rem; }
+    h2 { color: #800000; text-align: center; margin-bottom: 1.5rem; }
+
+    table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+    th, td { padding: 0.75rem; border: 1px solid #ccc; text-align: center; }
+    th { background-color: #800000; color: white; }
+
+    select.status-dropdown {
+      padding: 0.3rem 0.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+    }
+
+    .filter-buttons, .search-bar {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .filter-buttons button {
+      background-color: #800000; color: white; padding: 0.5rem 1rem;
+      border: none; border-radius: 1rem; margin: 0 0.3rem; cursor: pointer; font-weight: 600;
+    }
+    .filter-buttons button:hover { background-color: #a60000; }
+
+    .filter-buttons button.active {
+      background-color: #f5c21d;
+      color: #800000;
+    }
+
+    .filter-buttons button.clear {
+      background-color: #ccc;
+      color: #800000;
+    }
+    .filter-buttons button.clear:hover {
+      background-color: #aaa;
+    }
+
+    .content-box {
+      background-color: white; padding: 1.5rem; border-radius: 1.5rem;
+      box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3); max-width: 100%; overflow-x: auto; margin: auto;
+    }
+
+    .search-bar input {
+      padding: 0.5rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid #ccc;
+      width: 80%;
+      max-width: 500px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="ERestore Logo" />
+      <h1>ERestore Leatherworks <span class="branch-name">| Admin</span></h1>
+    </div>
+    <nav class="nav-buttons">
+      <a href="admin.html">Home</a>
+      <a href="admin_announcement.html">Announcement</a>
+      <a href="admin_appointment.html">Appointment</a>
+      <a href="admin_attendance.html">Attendance</a>
+      <a href="admin_customerlist.html">Customer List</a>
+      <a href="admin_report.html">Report</a>
+      <a href="admin_salesorder.html">Sales Order</a>
+      <a href="admin_expenses.html">Expenses</a>
+    </nav>
+  </header>
+
+  <div class="main-content">
+    <h2>Sales Status List</h2>
+    <div class="search-bar">
+      <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Search by customer, order #, or branch">
+    </div>
+
+    <!-- Status filter -->
+    <div class="filter-buttons" id="statusButtons">
+      <button onclick="filterStatus('All')" class="active">All</button>
+      <button onclick="filterStatus('In Progress')">In Progress</button>
+      <button onclick="filterStatus('With Balance')">With Balance</button>
+      <button onclick="filterStatus('Finished')">Finished</button>
+    </div>
+
+    <!-- Branch + Date + Clear -->
+    <div class="filter-buttons">
+      <label style="color:#800000;font-weight:600;">Filter by Branch:</label>
+      <select id="branchFilter" onchange="applyFilters()">
+        <option value="All">All Branches</option>
+        <option value="Greenhills">Greenhills</option>
+        <option value="Abreeza">Abreeza</option>
+        <option value="Bacolod">Bacolod</option>
+        <option value="Cagayan de Oro">Cagayan de Oro</option>
+        <option value="General Santos">General Santos</option>
+        <option value="Lanang">Lanang</option>
+      </select>
+
+      <label style="color:#800000;font-weight:600; margin-left:1rem;">Date Range:</label>
+      <input type="date" id="startDate" onchange="applyFilters()">
+      <input type="date" id="endDate" onchange="applyFilters()">
+
+      <button class="clear" onclick="clearFilters()">Clear Filters</button>
+    </div>
+
+    <div id="totalsDisplay" style="text-align:center; margin-bottom:1rem; font-weight:600; color:#800000;">
+      Total Sales: ₱0.00 | Total Balance: ₱0.00
+    </div>
+
+    <div class="content-box">
+      <table id="statusTable">
+        <thead>
+          <tr>
+            <th>Branch</th>
+            <th>Order #</th>
+            <th>Customer</th>
+            <th>Date Booked</th>
+            <th>Repairman</th>
+            <th>Items</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
+      apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+      authDomain: "erestore-leatherworks.firebaseapp.com",
+      projectId: "erestore-leatherworks",
+      storageBucket: "erestore-leatherworks.firebasestorage.app",
+      messagingSenderId: "727698074030",
+      appId: "1:727698074030:web:58870b6be96934e71c003f"
     };
 
-    // Init
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    const branchMap = {
+      gh: 'Greenhills', abreeza: 'Abreeza', bcd: 'Bacolod',
+      cdo: 'Cagayan de Oro', gensan: 'General Santos', lanang: 'Lanang'
+    };
+
+    const tableBody = document.querySelector("#statusTable tbody");
     let allOrders = [];
-    let currentStatus = "All";
+    let currentStatus = "All"; // track active status filter
 
-    async function fetchOrders() {
-      const branches = ["branch1", "branch2"]; // update with your branch collections
+    async function loadOrders() {
       allOrders = [];
-
-      for (let branch of branches) {
-        const colRef = collection(db, branch);
-        const snapshot = await getDocs(colRef);
-        snapshot.forEach(doc => {
-          allOrders.push({
-            docId: doc.id,
-            collection: branch,
-            ...doc.data()
-          });
+      for (const key in branchMap) {
+        const snapshot = await getDocs(collection(db, `${key}_salesOrders`));
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if (!data.status) data.status = 'In Progress';
+          data.branch = branchMap[key];
+          data.docId = docSnap.id;
+          data.collection = `${key}_salesOrders`;
+          allOrders.push(data);
         });
       }
-
       applyFilters();
     }
 
-    function renderTable(orders) {
-      const tbody = document.querySelector("#salesTable tbody");
-      tbody.innerHTML = "";
+    function renderTable(data) {
+      tableBody.innerHTML = "";
 
-      if (orders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No records found</td></tr>`;
-        return;
-      }
+      const sorted = data.slice().sort((a, b) => {
+        const dateA = new Date(a.dateBooked || "2000-01-01");
+        const dateB = new Date(b.dateBooked || "2000-01-01");
+        return dateB - dateA;
+      });
 
-      orders.forEach(order => {
-        const repairmen = order.repairmen || "—";
-        const items = order.items ? order.items.join(", ") : "—";
+      let totalSales = 0;
+      let totalBalance = 0;
+
+      sorted.forEach(order => {
+        const items = (order.items || []).map(i => {
+          const itemTotal = (i.price || 0) * (i.quantity || 1);
+          totalSales += itemTotal;
+          return `• Ticket: ${i.ticketNo || '—'} | ${i.itemDescription || '—'} | Qty: ${i.quantity || '—'} | ₱${i.price || '0.00'}${i.remarks ? ' - ' + i.remarks : ''}`;
+        }).join("\n");
+
+        if (!isNaN(order.balance)) {
+          totalBalance += Number(order.balance);
+        }
+
+        const repairmen = [...new Set((order.items || []).map(i => i.repairman).filter(Boolean))].join(', ');
 
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -61,70 +225,116 @@
           <td>${order.jobOrderNumber || '—'}</td>
           <td>${order.customerName || '—'}</td>
           <td>${order.dateBooked || '—'}</td>
-          <td>${repairmen}</td>
-          <td style="white-space: pre-wrap; text-align:left;">${items}</td>
-          <td>${order.status || '—'}</td>
+          <td>${repairmen || '—'}</td>
+          <td style="white-space: pre-wrap; text-align: left">${items}</td>
+          <td>
+            <select class="status-dropdown" data-docid="${order.docId}" data-collection="${order.collection}">
+              <option value="In Progress" ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option value="With Balance" ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
+              <option value="Finished" ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
+            </select>
+          </td>
         `;
-        tbody.appendChild(row);
+        tableBody.appendChild(row);
       });
+
+      document.querySelectorAll('.status-dropdown').forEach(select => {
+        select.addEventListener('change', async function () {
+          const docId = this.dataset.docid;
+          const collection = this.dataset.collection;
+          const newStatus = this.value;
+
+          const docRef = doc(db, collection, docId);
+          await updateDoc(docRef, { status: newStatus });
+
+          allOrders.forEach(o => {
+            if (o.docId === docId && o.collection === collection) {
+              o.status = newStatus;
+            }
+          });
+
+          applyFilters();
+        });
+      });
+
+      document.getElementById("totalsDisplay").innerText = 
+        `Total Sales: ₱${totalSales.toFixed(2)} | Total Balance: ₱${totalBalance.toFixed(2)}`;
     }
 
-    function applyFilters() {
-      let filtered = [...allOrders];
+    // Apply all filters together
+    window.applyFilters = function () {
+      let filtered = allOrders;
 
+      // Branch filter
+      const selectedBranch = document.getElementById("branchFilter").value;
+      if (selectedBranch !== "All") {
+        filtered = filtered.filter(order => order.branch === selectedBranch);
+      }
+
+      // Status filter
       if (currentStatus !== "All") {
         filtered = filtered.filter(order => order.status === currentStatus);
       }
 
+      // Search filter
+      const term = document.getElementById("searchInput").value.toLowerCase();
+      if (term) {
+        filtered = filtered.filter(order =>
+          (order.customerName || "").toLowerCase().includes(term) ||
+          (order.jobOrderNumber || "").toLowerCase().includes(term) ||
+          (order.branch || "").toLowerCase().includes(term)
+        );
+      }
+
+      // Date filter
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+      if (start || end) {
+        filtered = filtered.filter(order => {
+          const date = new Date(order.dateBooked || "1900-01-01");
+          const startDate = start ? new Date(start) : null;
+          const endDate = end ? new Date(end) : null;
+          if (startDate && date < startDate) return false;
+          if (endDate && date > endDate) return false;
+          return true;
+        });
+      }
+
       renderTable(filtered);
-    }
+    };
 
-    window.filterStatus = function(status) {
+    // Status filter handler
+    window.filterStatus = function (status) {
       currentStatus = status;
-      document.querySelectorAll("#statusButtons button").forEach(btn => {
-        btn.classList.remove("active");
-      });
-      document.querySelector(`#statusButtons button[data-status="${status}"]`).classList.add("active");
       applyFilters();
-    }
 
-    window.onload = fetchOrders;
+      const buttons = document.querySelectorAll("#statusButtons button");
+      buttons.forEach(btn => btn.classList.remove("active"));
+      buttons.forEach(btn => {
+        if (btn.textContent === status || (status === "All" && btn.textContent === "All")) {
+          btn.classList.add("active");
+        }
+      });
+    };
+
+    // Clear all filters
+    window.clearFilters = function () {
+      document.getElementById("branchFilter").value = "All";
+      document.getElementById("searchInput").value = "";
+      document.getElementById("startDate").value = "";
+      document.getElementById("endDate").value = "";
+      currentStatus = "All";
+
+      const buttons = document.querySelectorAll("#statusButtons button");
+      buttons.forEach(btn => btn.classList.remove("active"));
+      document.querySelector('#statusButtons button').classList.add("active");
+
+      applyFilters();
+    };
+
+    loadOrders();
   </script>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    .filter-buttons button { margin-right: 8px; padding: 6px 12px; cursor: pointer; }
-    .filter-buttons .active { background: #007bff; color: #fff; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background: #f4f4f4; }
-  </style>
-</head>
-<body>
-  <h2>Sales Monitoring</h2>
-
-  <div class="filter-buttons" id="statusButtons">
-    <button onclick="filterStatus('All')" data-status="All" class="active">All</button>
-    <button onclick="filterStatus('In Progress')" data-status="In Progress">In Progress</button>
-    <button onclick="filterStatus('With Balance')" data-status="With Balance">With Balance</button>
-    <button onclick="filterStatus('Finished')" data-status="Finished">Finished</button>
-    <button onclick="filterStatus('Claimed')" data-status="Claimed">Claimed</button>
-  </div>
-
-  <table id="salesTable">
-    <thead>
-      <tr>
-        <th>Branch</th>
-        <th>Job Order No.</th>
-        <th>Customer</th>
-        <th>Date Booked</th>
-        <th>Repairmen</th>
-        <th>Items</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td colspan="7" style="text-align:center;">Loading...</td></tr>
-    </tbody>
-  </table>
 </body>
 </html>
+
+add the a claim button 
