@@ -267,7 +267,9 @@
   <option value="cdo">CDO</option>
   <option value="gensan">Gensan</option>
   <option value="lanang">Lanang</option>
-</select>
+  <option value="mercedes">Mercedes</option>
+
+        </select>
 
       </div>
 
@@ -363,7 +365,7 @@
 
   // ✅ Fetch all branches
   async function fetchAllBranchesOrders() {
-    const branchKeys = ['gh', 'abreeza', 'bcd', 'cdo', 'gensan', 'lanang'];
+    const branchKeys = ['gh', 'abreeza', 'bcd', 'cdo', 'gensan', 'lanang', 'mercedes'];
     const all = await Promise.all(branchKeys.map(fetchBranchOrders));
     return all.flat();
   }
@@ -512,3 +514,4 @@
 
 </body>
 </html>
+
