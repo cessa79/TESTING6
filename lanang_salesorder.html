@@ -450,7 +450,7 @@
     if (startRange) inRange = orderDate >= startRange;
     if (endRange)   inRange = inRange && orderDate <= endRange;
 
-    return isCdo && matchJobOrder && matchTime && inRange;
+    return isLanang && matchJobOrder && matchTime && inRange;
   });
 
   filteredOrders.sort((a, b) => b.jobOrderNumber.localeCompare(a.jobOrderNumber));
@@ -644,6 +644,7 @@ document.getElementById('paymentModal').addEventListener('click', (e) => {
 
 </body>
 </html>
+
 
 
 
