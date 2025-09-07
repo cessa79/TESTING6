@@ -1,3 +1,5 @@
+# Write the full HTML (exactly as in the canvas) to a downloadable file
+html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -597,7 +599,7 @@
                 <option>Winlove Baconga</option>
                 <option>Jerico Casamillo</option>
                 <option>Romel Gutierez</option>
-                <option>Joekim Alcachupas</option
+                <option>Joekim Alcachupas</option>
               </select>
             </td>
             <td><button type="button" onclick="this.closest('tr').remove()">Remove</button></td>
@@ -759,12 +761,18 @@ function getNextTicketNumber() {
       newRow.querySelector('.removeBtn').addEventListener('click', function () {
         this.closest('tr').remove();
         updateBalance();
-        document.querySelector('#itemTable tbody tr input[name="ticketNo"]').value = "1";
-
+        renumberTickets();
       });
 
       attachInputListeners(newRow);
     });
+
+    function renumberTickets(){
+      document.querySelectorAll('#itemTable tbody tr').forEach((row, idx)=>{
+        const t=row.querySelector('input[name="ticketNo"]');
+        if(t){ t.value = String(idx+1); }
+      });
+    }
 
     // Balance Calculation
     function updateBalance() {
@@ -838,9 +846,6 @@ if (!joValue) {
   return;
 }
 
-  
- 
-
   console.log("🚀 Submit clicked");
 
   // Validate items before saving
@@ -890,7 +895,7 @@ if (!joValue) {
     totalAmount: totalAmount,
     amountPaid: downPayment,
     completionDate: document.getElementById('completionDate').value,
-    branch: "Lanang",
+    branch: "Mercedes",
     items: items,
     images: imageBase64List
   };
@@ -911,8 +916,7 @@ if (!joValue) {
 
 
     // Print Receipt
-    // Print Receipt
-document.getElementById('printBtn').addEventListener('click', () => {
+    document.getElementById('printBtn').addEventListener('click', () => {
   const printContainer = document.getElementById('printableImages');
   printContainer.innerHTML = '';
   document.querySelectorAll('#imagePreviewWrapper img').forEach(img => {
@@ -943,8 +947,6 @@ document.getElementById('printBtn').addEventListener('click', () => {
 
 
     // Print Ticket
-   // Print Ticket
-// Print Ticket (with reliable yellow highlight in print)
 // Print Ticket: 4 per A4 with highlights
 document.getElementById('printTicketBtn').addEventListener('click', () => {
   const ticketSection = document.getElementById('ticketPrintSection');
@@ -1073,7 +1075,7 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
   // Load customer list from Firestore using modular syntax
   async function loadCustomerList() {
     try {
-      const ordersCollection = collection(db, "merceddes_salesOrders");
+      const ordersCollection = collection(db, "mercedes_salesOrders");
       const snapshot = await getDocs(ordersCollection);
       const customerSet = new Set();
 
@@ -1100,10 +1102,3 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
 
 </body>
 </html>
-
-
-
-
-
-
-
