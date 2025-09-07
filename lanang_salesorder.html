@@ -420,7 +420,7 @@
   }
 
   const filteredOrders = orders.filter(order => {
-    const isLanang = order.branch === "SM Lanang";
+    const isLanang = order.branch === "Lanang";
     const jobOrderStr = (order.jobOrderNumber || '').toLowerCase();
     const matchJobOrder = jobOrderStr.includes((filter || '').toLowerCase());
 
@@ -644,3 +644,4 @@ document.getElementById('paymentModal').addEventListener('click', (e) => {
 
 </body>
 </html>
+
