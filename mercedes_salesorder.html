@@ -450,7 +450,7 @@
     if (startRange) inRange = orderDate >= startRange;
     if (endRange)   inRange = inRange && orderDate <= endRange;
 
-    return isCdo && matchJobOrder && matchTime && inRange;
+    return isMercedes && matchJobOrder && matchTime && inRange;
   });
 
   filteredOrders.sort((a, b) => b.jobOrderNumber.localeCompare(a.jobOrderNumber));
