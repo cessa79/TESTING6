@@ -284,7 +284,7 @@
       <a href="mercedes_announcement.html">Announcements</a>
       <a href="mercedes_report.html">Reports</a>
       <a href="mercedes_appointment.html">Appointments</a>
-      <a href="nercedes_customerlist.html">Customers</a>
+      <a href="mercedes_customerlist.html">Customers</a>
       <a href="mercedes_attendance.html">Attendance</a>
       <a href="mercedes_expenses.html">Expenses</a>
     </nav>
@@ -315,10 +315,9 @@
 
       <h2>Sales Order List</h2>
 <div class="action-buttons">
-  <button onclick="window.print()"> Print</button>
+  <button onclick="printTable()"> Print</button>
   <button onclick="exportToCSV()"> Export to CSV</button>
   <button onclick="resetFormFields()" style="background-color: #ccc; color: #333; padding: 0.4rem 1rem; border-radius: 0.5rem;">Reset</button>
- <button onclick="openReceipt()">Receipt</button>
 
 </div>
 
@@ -421,7 +420,7 @@
   }
 
   const filteredOrders = orders.filter(order => {
-    const isGreenhills = order.branch === "Mercedes";
+    const isCdo = order.branch === "Mercedes";
     const jobOrderStr = (order.jobOrderNumber || '').toLowerCase();
     const matchJobOrder = jobOrderStr.includes((filter || '').toLowerCase());
 
@@ -451,7 +450,7 @@
     if (startRange) inRange = orderDate >= startRange;
     if (endRange)   inRange = inRange && orderDate <= endRange;
 
-    return isGreenhills && matchJobOrder && matchTime && inRange;
+    return isCdo && matchJobOrder && matchTime && inRange;
   });
 
   filteredOrders.sort((a, b) => b.jobOrderNumber.localeCompare(a.jobOrderNumber));
@@ -587,84 +586,62 @@ document.getElementById('paymentModal').addEventListener('click', (e) => {
   });
 
   window.resetFormFields = resetFormFields;
- window.openReceipt = function () {
-  const jobOrderId = document.getElementById("searchInput").value.trim();
-  if (!jobOrderId) {
-    alert("Please enter a Job Order # in the search box first.");
-    return;
+
+  window.printTable = function () {
+  const table = document.getElementById('salesOrdersTable').outerHTML;
+  const startDateVal = document.getElementById('startDate').value;
+  const endDateVal   = document.getElementById('endDate').value;
+
+  // Create header note
+  let headerNote = "Showing: All Records";
+  if (startDateVal && endDateVal) {
+    headerNote = `Showing: ${startDateVal} to ${endDateVal}`;
+  } else if (startDateVal) {
+    headerNote = `Showing: From ${startDateVal}`;
+  } else if (endDateVal) {
+    headerNote = `Showing: Until ${endDateVal}`;
   }
 
-  const rows = Array.from(document.querySelectorAll("#salesOrdersTable tbody tr"));
-  const match = rows.find(r => r.cells[0].innerText === jobOrderId);
+  // Get total sales text
+  const totalSales = document.getElementById('totalSales').textContent;
 
-  if (!match) {
-    alert("Job Order not found in the list.");
-    return;
-  }
-
-  // Extract data from table row
-  const order = {
-    jobOrderNumber: match.cells[0].innerText,
-    date: match.cells[1].innerText,
-    customer: match.cells[2].innerText,
-    contact: match.cells[3].innerText,
-    email: match.cells[4].innerText,
-    receiver: match.cells[5].innerText,
-    repairman: match.cells[6].innerText,
-    paymentMode: match.cells[7].innerText,
-    total: match.cells[8].innerText,
-    balance: match.cells[9].innerText,
-    completion: match.cells[10].innerText,
-    items: match.cells[11].innerText
-  };
-
-  // Build receipt HTML
-  const receiptHtml = `
+  // Open print window
+  const win = window.open('', '', 'width=900,height=650');
+  win.document.write(`
     <html>
       <head>
-        <title>Receipt - ${order.jobOrderNumber}</title>
+        <title>Sales Order List</title>
         <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          h2 { text-align: center; color: #800000; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
-          .total { font-weight: bold; text-align: right; }
-        </style>
+  body { font-family: 'Inter', sans-serif; padding: 20px; }
+  h2 { text-align: center; color: #800000; margin-bottom: 0.5rem; }
+  p { text-align: center; margin-bottom: 1rem; font-size: 0.9rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  th, td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: top; }
+  th { background: #f0f0f0; }
+  #totalSalesPrint { margin-top: 1rem; font-weight: bold; text-align: right; }
+
+  /* ✅ HIDE Images column (last column) */
+  th:last-child, td:last-child {
+    display: none;
+  }
+</style>
+
       </head>
       <body>
-        <h2>ERestore Leatherworks - Greenhills</h2>
-        <p><strong>Job Order:</strong> ${order.jobOrderNumber}</p>
-        <p><strong>Date:</strong> ${order.date}</p>
-        <p><strong>Customer:</strong> ${order.customer}</p>
-        <p><strong>Contact:</strong> ${order.contact}</p>
-        <p><strong>Email:</strong> ${order.email}</p>
-        <p><strong>Receiver:</strong> ${order.receiver}</p>
-        <p><strong>Repairman:</strong> ${order.repairman}</p>
-
-        <table>
-          <tr><th>Items</th></tr>
-          <tr><td style="white-space:pre-wrap">${order.items}</td></tr>
-        </table>
-
-        <p class="total">Total: ${order.total}</p>
-        <p class="total">Balance: ${order.balance}</p>
-        <p><strong>Payment Mode:</strong> ${order.paymentMode}</p>
-        <p><strong>Completion Date:</strong> ${order.completion}</p>
-
-        <p style="text-align:center; margin-top:30px;">Thank you for your order!</p>
+        <h2>Sales Order List</h2>
+        <p>${headerNote}</p>
+        ${table}
+        <p id="totalSalesPrint">${totalSales}</p>
       </body>
     </html>
-  `;
-
-  const receiptWindow = window.open('', '_blank', 'width=700,height=800');
-  receiptWindow.document.open();
-  receiptWindow.document.write(receiptHtml);
-  receiptWindow.document.close();
-  receiptWindow.focus();
-  setTimeout(() => receiptWindow.print(), 300);
+  `);
+  win.document.close();
+  win.print();
 };
+
 
 </script>
 
 </body>
 </html>
+
