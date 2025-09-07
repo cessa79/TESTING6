@@ -420,7 +420,7 @@
   }
 
   const filteredOrders = orders.filter(order => {
-    const isCdo = order.branch === "Mercedes";
+    const isMercedes = order.branch === "Mercedes";
     const jobOrderStr = (order.jobOrderNumber || '').toLowerCase();
     const matchJobOrder = jobOrderStr.includes((filter || '').toLowerCase());
 
