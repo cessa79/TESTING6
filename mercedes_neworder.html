@@ -672,8 +672,9 @@
   import {
     getFirestore,
     collection,
-    addDoc,
-    getDocs
+    getDocs,
+    doc,
+    setDoc
   } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -687,6 +688,7 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  let isSaving = false;
 
   document.addEventListener('DOMContentLoaded', function () {
     // Receiver Password Modal
@@ -845,6 +847,9 @@ if (!joValue) {
   return;
 }
 
+  
+ 
+
   console.log("🚀 Submit clicked");
 
   // Validate items before saving
@@ -877,7 +882,7 @@ if (!joValue) {
   // ✅ Proper number parsing for balance, discount, downPayment, and new fields totalAmount & amountPaid
   const totalAmount = parseFloat(document.getElementById('totalAmount').value || 0);
   const downPayment = parseFloat(document.getElementById('downPayment').value || 0);
-  const discount = parseFloat(document.getElementById('discount').value || 0);
+  const discount = parseFloat(document.getElementById('discount').value) || 0;
   const balance = totalAmount - discount - downPayment;
 
   const order = {
@@ -902,17 +907,19 @@ if (!joValue) {
   console.log("📝 Order data to be saved:", order);
 
   try {
-    const ordersCollection = collection(db, "mercedes_salesOrders");
-    console.log("📤 Attempting to write to Firestore...");
-    await addDoc(ordersCollection, order);
+    // prevent double save by using jobOrderNumber as doc id
+    const docRef = doc(db, "mercedes_salesOrders", order.jobOrderNumber);
+    await setDoc(docRef, order);
     alert("✅ Sales Order has been saved to Firestore!");
     window.location.href = "mercedes_salesorder.html";
   } catch (error) {
     console.error("❌ Firestore Error:", error);
     alert("❌ Failed to save sales order. Please try again.");
+  } finally {
+    // ensure form submit re-entry allowed after save/error
   }
 });
-
+  
 
     // Print Receipt
     document.getElementById('printBtn').addEventListener('click', () => {
@@ -1074,7 +1081,7 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
   // Load customer list from Firestore using modular syntax
   async function loadCustomerList() {
     try {
-      const ordersCollection = collection(db, "mercedes_salesOrders");
+      const ordersCollection = collection(db, "merceddes_salesOrders");
       const snapshot = await getDocs(ordersCollection);
       const customerSet = new Set();
 
