@@ -46,6 +46,18 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
+    .row {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.col {
+  flex: 1;
+  min-width: 200px;
+}
+
     /* Page */
     .main-content { padding: 3rem; }
     .form-container {
@@ -122,11 +134,29 @@
     <div class="form-container">
       <h2>Sell Items</h2>
       <form id="sellForm">
-        <label for="date">Transaction Date</label>
-        <input type="date" id="date" required>
+        <div class="row">
+  <div class="col">
+    <label for="customer">Customer Name</label>
+<input type="text" id="customer" required placeholder="Walk-in / Name">
 
-        <label for="customer">Customer Name</label>
-        <input type="text" id="customer" required placeholder="Walk-in / Name">
+<div class="row">
+  <div class="col">
+    <label for="date">Transaction Date</label>
+    <input type="date" id="date" required>
+  </div>
+
+  <div class="col">
+    <label for="payment">Mode of Payment</label>
+    <select id="payment" required>
+      <option value="" disabled selected>Select Payment Method</option>
+      <option value="Cash">Cash</option>
+      <option value="GCash">GCash</option>
+      <option value="Card">Card</option>
+      <option value="Others">Others</option>
+    </select>
+  </div>
+</div>
+
 
         <table id="sellTable">
           <thead>
@@ -249,9 +279,11 @@
 
       const customer = document.getElementById('customer').value.trim();
       const date     = document.getElementById('date').value;
+      const payment  = document.getElementById('payment').value;
 
       if (!customer) { alert('Please enter a customer name.'); return; }
       if (!date)     { alert('Please select a transaction date.'); return; }
+      if (!payment)  { alert('Please select a mode of payment.'); return; }
 
       const items = [];
       const rows = tableBody.querySelectorAll('tr');
@@ -271,6 +303,7 @@
         branch: "Mercedes",
         date,
         customer,
+        payment,
         items,
         grandTotal,
         createdAt: serverTimestamp(),
@@ -294,6 +327,7 @@
             <h3 style="text-align:center;">E-Restore Leatherworks - Mercedes</h3>
             <p><strong>Date:</strong> ${date}</p>
             <p><strong>Customer:</strong> ${customer}</p>
+            <p><strong>Mode of Payment:</strong> ${payment}</p>
             <table style="width:100%; border-collapse:collapse; margin-top:10px;" border="1">
               <tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
               ${itemsHtml}
