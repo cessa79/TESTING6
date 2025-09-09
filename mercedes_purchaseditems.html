@@ -163,13 +163,15 @@
         <div class="table-scroll">
           <table>
             <thead>
-              <tr>
-                <th style="min-width:110px;">Date</th>
-                <th style="min-width:160px;">Customer</th>
-                <th>Items</th>
-                <th style="min-width:140px;">Grand Total (₱)</th>
-              </tr>
-            </thead>
+  <tr>
+    <th style="min-width:110px;">Date</th>
+    <th style="min-width:160px;">Customer</th>
+    <th>Items</th>
+    <th style="min-width:120px;">Mode of Payment</th>
+    <th style="min-width:140px;">Grand Total (₱)</th>
+  </tr>
+</thead>
+
             <tbody id="soldTableBody"></tbody>
           </table>
         </div>
@@ -224,12 +226,14 @@
       ).join('<br>');
 
       const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${sale.date || '—'}</td>
-        <td>${sale.customer || '—'}</td>
-        <td class="items-list">${itemList || '—'}</td>
-        <td>₱${(sale.grandTotal || 0).toFixed(2)}</td>
-      `;
+     row.innerHTML = `
+  <td>${sale.date || '—'}</td>
+  <td>${sale.customer || '—'}</td>
+  <td class="items-list">${itemList || '—'}</td>
+  <td>${sale.payment || '—'}</td>
+  <td>₱${(sale.grandTotal || 0).toFixed(2)}</td>
+`;
+
       tableBody.appendChild(row);
     });
   }
@@ -282,5 +286,4 @@
 
 </body>
 </html>
-
 
