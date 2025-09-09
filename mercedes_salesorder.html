@@ -335,6 +335,7 @@
         <th>Repairman</th>
         <th>Payment</th>
         <th>Total</th>
+       <th>Deposit</th> <!-- ✅ NEW -->
         <th>Balance</th>
         <th>Completion</th>
         <th>Items</th>
@@ -477,6 +478,8 @@
       <td>${[...new Set(order.items.map(i => i.repairman))].join(', ')}</td>
       <td>${order.paymentMode}</td>
       <td>₱${total.toFixed(2)}</td>
+        <td>₱${paid.toFixed(2)}</td> <!-- ✅ NEW Deposit column -->
+
      <td>
   ₱${balance}<br>
   ${Number(balance) > 0 ? `<button class="edit-btn" onclick="editBalance('${order.id}', ${total})">Edit</button>` : ``}
@@ -620,10 +623,12 @@ document.getElementById('paymentModal').addEventListener('click', (e) => {
   th { background: #f0f0f0; }
   #totalSalesPrint { margin-top: 1rem; font-weight: bold; text-align: right; }
 
-  /* ✅ HIDE Images column (last column) */
-  th:last-child, td:last-child {
-    display: none;
-  }
+/* ✅ HIDE Images column ONLY */
+th:nth-last-child(1), td:nth-last-child(1) {
+  display: none;
+}
+ 
+
 </style>
 
       </head>
@@ -639,9 +644,39 @@ document.getElementById('paymentModal').addEventListener('click', (e) => {
   win.print();
 };
 
+window.exportToCSV = function () {
+  const table = document.getElementById("salesOrdersTable");
+  let csv = [];
+  const rows = table.querySelectorAll("tr");
+
+  for (let row of rows) {
+    let cols = row.querySelectorAll("th, td");
+    let rowData = [];
+    cols.forEach((col, i) => {
+      // ✅ Skip Images column (last one)
+      if (i === cols.length - 1) return;
+      rowData.push(`"${col.innerText.replace(/"/g, '""')}"`);
+    });
+    csv.push(rowData.join(","));
+  }
+
+  // ✅ Add Total Sales at bottom
+  const totalSalesText = document.getElementById("totalSales").textContent;
+  csv.push("");
+  csv.push(`"${totalSalesText}"`);
+
+  // ✅ Download CSV
+  const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+  const downloadLink = document.createElement("a");
+  downloadLink.download = "sales_orders.csv";
+  downloadLink.href = window.URL.createObjectURL(csvFile);
+  downloadLink.style.display = "none";
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+};
+
 
 </script>
 
 </body>
 </html>
-
