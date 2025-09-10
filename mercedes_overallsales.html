@@ -224,169 +224,134 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
-      authDomain: "erestore-leatherworks.firebaseapp.com",
-      projectId: "erestore-leatherworks",
-      storageBucket: "erestore-leatherworks.firebasestorage.app",
-      messagingSenderId: "727698074030",
-      appId: "1:727698074030:web:58870b6be96934e71c003f"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+  authDomain: "erestore-leatherworks.firebaseapp.com",
+  projectId: "erestore-leatherworks",
+  storageBucket: "erestore-leatherworks.firebasestorage.app",
+  messagingSenderId: "727698074030",
+  appId: "1:727698074030:web:58870b6be96934e71c003f"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    const salesOrdersTable = document.querySelector("#salesOrdersTable tbody");
-    const purchasedItemsTable = document.querySelector("#purchasedItemsTable tbody");
-    const summaryBox = document.getElementById("summaryBox");
+const salesOrdersTable = document.querySelector("#salesOrdersTable tbody");
+const purchasedItemsTable = document.querySelector("#purchasedItemsTable tbody");
+const printSalesOrders = document.querySelector("#printSalesOrders tbody");
+const printPurchasedItems = document.querySelector("#printPurchasedItems tbody");
 
-    let allSales = [];
-    let allPurchases = [];
+let allSales = [];
+let allPurchases = [];
 
-    async function loadMercedesOverallSales() {
-      // Load Sales Orders
-      const salesSnap = await getDocs(collection(db, "mercedes_salesOrders"));
-      allSales = [];
-      salesSnap.forEach(docSnap => {
-        const data = docSnap.data();
-        allSales.push(data);
-      });
+async function loadMercedesOverallSales() {
+  // Load Sales Orders
+  const salesSnap = await getDocs(collection(db, "mercedes_salesOrders"));
+  allSales = [];
+  salesSnap.forEach(docSnap => allSales.push(docSnap.data()));
 
-      // Load Purchased Items
-      const purchaseSnap = await getDocs(collection(db, "mercedes_soldItems")); // 🔹 fixed collection name
-      allPurchases = [];
-      purchaseSnap.forEach(docSnap => {
-        const data = docSnap.data();
-        allPurchases.push(data);
-      });
+  // Load Purchased Items
+  const purchaseSnap = await getDocs(collection(db, "mercedes_soldItems"));
+  allPurchases = [];
+  purchaseSnap.forEach(docSnap => allPurchases.push(docSnap.data()));
 
-      renderTables(allSales, allPurchases);
-    }
+  renderTables(allSales, allPurchases);
+}
 
-    function renderTables(sales, purchases) {
-      salesOrdersTable.innerHTML = "";
-      purchasedItemsTable.innerHTML = "";
+function renderTables(sales, purchases) {
+  salesOrdersTable.innerHTML = "";
+  purchasedItemsTable.innerHTML = "";
+  printSalesOrders.innerHTML = "";
+  printPurchasedItems.innerHTML = "";
 
-      let totalSales = 0;
-      let totalBalances = 0;
-      let totalPurchases = 0;
+  let totalSales = 0;
+  let totalBalances = 0;
+  let totalPurchases = 0;
 
-      sales.forEach(data => {
-        const total = (data.items || []).reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
-        const balance = data.balance || 0;
-        const itemsList = (data.items || []).map(i => `${i.itemDescription || ''} x${i.quantity || 1}`).join(", ");
+  // 🔹 Sales Orders Table
+  sales.forEach(data => {
+    const total = (data.items || []).reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
+    const balance = data.balance || 0;
+    const itemsList = (data.items || []).map(i => `${i.itemDescription || ''} x${i.quantity || 1}`).join(", ");
 
-        salesOrdersTable.innerHTML += `
-          <tr>
-            <td>${data.jobOrderNumber || "—"}</td>
-            <td>${data.customerName || "—"}</td>
-            <td>${data.dateBooked || "—"}</td>
-            <td>${itemsList}</td>
-            <td>₱${total.toFixed(2)}</td>
-            <td>₱${balance.toFixed(2)}</td>
-          </tr>
-        `;
-        totalSales += total;
-        totalBalances += balance;
-      });
+    const row = `
+      <tr>
+        <td>${data.jobOrderNumber || "—"}</td>
+        <td>${data.customerName || "—"}</td>
+        <td>${data.dateBooked || "—"}</td>
+        <td>${itemsList}</td>
+        <td>₱${total.toFixed(2)}</td>
+        <td>₱${balance.toFixed(2)}</td>
+      </tr>
+    `;
+    salesOrdersTable.innerHTML += row;
+    printSalesOrders.innerHTML += row;
 
-      purchases.forEach(data => {
-  // adjust field names to match Firestore
-  const name = data.itemName || data.item || "—";
-  const qty = data.quantity || 0;
-  const unit = data.unitPrice || data.price || 0;
-  const total = qty * unit;
-  const date = data.datePurchased || data.date || "—";
+    totalSales += total;
+    totalBalances += balance;
+  });
 
-  purchasedItemsTable.innerHTML += `
-    <tr>
-      <td>${name}</td>
-      <td>${qty}</td>
-      <td>₱${unit.toFixed(2)}</td>
-      <td>₱${total.toFixed(2)}</td>
-      <td>${date}</td>
-    </tr>
+  // 🔹 Purchased Items Table (updated)
+  purchases.forEach(data => {
+    const date = data.date || "—";
+    (data.items || []).forEach(item => {
+      const name = item.description || "—";
+      const qty = item.quantity || 0;
+      const unit = item.unitPrice || item.price || 0;
+      const total = item.lineTotal || (qty * unit);
+
+      const row = `
+        <tr>
+          <td>${name}</td>
+          <td>${qty}</td>
+          <td>₱${unit.toFixed(2)}</td>
+          <td>₱${total.toFixed(2)}</td>
+          <td>${date}</td>
+        </tr>
+      `;
+      purchasedItemsTable.innerHTML += row;
+      printPurchasedItems.innerHTML += row;
+
+      totalPurchases += total;
+    });
+  });
+
+  // 🔹 Update summary
+  summaryBox.innerHTML = `
+    <h3>Summary</h3>
+    <p>Total Sales: ₱${totalSales.toFixed(2)}</p>
+    <p>Total Balances: ₱${totalBalances.toFixed(2)}</p>
+    <p>Total Purchases: ₱${totalPurchases.toFixed(2)}</p>
+    <p><strong>Profit: ₱${(totalSales - totalPurchases).toFixed(2)}</strong></p>
   `;
-  totalPurchases += total;
-});
+}
 
-// 🔹 Printable Purchased Items
-purchases.forEach(data => {
-  const date = data.date || '—';
-  const itemsList = (data.items || []).map(i =>
-    `• ${i.description || ''} (x${i.quantity || 1}) - ₱${(i.lineTotal || 0).toFixed(2)}`
-  ).join('<br>') || '—';
-  const payment = data.payment || '—';
-  const total = data.grandTotal || 0;
+// 🔹 Filter function
+function applyFilter() {
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+  const start = startDate ? new Date(startDate) : null;
+  const end = endDate ? new Date(endDate) : null;
 
-  purchasedItemsTable.innerHTML += `
-    <tr>
-      <td>${date}</td>
-      <td>${itemsList}</td>
-      <td>${payment}</td>
-      <td>₱${total.toFixed(2)}</td>
-    </tr>
-  `;
+  const filteredSales = allSales.filter(s => {
+    const date = new Date(s.dateBooked);
+    return (!start || date >= start) && (!end || date <= end);
+  });
 
-  // For printable table
-  printPurchasedItems.innerHTML += `
-    <tr>
-      <td>${date}</td>
-      <td>${itemsList}</td>
-      <td>${payment}</td>
-      <td>₱${total.toFixed(2)}</td>
-    </tr>
-  `;
-});
+  const filteredPurchases = allPurchases.filter(p => {
+    const date = new Date(p.date);
+    return (!start || date >= start) && (!end || date <= end);
+  });
 
+  renderTables(filteredSales, filteredPurchases);
+}
 
+loadMercedesOverallSales();
+window.applyFilter = applyFilter;
+</script>
 
-      purchases.forEach(data => {
-        const total = (data.quantity || 0) * (data.unitPrice || 0);
-
-        printPurchasedItems.innerHTML += `
-          <tr>
-            <td>${data.itemName || "—"}</td>
-            <td>${data.quantity || "—"}</td>
-            <td>₱${(data.unitPrice || 0).toFixed(2)}</td>
-            <td>₱${total.toFixed(2)}</td>
-            <td>${data.datePurchased || "—"}</td>
-          </tr>
-        `;
-      });
-    }
-
-    // 🔹 Filter function
-    function applyFilter() {
-      const startDate = document.getElementById("startDate").value;
-      const endDate = document.getElementById("endDate").value;
-
-      if (!startDate && !endDate) {
-        renderTables(allSales, allPurchases);
-        return;
-      }
-
-      const start = startDate ? new Date(startDate) : null;
-      const end = endDate ? new Date(endDate) : null;
-
-      const filteredSales = allSales.filter(s => {
-        const date = new Date(s.dateBooked);
-        return (!start || date >= start) && (!end || date <= end);
-      });
-
-      const filteredPurchases = allPurchases.filter(p => {
-        const date = new Date(p.datePurchased);
-        return (!start || date >= start) && (!end || date <= end);
-      });
-
-      renderTables(filteredSales, filteredPurchases);
-    }
-
-    loadMercedesOverallSales();
-    window.applyFilter = applyFilter;
-  </script>
 </body>
 </html>
