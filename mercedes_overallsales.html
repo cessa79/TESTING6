@@ -119,7 +119,7 @@
       <h1>ERestore Leatherworks <span class="branch-name">| Mercedes Branch</span></h1>
     </div>
     <nav class="nav-buttons">
-      <a href="mercedes.html">Home</a>
+      <a href="mercedes_home.html">Home</a>
       <a href="mercedes_salesorder.html">Sales Order</a>
       <a href="mercedes_salesstatus.html">Sales Status</a>
       <a href="mercedes_customerlist.html">Customer List</a>
@@ -294,51 +294,44 @@
       });
 
       purchases.forEach(data => {
-        const total = (data.quantity || 0) * (data.unitPrice || 0);
+  // adjust field names to match Firestore
+  const name = data.itemName || data.item || "—";
+  const qty = data.quantity || 0;
+  const unit = data.unitPrice || data.price || 0;
+  const total = qty * unit;
+  const date = data.datePurchased || data.date || "—";
 
-        purchasedItemsTable.innerHTML += `
-          <tr>
-            <td>${data.itemName || "—"}</td>
-            <td>${data.quantity || "—"}</td>
-            <td>₱${(data.unitPrice || 0).toFixed(2)}</td>
-            <td>₱${total.toFixed(2)}</td>
-            <td>${data.datePurchased || "—"}</td>
-          </tr>
-        `;
-        totalPurchases += total;
-      });
+  purchasedItemsTable.innerHTML += `
+    <tr>
+      <td>${name}</td>
+      <td>${qty}</td>
+      <td>₱${unit.toFixed(2)}</td>
+      <td>₱${total.toFixed(2)}</td>
+      <td>${date}</td>
+    </tr>
+  `;
+  totalPurchases += total;
+});
 
-      const profit = totalSales - totalPurchases;
-      summaryBox.innerHTML = `
-        <h3>Summary</h3>
-        <p>Total Sales: ₱${totalSales.toFixed(2)}</p>
-        <p>Total Balances: ₱${totalBalances.toFixed(2)}</p>
-        <p>Total Purchases: ₱${totalPurchases.toFixed(2)}</p>
-        <p><strong>Profit: ₱${profit.toFixed(2)}</strong></p>
-      `;
+// 🔹 Printable Purchased Items
+purchases.forEach(data => {
+  const name = data.itemName || data.item || "—";
+  const qty = data.quantity || 0;
+  const unit = data.unitPrice || data.price || 0;
+  const total = qty * unit;
+  const date = data.datePurchased || data.date || "—";
 
-      // 🔹 Fill Printable Tables
-      const printSalesOrders = document.querySelector("#printSalesOrders tbody");
-      const printPurchasedItems = document.querySelector("#printPurchasedItems tbody");
-      printSalesOrders.innerHTML = "";
-      printPurchasedItems.innerHTML = "";
+  printPurchasedItems.innerHTML += `
+    <tr>
+      <td>${name}</td>
+      <td>${qty}</td>
+      <td>₱${unit.toFixed(2)}</td>
+      <td>₱${total.toFixed(2)}</td>
+      <td>${date}</td>
+    </tr>
+  `;
+});
 
-      sales.forEach(data => {
-        const total = (data.items || []).reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
-        const balance = data.balance || 0;
-        const itemsList = (data.items || []).map(i => `${i.itemDescription || ''} x${i.quantity || 1}`).join(", ");
-
-        printSalesOrders.innerHTML += `
-          <tr>
-            <td>${data.jobOrderNumber || "—"}</td>
-            <td>${data.customerName || "—"}</td>
-            <td>${data.dateBooked || "—"}</td>
-            <td>${itemsList}</td>
-            <td>₱${total.toFixed(2)}</td>
-            <td>₱${balance.toFixed(2)}</td>
-          </tr>
-        `;
-      });
 
       purchases.forEach(data => {
         const total = (data.quantity || 0) * (data.unitPrice || 0);
