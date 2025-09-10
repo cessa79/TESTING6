@@ -315,22 +315,33 @@
 
 // 🔹 Printable Purchased Items
 purchases.forEach(data => {
-  const name = data.itemName || data.item || "—";
-  const qty = data.quantity || 0;
-  const unit = data.unitPrice || data.price || 0;
-  const total = qty * unit;
-  const date = data.datePurchased || data.date || "—";
+  const date = data.date || '—';
+  const itemsList = (data.items || []).map(i =>
+    `• ${i.description || ''} (x${i.quantity || 1}) - ₱${(i.lineTotal || 0).toFixed(2)}`
+  ).join('<br>') || '—';
+  const payment = data.payment || '—';
+  const total = data.grandTotal || 0;
 
+  purchasedItemsTable.innerHTML += `
+    <tr>
+      <td>${date}</td>
+      <td>${itemsList}</td>
+      <td>${payment}</td>
+      <td>₱${total.toFixed(2)}</td>
+    </tr>
+  `;
+
+  // For printable table
   printPurchasedItems.innerHTML += `
     <tr>
-      <td>${name}</td>
-      <td>${qty}</td>
-      <td>₱${unit.toFixed(2)}</td>
-      <td>₱${total.toFixed(2)}</td>
       <td>${date}</td>
+      <td>${itemsList}</td>
+      <td>${payment}</td>
+      <td>₱${total.toFixed(2)}</td>
     </tr>
   `;
 });
+
 
 
       purchases.forEach(data => {
@@ -379,6 +390,3 @@ purchases.forEach(data => {
   </script>
 </body>
 </html>
-
-
-
