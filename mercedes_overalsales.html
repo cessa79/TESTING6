@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overall Sales - Mercedes Branch</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+    body, html { height: 100%; background: linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)), url('bg.png') no-repeat center center fixed; background-size: cover; }
+
+    header {
+      background-color: #800000; color: white; padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .logo-container { display: flex; align-items: center; gap: 2rem; }
+    .logo-container img { height: 80px; width: auto; }
+    .logo-container h1 { font-size: 2rem; font-weight: 700; }
+    .branch-name { font-size: 1.3rem; font-weight: 600; margin-left: 0.10rem; color: #ffffff; }
+
+    .nav-buttons { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .nav-buttons a {
+      background-color: #ffffff; color: #800000; padding: 0.6rem 1.3rem;
+      border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.95rem;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .nav-buttons a:hover { background-color: #f5c21d; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+
+    .main-content { padding: 3rem; }
+    h2 { color: #800000; text-align: center; margin-bottom: 1.5rem; }
+
+    .summary-box {
+      background: #f5f5f5;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      text-align: center;
+      margin: 0 auto 2rem auto;
+      max-width: 800px;
+    }
+    .summary-box h3 { margin-bottom: 1rem; color: #800000; }
+    .summary-box p { font-size: 1.2rem; margin: 0.5rem 0; }
+
+    .content-box {
+      background-color: white; 
+      padding: 1.5rem; 
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3); 
+      max-width: 100%;
+      margin: 2rem auto;
+    }
+
+    .table-container {
+      max-height: 300px;
+      overflow-y: auto;
+      border-radius: 1rem;
+    }
+
+    table { width: 100%; border-collapse: collapse; background-color: white; }
+    th, td { padding: 0.75rem; border: 1px solid #ccc; text-align: center; }
+    th { background-color: #800000; color: white; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="ERestore Logo" />
+      <h1>ERestore Leatherworks <span class="branch-name">| Mercedes Branch</span></h1>
+    </div>
+    <nav class="nav-buttons">
+      <a href="mercedes_home.html">Home</a>
+      <a href="mercedes_salesorder.html">Sales Order</a>
+      <a href="mercedes_salesstatus.html">Sales Status</a>
+      <a href="mercedes_customerlist.html">Customer List</a>
+      <a href="mercedes_attendance.html">Attendance</a>
+      <a href="mercedes_expenses.html">Expenses</a>
+      <a href="mercedes_overallsales.html">Overall Sales</a>
+    </nav>
+  </header>
+
+  <div class="main-content">
+    <h2>Mercedes Branch - Overall Sales Records</h2>
+
+    <!-- Summary Totals First -->
+    <div class="summary-box" id="summaryBox">
+      <h3>Summary</h3>
+      <p>Total Sales: ₱0.00</p>
+      <p>Total Balances: ₱0.00</p>
+      <p>Total Purchases: ₱0.00</p>
+      <p><strong>Profit: ₱0.00</strong></p>
+    </div>
+
+    <!-- Sales Orders Table -->
+    <div class="content-box">
+      <h3 style="text-align:center; color:#800000; margin-bottom:1rem;">Sales Orders</h3>
+      <div class="table-container">
+        <table id="salesOrdersTable">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Purchased Items Table -->
+    <div class="content-box">
+      <h3 style="text-align:center; color:#800000; margin-bottom:1rem;">Purchased Items</h3>
+      <div class="table-container">
+        <table id="purchasedItemsTable">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th>Total</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+      authDomain: "erestore-leatherworks.firebaseapp.com",
+      projectId: "erestore-leatherworks",
+      storageBucket: "erestore-leatherworks.firebasestorage.app",
+      messagingSenderId: "727698074030",
+      appId: "1:727698074030:web:58870b6be96934e71c003f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const salesOrdersTable = document.querySelector("#salesOrdersTable tbody");
+    const purchasedItemsTable = document.querySelector("#purchasedItemsTable tbody");
+    const summaryBox = document.getElementById("summaryBox");
+
+    let totalSales = 0;
+    let totalBalances = 0;
+    let totalPurchases = 0;
+
+    async function loadMercedesOverallSales() {
+      // Sales Orders
+      const salesSnap = await getDocs(collection(db, "mercedes_salesOrders"));
+      salesSnap.forEach(docSnap => {
+        const data = docSnap.data();
+        const row = document.createElement("tr");
+        const total = (data.items || []).reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
+        const balance = data.balance || 0;
+        const itemsList = (data.items || []).map(i => `${i.itemDescription || ''} x${i.quantity || 1}`).join(", ");
+
+        row.innerHTML = `
+          <td>${data.jobOrderNumber || "—"}</td>
+          <td>${data.customerName || "—"}</td>
+          <td>${data.dateBooked || "—"}</td>
+          <td>${itemsList}</td>
+          <td>₱${total.toFixed(2)}</td>
+          <td>₱${balance.toFixed(2)}</td>
+        `;
+        salesOrdersTable.appendChild(row);
+
+        totalSales += total;
+        totalBalances += balance;
+      });
+
+      // Purchased Items
+      const purchaseSnap = await getDocs(collection(db, "mercedes_purchasedItems"));
+      purchaseSnap.forEach(docSnap => {
+        const data = docSnap.data();
+        const row = document.createElement("tr");
+        const total = (data.quantity || 0) * (data.unitPrice || 0);
+
+        row.innerHTML = `
+          <td>${data.itemName || "—"}</td>
+          <td>${data.quantity || "—"}</td>
+          <td>₱${(data.unitPrice || 0).toFixed(2)}</td>
+          <td>₱${total.toFixed(2)}</td>
+          <td>${data.datePurchased || "—"}</td>
+        `;
+        purchasedItemsTable.appendChild(row);
+
+        totalPurchases += total;
+      });
+
+      // Update Summary
+      const profit = totalSales - totalPurchases;
+      summaryBox.innerHTML = `
+        <h3>Summary</h3>
+        <p>Total Sales: ₱${totalSales.toFixed(2)}</p>
+        <p>Total Balances: ₱${totalBalances.toFixed(2)}</p>
+        <p>Total Purchases: ₱${totalPurchases.toFixed(2)}</p>
+        <p><strong>Profit: ₱${profit.toFixed(2)}</strong></p>
+      `;
+    }
+
+    loadMercedesOverallSales();
+  </script>
+</body>
+</html>
