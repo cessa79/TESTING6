@@ -1,3 +1,5 @@
+adminsalesorder.html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -123,74 +125,8 @@
     button:hover {
       background-color: #500303;
     }
-    @media print {
-      body, html {
-        background: white !important;
-        color: black;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        font-size: 10pt;
-        padding: 1cm;
-      }
-      header,
-      .nav-buttons,
-      .action-buttons,
-      .view-images-btn,
-      #imageModal,
-      button {
-        display: none !important;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-        font-size: 9pt;
-        table-layout: fixed;
-      }
-      th {
-        background-color: #f0f0f0;
-        font-weight: bold;
-        border: 1px solid #000;
-        padding: 6px;
-        text-align: center;
-      }
-      td {
-        border: 1px solid #000;
-        padding: 6px;
-        text-align: center;
-        vertical-align: top;
-        word-wrap: break-word;
-      }
-      #salesOrdersTable th:nth-child(12),
-      #salesOrdersTable td:nth-child(12) {
-        display: none !important;
-      }
-      h2 {
-        color: #000;
-        font-size: 1.1rem;
-        text-align: center;
-        margin-bottom: 0.5rem;
-      }
-      #totalSales {
-        margin-top: 1rem;
-        font-weight: bold;
-        font-size: 10pt;
-        text-align: right;
-        color: black !important;
-      }
-      .content-box {
-        box-shadow: none;
-        padding: 0;
-        margin: 0;
-      }
-      .main-content {
-        padding: 0;
-      }
-      @page {
-        margin: 1cm;
-        size: A4 portrait;
-      }
-    }
+
+
 
     .content-box {
   background-color: white;
@@ -273,9 +209,13 @@
 
       </div>
 
+      <div id="printHeader" style="display:none; text-align:center; margin-bottom: 0.5rem;">
+  <p id="filterInfo" style="font-size: 10pt; font-weight: bold; color: black;"></p>
+</div>
+
       <h2>Sales Order List</h2>
       <div class="action-buttons">
-        <button onclick="window.print()"> Print</button>
+        <button onclick="printTable()"> Print</button>
         <button onclick="exportToCSV()"> Export to CSV</button>
       </div>
 
@@ -292,8 +232,9 @@
             <th>Receiver</th>
             <th>Repairman</th>
             <th>Payment</th>
-            <th>Balance</th>
-            <th>Total Amount</th>
+<th>Deposit</th>
+<th>Balance</th>
+<th>Total Amount</th>
             <th>Completion</th>
             <th>Items</th>
             <th>Images</th>
@@ -304,6 +245,9 @@
     </div>
 
       <p id="totalSales" style="font-size: 1rem; font-weight: bold; color: #800000; margin-top: 1rem;">Total Sales: ₱0.00</p>
+      <p id="totalDeposit" style="font-size: 1rem; font-weight: bold; color: #800000;">Total Deposit: ₱0.00</p>
+<p id="totalBalance" style="font-size: 1rem; font-weight: bold; color: #800000;">Total Balance: ₱0.00</p>
+
     </div>
   </div>
 
@@ -377,12 +321,27 @@
   }
 
   // ✅ Filtering & rendering
-  async function filterByDate() {
-    const allOrders = cachedOrders;
-    const start = document.getElementById('startDate').value;
-    const end = document.getElementById('endDate').value;
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    const branch = document.getElementById('branchFilter').value;
+async function filterByDate() {
+  const start = document.getElementById('startDate').value;
+  const end = document.getElementById('endDate').value;
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const branch = document.getElementById('branchFilter').value;
+
+  // ✅ Update print filter info
+  const filterText = [];
+  if (start && end) {
+    filterText.push(`Date Range: ${start} to ${end}`);
+  }
+  if (branch !== 'all') {
+    filterText.push(`Branch: ${branch.toUpperCase()}`);
+  }
+  if (search) {
+    filterText.push(`Search: ${search}`);
+  }
+  document.getElementById("filterInfo").textContent =
+    filterText.length ? filterText.join(" | ") : "All Records";
+
+  const allOrders = cachedOrders;
 
     const filtered = allOrders
       .filter(order => {
@@ -401,11 +360,13 @@
 
         return matchesSearch && matchesBranch && matchesDate;
       })
+      
       .sort((a, b) => {
-        const dateA = new Date(a.dateBooked?.toDate ? a.dateBooked.toDate() : a.dateBooked || '2000-01-01');
-        const dateB = new Date(b.dateBooked?.toDate ? b.dateBooked.toDate() : b.dateBooked || '2000-01-01');
-        return dateB - dateA;
-      });
+  const dateA = a.dateBooked?.toDate ? a.dateBooked.toDate() : new Date(a.dateBooked || 0);
+  const dateB = b.dateBooked?.toDate ? b.dateBooked.toDate() : new Date(b.dateBooked || 0);
+  return dateB - dateA;
+});
+
 
     const tableBody = document.querySelector('#salesOrdersTable tbody');
     tableBody.innerHTML = '';
@@ -433,9 +394,10 @@
         <td>${order.email || '---'}</td>
         <td>${order.receiver}</td>
         <td>${repairmen}</td>
-        <td>${order.paymentMode}</td>
-        <td>₱${order.balance}</td>
-        <td>₱${totalAmount.toFixed(2)}</td>
+       <td>${order.paymentMode}</td>
+         <td>₱${order.deposit || '0.00'}</td>
+         <td>₱${order.balance}</td>
+         <td>₱${totalAmount.toFixed(2)}</td>
         <td>${formatDate(order.completionDate)}</td>
         <td style="white-space: pre-wrap; text-align: left">${items}</td>
         <td>${order.images?.length ? `<button onclick='showImages(${JSON.stringify(order.images)})'>View Images</button>` : ''}</td>
@@ -479,20 +441,25 @@
   document.getElementById('startDate').addEventListener('change', filterByDate);
   document.getElementById('endDate').addEventListener('change', filterByDate);
 
-  // ✅ Load once at startup
-  document.addEventListener('DOMContentLoaded', loadOrders);
+// ✅ Load all branch orders once at startup
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadOrders(); // fetch all branch collections
+  filterByDate();     // render them immediately
+});
+
 
   // ✅ Export CSV with items
   window.exportToCSV = function() {
     const rows = [[
       'Order #', 'Branch', 'Date', 'Customer', 'Contact', 'Email',
-      'Receiver', 'Repairman', 'Payment', 'Balance', 'Total Amount',
+      'Receiver', 'Repairman', 'Payment', 'Deposit', 'Balance', 'Total Amount',
       'Completion', 'Items'
     ]];
 
     document.querySelectorAll('#salesOrdersTable tbody tr').forEach(tr => {
       const cells = tr.querySelectorAll('td');
-      const rowData = Array.from(cells).slice(0, 12).map(c => `"${c.textContent.trim()}"`);
+      const rowData = Array.from(cells).slice(0, 13).map(c => `"${c.textContent.trim()}"`);
+
 
       // ✅ Add items column
       const itemsCell = cells[12]?.textContent.trim() || '';
@@ -508,10 +475,71 @@
     link.setAttribute('download', 'sales_orders.csv');
     link.click();
   };
+
+  // ✅ Print function copied from Mercedes template
+window.printTable = function () {
+  const table = document.getElementById('salesOrdersTable').outerHTML;
+  const startDateVal = document.getElementById('startDate').value;
+  const endDateVal   = document.getElementById('endDate').value;
+  const branchVal    = document.getElementById('branchFilter').value;
+
+  // Create header note
+  let headerNote = "Showing: All Records";
+  if (startDateVal && endDateVal) {
+    headerNote = `Showing: ${startDateVal} to ${endDateVal}`;
+  } else if (startDateVal) {
+    headerNote = `Showing: From ${startDateVal}`;
+  } else if (endDateVal) {
+    headerNote = `Showing: Until ${endDateVal}`;
+  }
+  if (branchVal && branchVal !== 'all') {
+    headerNote += ` | Branch: ${branchVal.toUpperCase()}`;
+  }
+
+  // Get totals
+  const totalSales   = document.getElementById('totalSales')?.textContent || '';
+  const totalDeposit = document.getElementById('totalDeposit')?.textContent || '';
+  const totalBalance = document.getElementById('totalBalance')?.textContent || '';
+
+  // Open print window
+  const win = window.open('', '', 'width=900,height=650');
+  win.document.write(`
+    <html>
+      <head>
+        <title>Sales Order List</title>
+        <style>
+          body { font-family: 'Inter', sans-serif; padding: 20px; }
+          h2 { text-align: center; color: #800000; margin-bottom: 0.5rem; }
+          p { text-align: center; margin-bottom: 1rem; font-size: 0.9rem; }
+          table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+          th, td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: top; }
+          th { background: #f0f0f0; }
+          #totals p { margin: 0.3rem 0; font-weight: bold; text-align: right; }
+          /* ✅ Hide Images column */
+          th:nth-last-child(1), td:nth-last-child(1) {
+            display: none;
+          }
+        </style>
+      </head>
+      <body>
+        <h2>Sales Order List</h2>
+        <p>${headerNote}</p>
+        ${table}
+        <div id="totals">
+          <p>${totalSales}</p>
+          <p>${totalDeposit}</p>
+          <p>${totalBalance}</p>
+        </div>
+      </body>
+    </html>
+  `);
+  win.document.close();
+  win.print();
+};
+
 </script>
 
 
 
 </body>
 </html>
-
