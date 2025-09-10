@@ -78,13 +78,15 @@
 
   <div class="main-content">
     <h2>Sales Status List</h2>
-    <div class="filter-buttons">
-      <button data-status="All" class="active" onclick="filterStatus('All')">All</button>
-      <button data-status="In Progress" onclick="filterStatus('In Progress')">In Progress</button>
-      <button data-status="Claimed" onclick="filterStatus('Claimed')">Claimed</button>
-      <button data-status="With Balance" onclick="filterStatus('With Balance')">With Balance</button>
-      <button data-status="Finished" onclick="filterStatus('Finished')">Finished</button>
-    </div>
+   <div class="filter-buttons">
+  <button data-status="All" class="active" onclick="filterStatus('All')">All</button>
+  <button data-status="Received" onclick="filterStatus('Received')">Received</button>
+  <button data-status="In Progress" onclick="filterStatus('In Progress')">In Progress</button>
+  <button data-status="Finished without Balance" onclick="filterStatus('Finished without Balance')">Finished without Balance</button>
+  <button data-status="Finished with Balance" onclick="filterStatus('Finished with Balance')">Finished with Balance</button>
+  <button data-status="Claimed" onclick="filterStatus('Claimed')">Claimed</button>
+</div>
+
     <div class="date-toolbar" style="display:flex; justify-content:center; align-items:center; gap:10px; margin:0 0 12px 0; flex-wrap:wrap;">
       <div class="date-range" style="display:flex; align-items:center; gap:4px;">
         <input type="date" id="startDate" style="padding:0.5rem 0.9rem; border-radius:1rem; border:1px solid #ccc; font-size:0.9rem;" />
@@ -155,14 +157,17 @@
           <td>${order.items.map(i => i.repairman).filter(Boolean).join(", ") || 'N/A'}</td>
           <td style="white-space: pre-wrap; text-align: left">${items}</td>
           <td>
-            <select class="status-dropdown" 
-              onchange="updateStatus('${order.jobOrderNumber}', this.value)" 
-              ${order.status === 'Claimed' ? 'disabled' : ''}>
-              <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-              <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
-              <option ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
-              <option ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
-            </select>
+           <select class="status-dropdown" 
+  onchange="updateStatus('${order.jobOrderNumber}', this.value)" 
+  ${order.status === 'Claimed' ? 'disabled' : ''}>
+  <option ${order.status === 'Received' ? 'selected' : ''}>Received</option>
+  <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+  <option ${order.status === 'Finished without Balance' ? 'selected' : ''}>Finished without Balance</option>
+  <option ${order.status === 'Finished with Balance' ? 'selected' : ''}>Finished with Balance</option>
+  <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
+</select>
+
+
           </td>
           <td><button onclick="viewOrder('${order.jobOrderNumber}')">View</button></td>
         `;
@@ -197,10 +202,11 @@
 
       const snapshot = await getDocs(collection(db, "mercedes_salesOrders"));
       const storedOrders = snapshot.docs.map(doc => {
-        const data = doc.data();
-        if (!data.status) data.status = "In Progress";
-        return data;
-      });
+  const data = doc.data();
+  if (!data.status) data.status = "Received";
+  return data;
+});
+
 
       let filtered = (status === 'All') ? storedOrders : storedOrders.filter(o => o.status === status);
 
