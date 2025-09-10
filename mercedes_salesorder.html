@@ -346,6 +346,12 @@
   </table>
 </div>
       <p id="totalSales" style="font-size: 1rem; font-weight: bold; color: #800000; margin-top: 1rem;">Total Sales: ₱0.00</p>
+      <p id="totalDeposit" style="font-size: 1rem; font-weight: bold; color: #004080; margin-top: 0.2rem;">
+  Total Deposit: ₱0.00
+</p>
+<p id="totalBalance" style="font-size: 1rem; font-weight: bold; color: #500303; margin-top: 0.2rem;">
+  Total Balance: ₱0.00
+</p>
 
     </div>
   </div>
@@ -456,12 +462,15 @@
 
   filteredOrders.sort((a, b) => b.jobOrderNumber.localeCompare(a.jobOrderNumber));
   tableBody.innerHTML = '';
-  let totalSales = 0;
+let totalSales = 0;
+let totalDeposit = 0;
+let totalBalance = 0;
+
 
   filteredOrders.forEach(order => {
     const total = parseFloat(order.totalAmount || 0);
     const paid = parseFloat(order.amountPaid || 0);
-    const balance = parseFloat(order.balance ?? (total - paid)).toFixed(2);
+const balance = parseFloat(order.balance ?? (total - paid)); // keep as number
 
     const items = order.items.map(i =>
       `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}`
@@ -491,9 +500,15 @@
     `;
     tableBody.appendChild(row);
     totalSales += total;
+totalDeposit += paid;
+totalBalance += balance;
+
   });
 
-  document.getElementById('totalSales').textContent = `Total Sales: ₱${totalSales.toFixed(2)}`;
+   document.getElementById('totalSales').textContent = `Total Sales: ₱${totalSales.toFixed(2)}`;
+document.getElementById('totalDeposit').textContent = `Total Deposit: ₱${totalDeposit.toFixed(2)}`;
+document.getElementById('totalBalance').textContent = `Total Balance: ₱${totalBalance.toFixed(2)}`;
+
 }
 
 function resetFormFields() {
@@ -607,6 +622,8 @@ document.getElementById('paymentModal').addEventListener('click', (e) => {
 
   // Get total sales text
   const totalSales = document.getElementById('totalSales').textContent;
+  const totalDeposit = document.getElementById('totalDeposit').textContent;
+const totalBalance = document.getElementById('totalBalance').textContent;
 
   // Open print window
   const win = window.open('', '', 'width=900,height=650');
@@ -636,8 +653,13 @@ th:nth-last-child(1), td:nth-last-child(1) {
         <h2>Sales Order List</h2>
         <p>${headerNote}</p>
         ${table}
-        <p id="totalSalesPrint">${totalSales}</p>
-      </body>
+        <div id="totals">
+  <p>${totalSales}</p>
+  <p>${totalDeposit}</p>
+  <p>${totalBalance}</p>
+</div>
+
+        </body>
     </html>
   `);
   win.document.close();
@@ -661,9 +683,16 @@ window.exportToCSV = function () {
   }
 
   // ✅ Add Total Sales at bottom
-  const totalSalesText = document.getElementById("totalSales").textContent;
-  csv.push("");
-  csv.push(`"${totalSalesText}"`);
+  // ✅ Add Totals at bottom
+const totalSalesText = document.getElementById("totalSales").textContent;
+const totalDepositText = document.getElementById("totalDeposit").textContent;
+const totalBalanceText = document.getElementById("totalBalance").textContent;
+
+csv.push("");
+csv.push(`"${totalSalesText}"`);
+csv.push(`"${totalDepositText}"`);
+csv.push(`"${totalBalanceText}"`);
+
 
   // ✅ Download CSV
   const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
