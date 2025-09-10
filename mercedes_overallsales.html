@@ -93,20 +93,15 @@
       body {
         background: white !important;
       }
-      header, .nav-buttons, .print-btn, .filter-bar {
+      header, .nav-buttons, .print-btn, .filter-bar, .summary-box, .content-box {
         display: none !important;
       }
-      .main-content {
-        padding: 0;
-      }
-      .content-box, .summary-box {
-        box-shadow: none !important;
-        border: none !important;
-        margin: 1rem auto;
-        padding: 0;
+      #printArea {
+        display: block !important;
       }
       table, th, td {
         border: 1px solid black !important;
+        border-collapse: collapse !important;
       }
       th {
         background: #800000 !important;
@@ -192,6 +187,40 @@
         </table>
       </div>
     </div>
+
+    <!-- Hidden Printable Area -->
+    <div id="printArea" style="display:none;">
+      <h2 style="text-align:center; margin-bottom:1rem;">Mercedes Branch - Overall Sales Report</h2>
+
+      <h3>Sales Orders</h3>
+      <table id="printSalesOrders" border="1" cellspacing="0" cellpadding="5" style="width:100%; margin-bottom:2rem;">
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h3>Purchased Items</h3>
+      <table id="printPurchasedItems" border="1" cellspacing="0" cellpadding="5" style="width:100%;">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
   <script type="module">
@@ -227,7 +256,7 @@
       });
 
       // Load Purchased Items
-      const purchaseSnap = await getDocs(collection(db, "mercedes_purchasedItems"));
+      const purchaseSnap = await getDocs(collection(db, "mercedes_soldItems")); // 🔹 fixed collection name
       allPurchases = [];
       purchaseSnap.forEach(docSnap => {
         const data = docSnap.data();
@@ -287,6 +316,43 @@
         <p>Total Purchases: ₱${totalPurchases.toFixed(2)}</p>
         <p><strong>Profit: ₱${profit.toFixed(2)}</strong></p>
       `;
+
+      // 🔹 Fill Printable Tables
+      const printSalesOrders = document.querySelector("#printSalesOrders tbody");
+      const printPurchasedItems = document.querySelector("#printPurchasedItems tbody");
+      printSalesOrders.innerHTML = "";
+      printPurchasedItems.innerHTML = "";
+
+      sales.forEach(data => {
+        const total = (data.items || []).reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
+        const balance = data.balance || 0;
+        const itemsList = (data.items || []).map(i => `${i.itemDescription || ''} x${i.quantity || 1}`).join(", ");
+
+        printSalesOrders.innerHTML += `
+          <tr>
+            <td>${data.jobOrderNumber || "—"}</td>
+            <td>${data.customerName || "—"}</td>
+            <td>${data.dateBooked || "—"}</td>
+            <td>${itemsList}</td>
+            <td>₱${total.toFixed(2)}</td>
+            <td>₱${balance.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+
+      purchases.forEach(data => {
+        const total = (data.quantity || 0) * (data.unitPrice || 0);
+
+        printPurchasedItems.innerHTML += `
+          <tr>
+            <td>${data.itemName || "—"}</td>
+            <td>${data.quantity || "—"}</td>
+            <td>₱${(data.unitPrice || 0).toFixed(2)}</td>
+            <td>₱${total.toFixed(2)}</td>
+            <td>${data.datePurchased || "—"}</td>
+          </tr>
+        `;
+      });
     }
 
     // 🔹 Filter function
