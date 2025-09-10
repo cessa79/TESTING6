@@ -1,3 +1,4 @@
+adminsalesstatus.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,14 +104,23 @@
       <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Search by customer, order #, or branch">
     </div>
 
+    <div style="text-align:center; margin:1rem 0;">
+  <button onclick="printStatusReport()" style="background:#800000;color:white;padding:0.6rem 1.2rem;border:none;border-radius:1rem;cursor:pointer;font-weight:600;">
+    Print Report
+  </button>
+</div>
+
     <!-- Status filter -->
     <div class="filter-buttons" id="statusButtons">
-      <button onclick="filterStatus('All')" class="active">All</button>
-      <button onclick="filterStatus('In Progress')">In Progress</button>
-      <button onclick="filterStatus('With Balance')">With Balance</button>
-      <button onclick="filterStatus('Finished')">Finished</button>
-      <button onclick="filterStatus('Claimed')">Claimed</button> <!-- ✅ NEW -->
-    </div>
+  <button onclick="filterStatus('All')" class="active">All</button>
+  <button onclick="filterStatus('In Progress')">In Progress</button>
+  <button onclick="filterStatus('With Balance')">With Balance</button>
+  <button onclick="filterStatus('Finished')">Finished</button>
+  <button onclick="filterStatus('Finished with Balance')">Finished with Balance</button> <!-- ✅ NEW -->
+  <button onclick="filterStatus('Claimed')">Claimed</button>
+  <button onclick="filterStatus('Received')">Received</button> <!-- ✅ NEW -->
+</div>
+
 
     <!-- Branch + Date + Clear -->
     <div class="filter-buttons">
@@ -223,22 +233,26 @@
         const repairmen = [...new Set((order.items || []).map(i => i.repairman).filter(Boolean))].join(', ');
 
         const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${order.branch}</td>
-          <td>${order.jobOrderNumber || '—'}</td>
-          <td>${order.customerName || '—'}</td>
-          <td>${order.dateBooked || '—'}</td>
-          <td>${repairmen || '—'}</td>
-          <td style="white-space: pre-wrap; text-align: left">${items}</td>
-          <td>
-            <select class="status-dropdown" data-docid="${order.docId}" data-collection="${order.collection}">
-              <option value="In Progress" ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-              <option value="With Balance" ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
-              <option value="Finished" ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
-              <option value="Claimed" ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option> <!-- ✅ NEW -->
-            </select>
-          </td>
-        `;
+row.innerHTML = `
+  <td>${order.branch}</td>
+  <td>${order.jobOrderNumber || '—'}</td>
+  <td>${order.customerName || '—'}</td>
+  <td>${order.dateBooked || '—'}</td>
+  <td>${repairmen || '—'}</td>
+  <td style="white-space: pre-wrap; text-align: left">${items}</td>
+  <td>
+    <select class="status-dropdown" data-docid="${order.docId}" data-collection="${order.collection}">
+      <option value="In Progress" ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+      <option value="With Balance" ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
+      <option value="Finished" ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
+      <option value="Finished with Balance" ${order.status === 'Finished with Balance' ? 'selected' : ''}>Finished with Balance</option> <!-- ✅ NEW -->
+      <option value="Claimed" ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
+      <option value="Received" ${order.status === 'Received' ? 'selected' : ''}>Received</option> <!-- ✅ NEW -->
+    </select>
+  </td>
+`;
+
+        ;
         tableBody.appendChild(row);
       });
 
@@ -337,7 +351,43 @@
     };
 
     loadOrders();
+
+    // Print function
+window.printStatusReport = function () {
+  const table = document.getElementById("statusTable").outerHTML;
+  const totals = document.getElementById("totalsDisplay").innerText;
+  const filterText = document.querySelector("#statusButtons .active").innerText;
+
+  const printWindow = window.open('', '', 'width=900,height=700');
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Sales Status Report</title>
+        <style>
+          body { font-family: 'Inter', sans-serif; padding: 20px; }
+          h2 { text-align: center; color: #800000; margin-bottom: 1rem; }
+          p { text-align: center; margin: 0.5rem 0; font-weight: 600; }
+          table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+          th { background: #800000; color: white; }
+        </style>
+      </head>
+      <body>
+        <h2>ERestore Leatherworks - Admin</h2>
+        <p>Status Filter: ${filterText}</p>
+        <p>${totals}</p>
+        ${table}
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.print();
+};
+
   </script>
 </body>
 </html>
+
+</html>
+
 
