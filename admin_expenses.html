@@ -193,6 +193,21 @@
   padding: 1rem;
 }
 
+.branch-table-container {
+  max-height: 180px; /* adjust height if needed */
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+}
+
+.branch-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+
+
 </style>
 
 </head>
@@ -212,6 +227,10 @@
     </nav>
   </header>
 
+  <div id="chartContainer" style="width: 80%; height: 30vh; margin: 1rem auto;">
+  <canvas id="expensesChart"></canvas>
+</div>
+
   <div class="main-content" id="branchesContainer"></div>
   <div class="grand-total" id="grandTotal">Grand Total: ₱0.00</div>
 
@@ -221,9 +240,7 @@
     <button onclick="showAddModal()">Add Expense</button>
   </div>
 
-<div id="chartContainer" style="width: 80%; height: 30vh; margin: 1rem auto;">
-  <canvas id="expensesChart"></canvas>
-</div>
+
 
 
 
@@ -259,7 +276,7 @@
       let branchTotal = 0;
       const branchBox = document.createElement('div');
       branchBox.className = 'branch-box';
-      branchBox.innerHTML = `
+branchBox.innerHTML = `
   <div class="branch-header">
     <h3>${branch.name}</h3>
     <div class="branch-filters" style="display:flex; gap:0.5rem; align-items:center;">
@@ -268,10 +285,16 @@
       <button onclick="exportBranchPDF('${branch.name}')" style="padding:5px 10px; border:none; background:#800000; color:white; border-radius:5px; cursor:pointer;">Print PDF</button>
     </div>
   </div>
-  <table>
-    <thead><tr><th>Date</th><th>Description</th><th>₱ Amount</th></tr></thead>
-    <tbody></tbody>
-  </table>
+
+  <div class="branch-table-container">
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Description</th><th>₱ Amount</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
   <div class="branch-total">Total: ₱0.00</div>`;
 
       branchesContainer.appendChild(branchBox);
@@ -683,4 +706,3 @@ window.exportBranchPDF = async function (branchName) {
   </script>
 </body>
 </html>
-
