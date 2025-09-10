@@ -232,7 +232,11 @@
         return ok;
       });
 
-      renderTable(filtered);
+      
+     // Sort by dateBooked, newest first
+filtered.sort((a, b) => new Date(b.dateBooked) - new Date(a.dateBooked));
+
+renderTable(filtered);
     };
 
     window.viewOrder = async function (jobOrderNumber) {
