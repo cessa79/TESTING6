@@ -140,13 +140,13 @@ const searchEl = document.getElementById('searchCustomer');
 const clearBtn = document.getElementById('clearFiltersBtn');
 
 const branchCollections = [
-  "gh_salesOrders",
-  "abreeza_salesOrders",
-  "lanang_salesOrders",
-  "bcd_salesOrders",
-  "gensan_salesOrders",
-  "cdo_salesOrders",
-  "mercedes_salesOrders"
+  "gh_soldItems",
+  "abreeza_soldItems",
+  "lanang_soldItems",
+  "bcd_soldItems",
+  "gensan_soldItems",
+  "cdo_soldItems",
+  "mercedes_soldItems"
 ];
 
 let salesData = [];
@@ -175,7 +175,7 @@ function renderTable(list) {
 
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${p.date || '-'}</td>
+      <td>${formatDateField(p.date)}</td>
       <td>${p.customer || '-'}<br><small style="color:#800000;">(${p.branch})</small></td>
       <td class="items-list">${itemList || '-'}</td>
       <td>₱${(Number(p.totalCost ?? 0)).toFixed(2)}</td>
@@ -200,6 +200,17 @@ function applyFilters() {
   });
 
   renderTable(filtered);
+}
+
+  function formatDateField(dateField) {
+  if (!dateField) return "-";
+  if (dateField.seconds) {
+    // Firestore Timestamp
+    return new Date(dateField.seconds * 1000).toLocaleDateString();
+  }
+  // Try parsing if it’s already a string
+  const d = new Date(dateField);
+  return isNaN(d) ? "-" : d.toLocaleDateString();
 }
 
 clearBtn.addEventListener('click', () => {
@@ -232,7 +243,11 @@ async function loadSales() {
 }
 
 loadSales();
+
+  console.log("Branch:", branch, "Docs:", salesData);
+
 </script>
 
 </body>
 </html>
+
