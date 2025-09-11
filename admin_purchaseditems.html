@@ -124,6 +124,12 @@ td.no-data { text-align: center; font-style: italic; color: #666; }
             </tr>
           </thead>
           <tbody id="soldTableBody"></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" style="text-align:right; font-weight:bold;">Total Amount:</td>
+              <td id="totalAmountCell" style="font-weight:bold;">₱0.00</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
@@ -147,6 +153,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const tableBody = document.getElementById('soldTableBody');
+const totalAmountCell = document.getElementById('totalAmountCell');
 const sdEl = document.getElementById('startDate');
 const edEl = document.getElementById('endDate');
 const searchEl = document.getElementById('searchCustomer');
@@ -192,9 +199,12 @@ function inRange(dateField, startRange, endRange) {
 function renderTable(list) {
   if (!list.length) {
     tableBody.innerHTML = '<tr><td colspan="4" class="no-data">No sales recorded yet.</td></tr>';
+    totalAmountCell.textContent = "₱0.00";
     return;
   }
   tableBody.innerHTML = '';
+  let totalAmount = 0;
+
   list.forEach(p => {
     const itemList = (p.items || []).map(i =>
       `• ${i.desc ?? i.description ?? '-'} (x${i.qty ?? i.quantity ?? 1}) - ₱${((i.total ?? i.lineTotal) ?? 0).toFixed(2)}`
@@ -202,17 +212,21 @@ function renderTable(list) {
 
     const grandTotal = Number(
       p.totalCost ?? p.grandTotal ?? p.total ?? p.totalAmount ?? 0
-    ).toFixed(2);
+    );
+
+    totalAmount += grandTotal;
 
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${formatDateField(p.date)}</td>
       <td>${p.customer ?? p.customerName ?? '-'}<br><small style="color:#800000;">(${p.branch})</small></td>
       <td class="items-list">${itemList || '-'}</td>
-      <td>₱${grandTotal}</td>
+      <td>₱${grandTotal.toFixed(2)}</td>
     `;
     tableBody.appendChild(row);
   });
+
+  totalAmountCell.textContent = "₱" + totalAmount.toFixed(2);
 }
 
 function applyFilters() {
@@ -244,7 +258,6 @@ sdEl.addEventListener('change', applyFilters);
 edEl.addEventListener('change', applyFilters);
 searchEl.addEventListener('input', applyFilters);
 
-// 🔹 Print only filtered table
 printBtn.addEventListener('click', () => {
   window.print();
 });
@@ -268,6 +281,7 @@ async function loadSales() {
   } catch(err) {
     console.error("Error fetching sales:", err);
     tableBody.innerHTML = '<tr><td colspan="4" class="no-data">Failed to load sales.</td></tr>';
+    totalAmountCell.textContent = "₱0.00";
   }
 }
 
@@ -276,4 +290,3 @@ loadSales();
 
 </body>
 </html>
-
