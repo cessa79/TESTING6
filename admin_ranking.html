@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee & Branch Rankings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      height: 100%;
+      background: linear-gradient(rgba(0,0,0,0.8), #ffffffd5, rgba(109,20,20,0.8)),
+        url('bg.png') no-repeat center center fixed;
+      background-size: cover;
+      overflow: hidden; /* prevent whole page scroll */
+    }
+
+    header {
+      background-color: #800000;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-container img {
+      height: 60px;
+      width: auto;
+    }
+
+    .logo-container h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .branch-name {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-left: 0.3rem;
+      color: #fff;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .nav-buttons a {
+      background: #fff;
+      color: #800000;
+      padding: 0.4rem 1rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .nav-buttons a:hover {
+      background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
+      color: #fff;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 1rem;
+      padding: 1rem;
+      height: calc(100vh - 90px); /* Full screen minus header */
+    }
+
+    .ranking-box {
+      background: white;
+      border-radius: 0.8rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* ensures internal scrolling */
+    }
+
+    .ranking-box h2 {
+      color: #800000;
+      font-size: 1.1rem;
+      margin-bottom: 0.6rem;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      max-height: 250px; /* independent scroll for long tables */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.4rem;
+      text-align: center;
+    }
+
+    th {
+      background-color: #800000;
+      color: #fff;
+      font-size: 0.8rem;
+    }
+
+    td {
+      font-size: 0.8rem;
+    }
+
+    .rank-1 {
+      background: #ffd70070;
+      font-weight: bold;
+    }
+
+    .rank-2 {
+      background: #c0c0c070;
+    }
+
+    .rank-3 {
+      background: #cd7f3270;
+    }
+
+    canvas {
+      margin-top: 1rem;
+      max-height: 200px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="ERestore Logo" />
+      <h1>ERestore Leatherworks <span class="branch-name">| Rankings</span></h1>
+    </div>
+    <nav class="nav-buttons">
+      <a href="admin.html">Home</a>
+      <a href="admin_reports.html">Reports</a>
+      <a href="admin_customerlist.html">Customers</a>
+      <a href="admin_attendance.html">Attendance</a>
+      <a href="admin_expenses.html">Expenses</a>
+    </nav>
+  </header>
+
+  <div class="main-content">
+    <!-- Sales Ladies Ranking -->
+    <div class="ranking-box">
+      <h2>Sales Ladies Ranking</h2>
+      <div class="table-container">
+        <table id="salesladyRanking">
+          <thead>
+            <tr><th>Rank</th><th>Name</th><th>Sales (₱)</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Repairmen Ranking -->
+    <div class="ranking-box">
+      <h2>Repairmen Ranking</h2>
+      <div class="table-container">
+        <table id="repairmanRanking">
+          <thead>
+            <tr><th>Rank</th><th>Name</th><th>Performance</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Branch Ranking (Total Sales + Purchased Items) -->
+    <div class="ranking-box">
+      <h2>Branch Ranking (Overall Sales)</h2>
+      <div class="table-container">
+        <table id="branchRanking">
+          <thead>
+            <tr><th>Rank</th><th>Branch</th><th>Sales Orders (₱)</th><th>Purchased Items (₱)</th><th>Total (₱)</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <canvas id="branchChart"></canvas>
+    </div>
+
+    <!-- Overall Employee Performance -->
+    <div class="ranking-box">
+      <h2>Overall Employee Performance</h2>
+      <div class="table-container">
+        <table id="overallPerformance">
+          <thead>
+            <tr><th>Rank</th><th>Name</th><th>Score</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sales Ladies
+    const salesLadies = [
+      { name: "Marilyn", sales: 54000 },
+      { name: "Vivian", sales: 62000 },
+      { name: "Justine", sales: 48000 },
+      { name: "Rizza", sales: 70000 },
+      { name: "Charmagne", sales: 35000 },
+      { name: "Andrea", sales: 31000 },
+      { name: "Michelle", sales: 45000 },
+      { name: "Sarah", sales: 39000 },
+      { name: "Liza", sales: 28000 },
+      { name: "Kate", sales: 36000 }
+    ];
+
+    // Repairmen
+    const repairmen = [
+      { name: "Necky Garcia", performance: 95 },
+      { name: "Edwin Casoy", performance: 88 },
+      { name: "Randy Rubi", performance: 92 },
+      { name: "Robert Almodel", performance: 80 },
+      { name: "Romel Gutierez", performance: 97 },
+      { name: "John Santos", performance: 85 },
+      { name: "Luis Mendoza", performance: 90 },
+      { name: "Carlo Reyes", performance: 78 },
+      { name: "Mark dela Cruz", performance: 82 },
+      { name: "Anthony Perez", performance: 87 }
+    ];
+
+    // Branches
+    const branches = [
+      { name: "Greenhills", orders: 120000, purchases: 90000 },
+      { name: "Bacolod", orders: 100000, purchases: 80000 },
+      { name: "CDO", orders: 95000, purchases: 65000 },
+      { name: "Davao", orders: 110000, purchases: 80000 },
+      { name: "Lanang", orders: 85000, purchases: 65000 }
+    ];
+
+    // Overall performance
+    const overallPerformance = [
+      { name: "Rizza (Sales)", score: 70000 },
+      { name: "Romel Gutierez (Repair)", score: 97 },
+      { name: "Vivian (Sales)", score: 62000 },
+      { name: "Necky Garcia (Repair)", score: 95 },
+      { name: "Randy Rubi (Repair)", score: 92 },
+      { name: "Marilyn (Sales)", score: 54000 },
+      { name: "Justine (Sales)", score: 48000 },
+      { name: "Edwin Casoy (Repair)", score: 88 },
+      { name: "Robert Almodel (Repair)", score: 80 },
+      { name: "Charmagne (Sales)", score: 35000 }
+    ];
+
+    // Render functions
+    function renderRanking(data, tableId, valueKey) {
+      const sorted = [...data].sort((a, b) => b[valueKey] - a[valueKey]);
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      tbody.innerHTML = "";
+      sorted.forEach((item, i) => {
+        const tr = document.createElement("tr");
+        tr.className = i === 0 ? "rank-1" : i === 1 ? "rank-2" : i === 2 ? "rank-3" : "";
+        tr.innerHTML = `<td>${i + 1}</td><td>${item.name}</td><td>${item[valueKey].toLocaleString()}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderBranchRanking(data) {
+      const sorted = [...data].map(b => ({ ...b, total: b.orders + b.purchases }))
+                              .sort((a, b) => b.total - a.total);
+      const tbody = document.querySelector("#branchRanking tbody");
+      tbody.innerHTML = "";
+      sorted.forEach((branch, i) => {
+        const tr = document.createElement("tr");
+        tr.className = i === 0 ? "rank-1" : i === 1 ? "rank-2" : i === 2 ? "rank-3" : "";
+        tr.innerHTML = `<td>${i + 1}</td><td>${branch.name}</td>
+                        <td>${branch.orders.toLocaleString()}</td>
+                        <td>${branch.purchases.toLocaleString()}</td>
+                        <td>${branch.total.toLocaleString()}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      // Chart.js bar chart
+      const ctx = document.getElementById("branchChart").getContext("2d");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: sorted.map(b => b.name),
+          datasets: [{
+            label: "Overall Sales (₱)",
+            data: sorted.map(b => b.total),
+            backgroundColor: "rgba(128,0,0,0.7)"
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    // Run
+    renderRanking(salesLadies, "salesladyRanking", "sales");
+    renderRanking(repairmen, "repairmanRanking", "performance");
+    renderBranchRanking(branches);
+    renderRanking(overallPerformance, "overallPerformance", "score");
+  </script>
+</body>
+</html>
