@@ -839,67 +839,6 @@ function getNextTicketNumber() {
     document.getElementById('jobOrderNumber').value = 'JO-' + formattedNumber;
 
 
-  import { getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-document.getElementById('salesOrderForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
-
-  const form = e.target;
-  const joInput = document.getElementById('jobOrderNumber');
-  const joValue = (joInput.value || '').trim();
-  if (!joValue) {
-    alert('⚠️ Please enter a Job Order Number.');
-    joInput.focus();
-    return;
-  }
-
-  // 🔍 Check Firestore for duplicate Job Order Number
-  const docRef = doc(db, "mercedes_salesOrders", joValue);
-  const existingDoc = await getDoc(docRef);
-
-  if (existingDoc.exists()) {
-    alert("⚠️ This Job Order Number already exists. Please use a new one.");
-    return; // stop saving
-  }
-
-  // Collect items
-  const items = [];
-  document.querySelectorAll("#order-items tr").forEach((row) => {
-    items.push({
-      item: row.cells[0].textContent,
-      description: row.cells[1].textContent,
-      qty: row.cells[2].textContent,
-      unitPrice: row.cells[3].textContent,
-      total: row.cells[4].textContent,
-    });
-  });
-
-  const order = {
-    jobOrderNumber: joValue,
-    customerName: document.getElementById("customerName").value,
-    phone: document.getElementById("phone").value,
-    address: document.getElementById("address").value,
-    repairman: document.getElementById("repairman").value,
-    receiver: document.getElementById("receiver").value,
-    paymentMode: document.getElementById("paymentMode").value,
-    amountPaid: document.getElementById("amountPaid").value,
-    balance: document.getElementById("balance").value,
-    items,
-    date: new Date().toISOString(),
-  };
-
-  try {
-    await setDoc(docRef, order);
-    alert("✅ Sales Order has been saved to Firestore!");
-    form.reset();
-    document.getElementById("order-items").innerHTML = "";
-    window.location.href = "mercedes_salesorder.html"; // redirect
-  } catch (error) {
-    console.error("❌ Firestore Error:", error);
-    alert("❌ Failed to save Sales Order. Try again.");
-  }
-});
-
 
     // Print Receipt
     document.getElementById('printBtn').addEventListener('click', () => {
