@@ -52,8 +52,13 @@ h2 { color: #800000; text-align: center; margin-bottom: 1rem; }
 .toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
 .filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .filters input { padding: 0.5rem 0.8rem; border-radius: 1rem; border: 1px solid #ccc; }
-.btn-light { background:#ccc; color:#333; padding:0.5rem 0.8rem; border:none; border-radius:1rem; cursor:pointer; }
+.btn-light, .btn-print {
+  padding:0.5rem 0.8rem; border:none; border-radius:1rem; cursor:pointer;
+}
+.btn-light { background:#ccc; color:#333; }
+.btn-print { background:#800000; color:#fff; }
 .btn-light:hover { filter: brightness(0.95); }
+.btn-print:hover { background:#a00000; }
 .table-wrapper { border: 1px solid #ddd; border-radius: 1rem; overflow: hidden; background: #fff; }
 table { width: 100%; border-collapse: collapse; }
 thead th {
@@ -66,7 +71,14 @@ th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: center; }
 td.items-list { text-align: left; }
 td.no-data { text-align: center; font-style: italic; color: #666; }
 .table-scroll { overflow-y: auto; max-height: 400px; }
-@media (max-width: 640px) { .main-content { padding: 1.5rem; } }
+
+/* Print Styles */
+@media print {
+  header, .toolbar { display: none !important; }
+  body { background: #fff; }
+  .form-container { box-shadow: none; border-radius: 0; }
+  .table-scroll { max-height: unset; overflow: visible; }
+}
 </style>
 </head>
 <body>
@@ -96,12 +108,13 @@ td.no-data { text-align: center; font-style: italic; color: #666; }
         <input type="date" id="endDate">
         <input type="text" id="searchCustomer" placeholder="Search customer name...">
         <button id="clearFiltersBtn" class="btn-light">Clear</button>
+        <button id="printBtn" class="btn-print">Print</button>
       </div>
     </div>
 
     <div class="table-wrapper">
       <div class="table-scroll">
-        <table>
+        <table id="salesTable">
           <thead>
             <tr>
               <th>Date</th>
@@ -138,6 +151,7 @@ const sdEl = document.getElementById('startDate');
 const edEl = document.getElementById('endDate');
 const searchEl = document.getElementById('searchCustomer');
 const clearBtn = document.getElementById('clearFiltersBtn');
+const printBtn = document.getElementById('printBtn');
 
 const branchCollections = [
   "gh_soldItems",
@@ -151,9 +165,23 @@ const branchCollections = [
 
 let salesData = [];
 
-function inRange(dateStr, startRange, endRange) {
-  if (!dateStr) return false;
-  const d = new Date(dateStr);
+function formatDateField(dateField) {
+  if (!dateField) return "-";
+  if (dateField.seconds) {
+    return new Date(dateField.seconds * 1000).toLocaleDateString();
+  }
+  const d = new Date(dateField);
+  return isNaN(d) ? "-" : d.toLocaleDateString();
+}
+
+function inRange(dateField, startRange, endRange) {
+  if (!dateField) return false;
+  let d;
+  if (dateField.seconds) {
+    d = new Date(dateField.seconds * 1000);
+  } else {
+    d = new Date(dateField);
+  }
   if (isNaN(d)) return false;
   let ok = true;
   if (startRange) ok = ok && d >= startRange;
@@ -169,16 +197,19 @@ function renderTable(list) {
   tableBody.innerHTML = '';
   list.forEach(p => {
     const itemList = (p.items || []).map(i =>
-`• ${i.desc ?? (i.description ?? '-')} (x${i.qty ?? (i.quantity ?? 1)}) - ₱${((i.total ?? i.lineTotal) ?? 0).toFixed(2)}`
+      `• ${i.desc ?? i.description ?? '-'} (x${i.qty ?? i.quantity ?? 1}) - ₱${((i.total ?? i.lineTotal) ?? 0).toFixed(2)}`
+    ).join('<br>');
 
-).join('<br>');
+    const grandTotal = Number(
+      p.totalCost ?? p.grandTotal ?? p.total ?? p.totalAmount ?? 0
+    ).toFixed(2);
 
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${formatDateField(p.date)}</td>
-      <td>${p.customer || '-'}<br><small style="color:#800000;">(${p.branch})</small></td>
+      <td>${p.customer ?? p.customerName ?? '-'}<br><small style="color:#800000;">(${p.branch})</small></td>
       <td class="items-list">${itemList || '-'}</td>
-      <td>₱${(Number(p.totalCost ?? 0)).toFixed(2)}</td>
+      <td>₱${grandTotal}</td>
     `;
     tableBody.appendChild(row);
   });
@@ -195,22 +226,11 @@ function applyFilters() {
 
   const filtered = salesData.filter(p => {
     const matchDate = inRange(p.date, startRange, endRange);
-    const matchCustomer = !searchVal || (p.customer ?? '').toLowerCase().includes(searchVal);
+    const matchCustomer = !searchVal || (p.customer ?? p.customerName ?? '').toLowerCase().includes(searchVal);
     return matchDate && matchCustomer;
   });
 
   renderTable(filtered);
-}
-
-  function formatDateField(dateField) {
-  if (!dateField) return "-";
-  if (dateField.seconds) {
-    // Firestore Timestamp
-    return new Date(dateField.seconds * 1000).toLocaleDateString();
-  }
-  // Try parsing if it’s already a string
-  const d = new Date(dateField);
-  return isNaN(d) ? "-" : d.toLocaleDateString();
 }
 
 clearBtn.addEventListener('click', () => {
@@ -224,17 +244,26 @@ sdEl.addEventListener('change', applyFilters);
 edEl.addEventListener('change', applyFilters);
 searchEl.addEventListener('input', applyFilters);
 
+// 🔹 Print only filtered table
+printBtn.addEventListener('click', () => {
+  window.print();
+});
+
 async function loadSales() {
   salesData = [];
   try {
     for (const branch of branchCollections) {
       const snap = await getDocs(collection(db, branch));
       snap.forEach(doc => {
-        salesData.push({ ...doc.data(), branch });
+        const data = doc.data();
+        salesData.push({ ...data, branch });
       });
     }
-    // Sort by date descending
-    salesData.sort((a,b) => new Date(b.date) - new Date(a.date));
+    salesData.sort((a, b) => {
+      const dA = a.date?.seconds ? new Date(a.date.seconds * 1000) : new Date(a.date);
+      const dB = b.date?.seconds ? new Date(b.date.seconds * 1000) : new Date(b.date);
+      return dB - dA;
+    });
     renderTable(salesData);
   } catch(err) {
     console.error("Error fetching sales:", err);
@@ -243,11 +272,7 @@ async function loadSales() {
 }
 
 loadSales();
-
-  console.log("Branch:", branch, "Docs:", salesData);
-
 </script>
 
 </body>
 </html>
-
