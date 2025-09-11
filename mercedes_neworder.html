@@ -838,90 +838,68 @@ function getNextTicketNumber() {
     const formattedNumber = currentNumber.toString().padStart(5, '0');
     document.getElementById('jobOrderNumber').value = 'JO-' + formattedNumber;
 
-    document.getElementById('salesOrderForm').addEventListener('submit', async function (e) {
+
+  import { getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+document.getElementById('salesOrderForm').addEventListener('submit', async function (e) {
   e.preventDefault();
 
-const joInput = document.getElementById('jobOrderNumber');
-const joValue = (joInput.value || '').trim();
-if (!joValue) {
-  alert('Please enter a Job Order Number.');
-  joInput.focus();
-  return;
-}
-
-  
- 
-
-  console.log("🚀 Submit clicked");
-
-  // Validate items before saving
- for (let row of document.querySelectorAll('#itemTable tbody tr')) {
-    const desc = row.querySelector('input[name="itemDescription"]').value.trim();
-    const repairman = row.querySelector('select[name="repairman"]').value;
-
-    if (!desc || !repairman) {
-      alert("Please complete all item descriptions and select a repairman.");
-      return;
-    }
+  const form = e.target;
+  const joInput = document.getElementById('jobOrderNumber');
+  const joValue = (joInput.value || '').trim();
+  if (!joValue) {
+    alert('⚠️ Please enter a Job Order Number.');
+    joInput.focus();
+    return;
   }
 
-  // Prepare items array
+  // 🔍 Check Firestore for duplicate Job Order Number
+  const docRef = doc(db, "mercedes_salesOrders", joValue);
+  const existingDoc = await getDoc(docRef);
+
+  if (existingDoc.exists()) {
+    alert("⚠️ This Job Order Number already exists. Please use a new one.");
+    return; // stop saving
+  }
+
+  // Collect items
   const items = [];
-  document.querySelectorAll('#itemTable tbody tr').forEach(row => {
+  document.querySelectorAll("#order-items tr").forEach((row) => {
     items.push({
-      ticketNo: row.querySelector('input[name="ticketNo"]').value,
-      itemDescription: row.querySelector('input[name="itemDescription"]').value,
-      quantity: row.querySelector('input[name="quantity"]').value,
-      price: row.querySelector('input[name="price"]').value,
-      remarks: row.querySelector('input[name="remarks"]').value,
-      repairman: row.querySelector('select[name="repairman"]').value,
+      item: row.cells[0].textContent,
+      description: row.cells[1].textContent,
+      qty: row.cells[2].textContent,
+      unitPrice: row.cells[3].textContent,
+      total: row.cells[4].textContent,
     });
   });
 
-  // Get image base64 data
-    const imageBase64List = Array.from(document.querySelectorAll('#imagePreviewWrapper img')).map(img => img.src);
-
-  // ✅ Proper number parsing for balance, discount, downPayment, and new fields totalAmount & amountPaid
-  const totalAmount = parseFloat(document.getElementById('totalAmount').value || 0);
-  const downPayment = parseFloat(document.getElementById('downPayment').value || 0);
-  const discount = parseFloat(document.getElementById('discount').value) || 0;
-  const balance = totalAmount - discount - downPayment;
-
   const order = {
-    jobOrderNumber: document.getElementById('jobOrderNumber').value,
-    dateBooked: document.getElementById('dateBooked').value,
-    customerName: document.getElementById('customerName').value,
-    contactNumber: document.getElementById('contactNumber').value,
-    email: document.getElementById('email').value,
-    receiver: document.getElementById('receiver').value,
-    paymentMode: document.getElementById('paymentMode').value,
-    balance: balance,
-    discount: discount,
-    downPayment: downPayment,
-    totalAmount: totalAmount,
-    amountPaid: downPayment,
-    completionDate: document.getElementById('completionDate').value,
-    branch: "Mercedes",
-    items: items,
-    images: imageBase64List
+    jobOrderNumber: joValue,
+    customerName: document.getElementById("customerName").value,
+    phone: document.getElementById("phone").value,
+    address: document.getElementById("address").value,
+    repairman: document.getElementById("repairman").value,
+    receiver: document.getElementById("receiver").value,
+    paymentMode: document.getElementById("paymentMode").value,
+    amountPaid: document.getElementById("amountPaid").value,
+    balance: document.getElementById("balance").value,
+    items,
+    date: new Date().toISOString(),
   };
 
-  console.log("📝 Order data to be saved:", order);
-
   try {
-    // prevent double save by using jobOrderNumber as doc id
-    const docRef = doc(db, "mercedes_salesOrders", order.jobOrderNumber);
     await setDoc(docRef, order);
     alert("✅ Sales Order has been saved to Firestore!");
-    window.location.href = "mercedes_salesorder.html";
+    form.reset();
+    document.getElementById("order-items").innerHTML = "";
+    window.location.href = "mercedes_salesorder.html"; // redirect
   } catch (error) {
     console.error("❌ Firestore Error:", error);
-    alert("❌ Failed to save sales order. Please try again.");
-  } finally {
-    // ensure form submit re-entry allowed after save/error
+    alert("❌ Failed to save Sales Order. Try again.");
   }
 });
-  
+
 
     // Print Receipt
     document.getElementById('printBtn').addEventListener('click', () => {
