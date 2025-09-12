@@ -3,32 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sales Status - Bacolod</title>
+  <title>Sales Status - Bacolod Branch</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-    body, html { height: 100%; background: linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)), url('bg.png') no-repeat center center fixed; background-size: cover; }
-    header { background-color: #800000; color: white; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+    body, html {
+      height: 100%;
+      background: linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)), url('bg.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+    header {
+      background-color: #800000; color: white; padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
     .logo-container { display: flex; align-items: center; gap: 2rem; }
     .logo-container img { height: 80px; width: auto; }
     .logo-container h1 { font-size: 2rem; font-weight: 700; }
     .branch-name { font-size: 1.3rem; font-weight: 600; color: #ffffff; }
     .nav-buttons { display: flex; gap: 2rem; flex-wrap: wrap; }
-    .nav-buttons a { background-color: #ffffff; color: #800000; padding: 0.6rem 1.3rem; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: background-color 0.3s ease, box-shadow 0.3s ease; }
-    .nav-buttons a:hover { background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
-    
+    .nav-buttons a {
+      background-color: #ffffff; color: #800000;
+      padding: 0.6rem 1.3rem; border-radius: 50px;
+      text-decoration: none; font-weight: 600; font-size: 0.95rem;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .nav-buttons a:hover {
+      background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
     .main-content { padding: 3rem; }
     h2 { color: #800000; text-align: center; margin-bottom: 1.5rem; }
-    table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+    table {
+      width: 100%; border-collapse: collapse; background-color: white;
+      border-radius: 1rem; overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
     th, td { padding: 0.75rem; border: 1px solid #ccc; text-align: center; }
     th { background-color: #800000; color: white; }
     select.status-dropdown { padding: 0.3rem 0.5rem; border-radius: 0.5rem; border: 1px solid #ccc; }
     .filter-buttons { text-align: center; margin-bottom: 1rem; }
-    .filter-buttons button { background-color: #800000; color: white; padding: 0.5rem 1rem; border: none; border-radius: 1rem; margin: 0 0.3rem; cursor: pointer; font-weight: 600; }
+    .filter-buttons button {
+      background-color: #800000; color: white;
+      padding: 0.5rem 1rem; border: none; border-radius: 1rem;
+      margin: 0 0.3rem; cursor: pointer; font-weight: 600;
+    }
     .filter-buttons button:hover { background-color: #a60000; }
-    .content-box { background-color: white; padding: 1.5rem; border-radius: 1.5rem; box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3); max-width: 100%; overflow-x: auto; margin: auto; }
+    .content-box {
+      background-color: white; padding: 1.5rem; border-radius: 1.5rem;
+      box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3);
+      max-width: 100%; overflow-x: auto; margin: auto;
+    }
     .filter-buttons button.active { background-color: #f5c21d; color: #800000; }
-
     .date-toolbar .date-range input { max-width: 180px; }
     @media print { #startDate, #endDate, #clearDatesBtn { display: none !important; } }
   </style>
@@ -37,14 +63,14 @@
   <header>
     <div class="logo-container">
       <img src="logo.png" alt="ERestore Logo" />
-      <h1>ERestore Leatherworks <span class="branch-name">| Bacolod</span></h1>
+      <h1>ERestore Leatherworks <span class="branch-name">| Bacolod </span></h1>
     </div>
     <nav class="nav-buttons">
       <a href="bcd.html">Home</a>
       <a href="bcd_announcement.html">Announcements</a>
       <a href="bcd_report.html">Reports</a>
       <a href="bcd_appointment.html">Appointments</a>
-      <a href="bcd_customerlist.html">Customers</a>
+      <a href="bcd_costumerlist.html">Customers</a>
       <a href="bcd_attendance.html">Attendance</a>
       <a href="bcd_expenses.html">Expenses</a>
     </nav>
@@ -52,49 +78,66 @@
 
   <div class="main-content">
     <h2>Sales Status List</h2>
-    <div class="filter-buttons">
-      <button data-status="All" class="active" onclick="filterStatus('All')">All</button>
-      <button data-status="In Progress" onclick="filterStatus('In Progress')">In Progress</button>
-      <button data-status="Claimed" onclick="filterStatus('Claimed')">Claimed</button>
-      <button data-status="With Balance" onclick="filterStatus('With Balance')">With Balance</button>
-      <button data-status="Finished" onclick="filterStatus('Finished')">Finished</button>
-    </div>
+   <div class="filter-buttons">
+  <button data-status="All" class="active" onclick="filterStatus('All')">All</button>
+  <button data-status="Received" onclick="filterStatus('Received')">Received</button>
+  <button data-status="In Progress" onclick="filterStatus('In Progress')">In Progress</button>
+  <button data-status="Finished without Balance" onclick="filterStatus('Finished without Balance')">Finished without Balance</button>
+  <button data-status="Finished with Balance" onclick="filterStatus('Finished with Balance')">Finished with Balance</button>
+  <button data-status="Claimed" onclick="filterStatus('Claimed')">Claimed</button>
+</div>
+
     <div class="date-toolbar" style="display:flex; justify-content:center; align-items:center; gap:10px; margin:0 0 12px 0; flex-wrap:wrap;">
       <div class="date-range" style="display:flex; align-items:center; gap:4px;">
         <input type="date" id="startDate" style="padding:0.5rem 0.9rem; border-radius:1rem; border:1px solid #ccc; font-size:0.9rem;" />
         <span style="opacity:.7;">to</span>
         <input type="date" id="endDate" style="padding:0.5rem 0.9rem; border-radius:1rem; border:1px solid #ccc; font-size:0.9rem;" />
       </div>
-      <button id="clearDatesBtn" style="background:#ccc; color:#333; padding:0.45rem 0.9rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;">Clear Dates</button>
+      <button id="clearDatesBtn" style="background:#ccc; color:#333; padding:0.45rem 0.9rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;">
+        Clear Dates
+      </button>
     </div>
+
+    <div style="text-align:center; margin-bottom: 1rem;">
+  <button onclick="printTable()" 
+    style="background:#800000; color:white; padding:0.6rem 1.2rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;">
+    Print Results
+  </button>
+</div>
+
 
     <div class="content-box" style="overflow-x: auto;">
       <div style="max-height: 500px; overflow-y: auto;">
         <table id="statusTable">
-            <thead>
-              <tr>
-                <th>Order #</th>
-                <th>Customer</th>
-                <th>Date Booked</th>
-                <th>Repairman</th>
-                <th>Items</th>
-                <th>Status</th>
-                <th>View</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
+          <thead>
+            <tr>
+  <th>Order #</th>
+  <th>Customer</th>
+  <th>Date Booked</th>
+  <th>Repairman</th>
+  <th>Items</th>
+  <th>Total Amount</th>
+  <th>Balance</th>
+  <th>Payment Mode</th>
+  <th>Status</th>
+  <th>View</th>
+</tr>
+
+          </thead>
+          <tbody></tbody>
         </table>
       </div>
     </div>
+  </div>
 
-    <div id="viewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 9999;">
-      <div style="background: white; padding: 2rem; border-radius: 1rem; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <button onclick="closeModal()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: #800000; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 0.5rem; cursor: pointer;">Close</button>
-        <div id="modalContent"></div>
-      </div>
+  <div id="viewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 9999;">
+    <div style="background: white; padding: 2rem; border-radius: 1rem; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
+      <button onclick="closeModal()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: #800000; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 0.5rem; cursor: pointer;">Close</button>
+      <div id="modalContent"></div>
     </div>
+  </div>
 
- <script type="module">
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getFirestore, collection, getDocs, query, where, limit, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
@@ -119,30 +162,28 @@
         ).join("\n");
 
         const row = document.createElement("tr");
-
-        // If claimed, show static green text
-        let statusCell = "";
-        if (order.status === "Claimed") {
-          statusCell = `<span style="color: green; font-weight: bold;">Claimed</span>`;
-        } else {
-          statusCell = `
-            <select class="status-dropdown" onchange="updateStatus('${order.jobOrderNumber}', this.value)">
-              <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-              <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
-              <option ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
-              <option ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
-            </select>
-          `;
-        }
-
         row.innerHTML = `
           <td>${order.jobOrderNumber}</td>
-          <td>${order.customerName}</td>
-          <td>${order.dateBooked}</td>
-          <td>${order.items.map(i => i.repairman).filter(Boolean).join(", ") || 'N/A'}</td>
-          <td style="white-space: pre-wrap; text-align: left">${items}</td>
-          <td>${statusCell}</td>
-          <td><button onclick="viewOrder('${order.jobOrderNumber}')">View</button></td>
+<td>${order.customerName}</td>
+<td>${order.dateBooked}</td>
+<td>${order.items.map(i => i.repairman).filter(Boolean).join(", ") || 'N/A'}</td>
+<td style="white-space: pre-wrap; text-align: left">${items}</td>
+<td>${order.totalAmount || '₱0.00'}</td>
+<td>${order.balance || '₱0.00'}</td>
+<td>${order.paymentMode || '—'}</td>
+<td>
+  <select class="status-dropdown" 
+    onchange="updateStatus('${order.jobOrderNumber}', this.value)" 
+    ${order.status === 'Claimed' ? 'disabled' : ''}>
+    <option ${order.status === 'Received' ? 'selected' : ''}>Received</option>
+    <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+    <option ${order.status === 'Finished without Balance' ? 'selected' : ''}>Finished without Balance</option>
+    <option ${order.status === 'Finished with Balance' ? 'selected' : ''}>Finished with Balance</option>
+    <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
+  </select>
+</td>
+<td><button onclick="viewOrder('${order.jobOrderNumber}')">View</button></td>
+
         `;
         tableBody.appendChild(row);
       });
@@ -167,21 +208,19 @@
         if (btn.dataset.status === status) btn.classList.add('active');
       });
 
-      const sdEl = document.getElementById('startDate');
-      const edEl = document.getElementById('endDate');
-      const sdVal = sdEl?.value || '';
-      const edVal = edEl?.value || '';
-
+      const sdVal = document.getElementById('startDate').value;
+      const edVal = document.getElementById('endDate').value;
       let startRange = null, endRange = null;
-      if (sdVal) { startRange = new Date(sdVal); startRange.setHours(0, 0, 0, 0); }
-      if (edVal) { endRange = new Date(edVal); endRange.setHours(23, 59, 59, 999); }
+      if (sdVal) { startRange = new Date(sdVal); startRange.setHours(0,0,0,0); }
+      if (edVal) { endRange = new Date(edVal); endRange.setHours(23,59,59,999); }
 
       const snapshot = await getDocs(collection(db, "bcd_salesOrders"));
       const storedOrders = snapshot.docs.map(doc => {
-        const data = doc.data();
-        if (!data.status) data.status = "In Progress";
-        return data;
-      });
+  const data = doc.data();
+  if (!data.status) data.status = "Received";
+  return data;
+});
+
 
       let filtered = (status === 'All') ? storedOrders : storedOrders.filter(o => o.status === status);
 
@@ -189,24 +228,26 @@
         const d = new Date(o.dateBooked);
         let ok = true;
         if (startRange) ok = ok && d >= startRange;
-        if (endRange) ok = ok && d <= endRange;
+        if (endRange)   ok = ok && d <= endRange;
         return ok;
       });
 
-      renderTable(filtered);
+      
+     // Sort by dateBooked, newest first
+filtered.sort((a, b) => new Date(b.dateBooked) - new Date(a.dateBooked));
+
+renderTable(filtered);
     };
 
     window.viewOrder = async function (jobOrderNumber) {
-      const q = query(
-        collection(db, "bcd_salesOrders"),
-        where("jobOrderNumber", "==", jobOrderNumber),
-        limit(1)
-      );
+      const q = query(collection(db, "bcd_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
       const snapshot = await getDocs(q);
       if (snapshot.empty) { alert("Order not found."); return; }
       const order = snapshot.docs[0].data();
       const modalContent = document.getElementById('modalContent');
-      const itemsHtml = order.items.map(i => `<li>${i.quantity}x ${i.name} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}</li>`).join("");
+      const itemsHtml = order.items.map(i =>
+        `<li>${i.quantity}x ${i.name} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}</li>`
+      ).join("");
       modalContent.innerHTML = `
         <h3 style="color: #800000; margin-bottom: 0.5rem;">Order #${order.jobOrderNumber}</h3>
         <p><strong>Customer:</strong> ${order.customerName}</p>
@@ -221,26 +262,52 @@
       document.getElementById('viewModal').style.display = 'flex';
     }
 
-    window.closeModal = function () {
-      document.getElementById('viewModal').style.display = 'none';
-    }
+    window.closeModal = function () { document.getElementById('viewModal').style.display = 'none'; }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      filterStatus('All');
-    });
+    document.addEventListener('DOMContentLoaded', () => { filterStatus('All'); });
 
     const sdEl = document.getElementById('startDate');
     const edEl = document.getElementById('endDate');
     const clearBtn = document.getElementById('clearDatesBtn');
-
     function refilter() {
       const active = document.querySelector('.filter-buttons .active')?.dataset.status || 'All';
       filterStatus(active);
     }
-
     sdEl.addEventListener('change', refilter);
     edEl.addEventListener('change', refilter);
     clearBtn.addEventListener('click', () => { sdEl.value = ''; edEl.value = ''; refilter(); });
+
+    window.printTable = function () {
+  const table = document.getElementById("statusTable").outerHTML;
+  const activeStatus = document.querySelector('.filter-buttons .active')?.innerText || "All";
+  const sd = document.getElementById("startDate").value || "Any";
+  const ed = document.getElementById("endDate").value || "Any";
+
+  const win = window.open("", "_blank");
+  win.document.write(`
+    <html>
+    <head>
+      <title>Sales Status Report</title>
+      <style>
+        body { font-family: 'Inter', sans-serif; padding:20px; }
+        h2, p { text-align:center; }
+        table { width:100%; border-collapse: collapse; margin-top:20px; }
+        th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+        th { background:#800000; color:white; }
+      </style>
+    </head>
+    <body>
+      <h2>Sales Status Report - Bacolod Branch</h2>
+      <p><strong>Status:</strong> ${activeStatus}</p>
+      <p><strong>Date Range:</strong> ${sd} to ${ed}</p>
+      ${table}
+    </body>
+    </html>
+  `);
+  win.document.close();
+  win.print();
+};
+
   </script>
 </body>
 </html>
