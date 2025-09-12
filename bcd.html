@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bacolod Branch - E-Restore Leatherworks</title>
+  <title> Bacolod - E-Restore Leatherworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
 <style>
@@ -249,7 +250,7 @@
   <header>
     <div class="logo-container">
       <img src="logo.png" alt="E-Restore Logo" />
-      <h1>ERestore Leatherworks <span class="branch-name">| Bacolod</span></h1>
+      <h1>ERestore Leatherworks <span class="branch-name">| Bacolod </span></h1>
     </div>
     <nav class="nav-buttons">
       <a href="bcd_announcement.html">Announcements</a>
@@ -263,7 +264,7 @@
 
   <div class="main-content">
     <div class="overlay">
-      <h2>Welcome to Bacolod Branch</h2>
+      <h2>Welcome to Bacolod Branch, Congrats on ur opening day!</h2>
       <p class="branch-welcome">Choose a task</p>
       <div class="button-group">
   <a href="bcd_neworder.html">New Sales Order</a>
@@ -272,6 +273,8 @@
   <a href="bcd_addpurchased.html">Add Purchased Product</a>
   <a href="bcd_purchaseditems.html">Purchased Items</a>
   <a href="bcd_expenses.html">Expenses</a>
+  <a href="bcd_overallsales.html">Overall Sales</a>
+
 
 </div>
 
@@ -302,11 +305,9 @@
 
   const branch = localStorage.getItem("loggedInBranch");
 
-// Prevent redirect loop if you're already on bcd.html
-if ((!branch || branch.toLowerCase() !== "bacolod") && !window.location.pathname.includes("bcd.html")) {
-  window.location.href = "bcd.html";
-}
-
+  if ((!branch || branch.toLowerCase() !== "bacolod") && !window.location.pathname.includes("bcd.html")) {
+    window.location.href = "bcd.html";
+  }
 
   // Logout button event listener
   document.querySelector('.logout-btn').addEventListener('click', () => {
@@ -360,5 +361,3 @@ if ((!branch || branch.toLowerCase() !== "bacolod") && !window.location.pathname
 </script>
 </body>
 </html>
-
-
