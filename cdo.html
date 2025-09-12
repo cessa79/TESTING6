@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cagayan de Oro Branch - E-Restore Leatherworks</title>
+  <title> Cagayan de Oro - E-Restore Leatherworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
 <style>
@@ -249,7 +249,7 @@
   <header>
     <div class="logo-container">
       <img src="logo.png" alt="E-Restore Logo" />
-      <h1>ERestore Leatherworks <span class="branch-name">| Cagayan de Oro</span></h1>
+      <h1>ERestore Leatherworks <span class="branch-name">| Cagayan de Oro </span></h1>
     </div>
     <nav class="nav-buttons">
       <a href="cdo_announcement.html">Announcements</a>
@@ -263,7 +263,7 @@
 
   <div class="main-content">
     <div class="overlay">
-      <h2>Welcome to Cagayan de Oro Branch</h2>
+      <h2>Welcome to Cagayan de Oro Branch, Congrats on ur opening day!</h2>
       <p class="branch-welcome">Choose a task</p>
       <div class="button-group">
   <a href="cdo_neworder.html">New Sales Order</a>
@@ -272,6 +272,8 @@
   <a href="cdo_addpurchased.html">Add Purchased Product</a>
   <a href="cdo_purchaseditems.html">Purchased Items</a>
   <a href="cdo_expenses.html">Expenses</a>
+ <a href="cdo_overallsales.html">Overall Sales</a>
+
 
 </div>
 
@@ -302,7 +304,7 @@
 
   const branch = localStorage.getItem("loggedInBranch");
 
-  if ((!branch || branch.toLowerCase() !== "cagayan de oro") && !window.location.pathname.includes("cdo.html")) {
+  if ((!branch || branch.toLowerCase() !== "Cagayan de Oro") && !window.location.pathname.includes("cdo.html")) {
     window.location.href = "cdo.html";
   }
 
