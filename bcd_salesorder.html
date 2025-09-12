@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sales Orders - bcd </title>
+  <title>Sales Orders - Bacolod </title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
@@ -335,6 +336,7 @@
         <th>Repairman</th>
         <th>Payment</th>
         <th>Total</th>
+       <th>Deposit</th> <!-- ✅ NEW -->
         <th>Balance</th>
         <th>Completion</th>
         <th>Items</th>
@@ -345,6 +347,12 @@
   </table>
 </div>
       <p id="totalSales" style="font-size: 1rem; font-weight: bold; color: #800000; margin-top: 1rem;">Total Sales: ₱0.00</p>
+      <p id="totalDeposit" style="font-size: 1rem; font-weight: bold; color: #004080; margin-top: 0.2rem;">
+  Total Deposit: ₱0.00
+</p>
+<p id="totalBalance" style="font-size: 1rem; font-weight: bold; color: #500303; margin-top: 0.2rem;">
+  Total Balance: ₱0.00
+</p>
 
     </div>
   </div>
@@ -453,14 +461,19 @@
     return isBcd && matchJobOrder && matchTime && inRange;
   });
 
-  filteredOrders.sort((a, b) => b.jobOrderNumber.localeCompare(a.jobOrderNumber));
+   // Sort by dateBooked, newest first
+  filteredOrders.sort((a, b) => new Date(b.dateBooked) - new Date(a.dateBooked));
   tableBody.innerHTML = '';
-  let totalSales = 0;
+
+let totalSales = 0;
+let totalDeposit = 0;
+let totalBalance = 0;
+
 
   filteredOrders.forEach(order => {
     const total = parseFloat(order.totalAmount || 0);
     const paid = parseFloat(order.amountPaid || 0);
-    const balance = parseFloat(order.balance ?? (total - paid)).toFixed(2);
+const balance = parseFloat(order.balance ?? (total - paid)); // keep as number
 
     const items = order.items.map(i =>
       `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}`
@@ -477,6 +490,8 @@
       <td>${[...new Set(order.items.map(i => i.repairman))].join(', ')}</td>
       <td>${order.paymentMode}</td>
       <td>₱${total.toFixed(2)}</td>
+        <td>₱${paid.toFixed(2)}</td> <!-- ✅ NEW Deposit column -->
+
      <td>
   ₱${balance}<br>
   ${Number(balance) > 0 ? `<button class="edit-btn" onclick="editBalance('${order.id}', ${total})">Edit</button>` : ``}
@@ -488,9 +503,15 @@
     `;
     tableBody.appendChild(row);
     totalSales += total;
+totalDeposit += paid;
+totalBalance += balance;
+
   });
 
-  document.getElementById('totalSales').textContent = `Total Sales: ₱${totalSales.toFixed(2)}`;
+   document.getElementById('totalSales').textContent = `Total Sales: ₱${totalSales.toFixed(2)}`;
+document.getElementById('totalDeposit').textContent = `Total Deposit: ₱${totalDeposit.toFixed(2)}`;
+document.getElementById('totalBalance').textContent = `Total Balance: ₱${totalBalance.toFixed(2)}`;
+
 }
 
 function resetFormFields() {
@@ -604,6 +625,8 @@ document.getElementById('paymentModal').addEventListener('click', (e) => {
 
   // Get total sales text
   const totalSales = document.getElementById('totalSales').textContent;
+  const totalDeposit = document.getElementById('totalDeposit').textContent;
+const totalBalance = document.getElementById('totalBalance').textContent;
 
   // Open print window
   const win = window.open('', '', 'width=900,height=650');
@@ -620,10 +643,12 @@ document.getElementById('paymentModal').addEventListener('click', (e) => {
   th { background: #f0f0f0; }
   #totalSalesPrint { margin-top: 1rem; font-weight: bold; text-align: right; }
 
-  /* ✅ HIDE Images column (last column) */
-  th:last-child, td:last-child {
-    display: none;
-  }
+/* ✅ HIDE Images column ONLY */
+th:nth-last-child(1), td:nth-last-child(1) {
+  display: none;
+}
+ 
+
 </style>
 
       </head>
@@ -631,12 +656,55 @@ document.getElementById('paymentModal').addEventListener('click', (e) => {
         <h2>Sales Order List</h2>
         <p>${headerNote}</p>
         ${table}
-        <p id="totalSalesPrint">${totalSales}</p>
-      </body>
+        <div id="totals">
+  <p>${totalSales}</p>
+  <p>${totalDeposit}</p>
+  <p>${totalBalance}</p>
+</div>
+
+        </body>
     </html>
   `);
   win.document.close();
   win.print();
+};
+
+window.exportToCSV = function () {
+  const table = document.getElementById("salesOrdersTable");
+  let csv = [];
+  const rows = table.querySelectorAll("tr");
+
+  for (let row of rows) {
+    let cols = row.querySelectorAll("th, td");
+    let rowData = [];
+    cols.forEach((col, i) => {
+      // ✅ Skip Images column (last one)
+      if (i === cols.length - 1) return;
+      rowData.push(`"${col.innerText.replace(/"/g, '""')}"`);
+    });
+    csv.push(rowData.join(","));
+  }
+
+  // ✅ Add Total Sales at bottom
+  // ✅ Add Totals at bottom
+const totalSalesText = document.getElementById("totalSales").textContent;
+const totalDepositText = document.getElementById("totalDeposit").textContent;
+const totalBalanceText = document.getElementById("totalBalance").textContent;
+
+csv.push("");
+csv.push(`"${totalSalesText}"`);
+csv.push(`"${totalDepositText}"`);
+csv.push(`"${totalBalanceText}"`);
+
+
+  // ✅ Download CSV
+  const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+  const downloadLink = document.createElement("a");
+  downloadLink.download = "sales_orders.csv";
+  downloadLink.href = window.URL.createObjectURL(csvFile);
+  downloadLink.style.display = "none";
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
 };
 
 
