@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -249,7 +250,7 @@
   <header>
     <div class="logo-container">
       <img src="logo.png" alt="E-Restore Logo" />
-      <h1>ERestore Leatherworks <span class="branch-name">| Greenhills</span></h1>
+      <h1>ERestore Leatherworks <span class="branch-name">| Greenhills </span></h1>
     </div>
     <nav class="nav-buttons">
       <a href="gh_announcement.html">Announcements</a>
@@ -263,7 +264,7 @@
 
   <div class="main-content">
     <div class="overlay">
-      <h2>Welcome to Greenhills Branch</h2>
+      <h2>Welcome to Greenhills Branch, Congrats on ur opening day!</h2>
       <p class="branch-welcome">Choose a task</p>
       <div class="button-group">
   <a href="gh_neworder.html">New Sales Order</a>
@@ -272,6 +273,8 @@
   <a href="gh_addpurchased.html">Add Purchased Product</a>
   <a href="gh_purchaseditems.html">Purchased Items</a>
   <a href="gh_expenses.html">Expenses</a>
+  <a href="gh_overallsales.html">Overall Sales</a>
+
 
 </div>
 
@@ -302,7 +305,7 @@
 
   const branch = localStorage.getItem("loggedInBranch");
 
-  if ((!branch || branch.toLowerCase() !== "greenhills") && !window.location.pathname.includes("gh.html")) {
+  if ((!branch || branch.toLowerCase() !== "Greenhills") && !window.location.pathname.includes("gh.html")) {
     window.location.href = "gh.html";
   }
 
@@ -358,4 +361,3 @@
 </script>
 </body>
 </html>
-
