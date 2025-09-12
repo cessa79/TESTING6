@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sold Items - abreeza</title>
+  <title>Sold Items - Abreeza</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
@@ -163,13 +164,15 @@
         <div class="table-scroll">
           <table>
             <thead>
-              <tr>
-                <th style="min-width:110px;">Date</th>
-                <th style="min-width:160px;">Customer</th>
-                <th>Items</th>
-                <th style="min-width:140px;">Grand Total (₱)</th>
-              </tr>
-            </thead>
+  <tr>
+    <th style="min-width:110px;">Date</th>
+    <th style="min-width:160px;">Customer</th>
+    <th>Items</th>
+    <th style="min-width:120px;">Mode of Payment</th>
+    <th style="min-width:140px;">Grand Total (₱)</th>
+  </tr>
+</thead>
+
             <tbody id="soldTableBody"></tbody>
           </table>
         </div>
@@ -224,12 +227,14 @@
       ).join('<br>');
 
       const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${sale.date || '—'}</td>
-        <td>${sale.customer || '—'}</td>
-        <td class="items-list">${itemList || '—'}</td>
-        <td>₱${(sale.grandTotal || 0).toFixed(2)}</td>
-      `;
+     row.innerHTML = `
+  <td>${sale.date || '—'}</td>
+  <td>${sale.customer || '—'}</td>
+  <td class="items-list">${itemList || '—'}</td>
+  <td>${sale.payment || '—'}</td>
+  <td>₱${(sale.grandTotal || 0).toFixed(2)}</td>
+`;
+
       tableBody.appendChild(row);
     });
   }
@@ -282,5 +287,3 @@
 
 </body>
 </html>
-
-
