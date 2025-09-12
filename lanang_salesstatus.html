@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,14 +64,14 @@
   <header>
     <div class="logo-container">
       <img src="logo.png" alt="ERestore Logo" />
-      <h1>ERestore Leatherworks <span class="branch-name">| SM Lanang</span></h1>
+      <h1>ERestore Leatherworks <span class="branch-name">| SM Lanang </span></h1>
     </div>
     <nav class="nav-buttons">
       <a href="lanang.html">Home</a>
       <a href="lanang_announcement.html">Announcements</a>
       <a href="lanang_report.html">Reports</a>
       <a href="lanang_appointment.html">Appointments</a>
-      <a href="lanang_customerlist.html">Customers</a>
+      <a href="lanang_costumerlist.html">Customers</a>
       <a href="lanang_attendance.html">Attendance</a>
       <a href="lanang_expenses.html">Expenses</a>
     </nav>
@@ -78,13 +79,15 @@
 
   <div class="main-content">
     <h2>Sales Status List</h2>
-    <div class="filter-buttons">
-      <button data-status="All" class="active" onclick="filterStatus('All')">All</button>
-      <button data-status="In Progress" onclick="filterStatus('In Progress')">In Progress</button>
-      <button data-status="Claimed" onclick="filterStatus('Claimed')">Claimed</button>
-      <button data-status="With Balance" onclick="filterStatus('With Balance')">With Balance</button>
-      <button data-status="Finished" onclick="filterStatus('Finished')">Finished</button>
-    </div>
+   <div class="filter-buttons">
+  <button data-status="All" class="active" onclick="filterStatus('All')">All</button>
+  <button data-status="Received" onclick="filterStatus('Received')">Received</button>
+  <button data-status="In Progress" onclick="filterStatus('In Progress')">In Progress</button>
+  <button data-status="Finished without Balance" onclick="filterStatus('Finished without Balance')">Finished without Balance</button>
+  <button data-status="Finished with Balance" onclick="filterStatus('Finished with Balance')">Finished with Balance</button>
+  <button data-status="Claimed" onclick="filterStatus('Claimed')">Claimed</button>
+</div>
+
     <div class="date-toolbar" style="display:flex; justify-content:center; align-items:center; gap:10px; margin:0 0 12px 0; flex-wrap:wrap;">
       <div class="date-range" style="display:flex; align-items:center; gap:4px;">
         <input type="date" id="startDate" style="padding:0.5rem 0.9rem; border-radius:1rem; border:1px solid #ccc; font-size:0.9rem;" />
@@ -96,19 +99,31 @@
       </button>
     </div>
 
+    <div style="text-align:center; margin-bottom: 1rem;">
+  <button onclick="printTable()" 
+    style="background:#800000; color:white; padding:0.6rem 1.2rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;">
+    Print Results
+  </button>
+</div>
+
+
     <div class="content-box" style="overflow-x: auto;">
       <div style="max-height: 500px; overflow-y: auto;">
         <table id="statusTable">
           <thead>
             <tr>
-              <th>Order #</th>
-              <th>Customer</th>
-              <th>Date Booked</th>
-              <th>Repairman</th>
-              <th>Items</th>
-              <th>Status</th>
-              <th>View</th>
-            </tr>
+  <th>Order #</th>
+  <th>Customer</th>
+  <th>Date Booked</th>
+  <th>Repairman</th>
+  <th>Items</th>
+  <th>Total Amount</th>
+  <th>Balance</th>
+  <th>Payment Mode</th>
+  <th>Status</th>
+  <th>View</th>
+</tr>
+
           </thead>
           <tbody></tbody>
         </table>
@@ -150,21 +165,26 @@
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${order.jobOrderNumber}</td>
-          <td>${order.customerName}</td>
-          <td>${order.dateBooked}</td>
-          <td>${order.items.map(i => i.repairman).filter(Boolean).join(", ") || 'N/A'}</td>
-          <td style="white-space: pre-wrap; text-align: left">${items}</td>
-          <td>
-            <select class="status-dropdown" 
-              onchange="updateStatus('${order.jobOrderNumber}', this.value)" 
-              ${order.status === 'Claimed' ? 'disabled' : ''}>
-              <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-              <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
-              <option ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
-              <option ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
-            </select>
-          </td>
-          <td><button onclick="viewOrder('${order.jobOrderNumber}')">View</button></td>
+<td>${order.customerName}</td>
+<td>${order.dateBooked}</td>
+<td>${order.items.map(i => i.repairman).filter(Boolean).join(", ") || 'N/A'}</td>
+<td style="white-space: pre-wrap; text-align: left">${items}</td>
+<td>${order.totalAmount || '₱0.00'}</td>
+<td>${order.balance || '₱0.00'}</td>
+<td>${order.paymentMode || '—'}</td>
+<td>
+  <select class="status-dropdown" 
+    onchange="updateStatus('${order.jobOrderNumber}', this.value)" 
+    ${order.status === 'Claimed' ? 'disabled' : ''}>
+    <option ${order.status === 'Received' ? 'selected' : ''}>Received</option>
+    <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+    <option ${order.status === 'Finished without Balance' ? 'selected' : ''}>Finished without Balance</option>
+    <option ${order.status === 'Finished with Balance' ? 'selected' : ''}>Finished with Balance</option>
+    <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
+  </select>
+</td>
+<td><button onclick="viewOrder('${order.jobOrderNumber}')">View</button></td>
+
         `;
         tableBody.appendChild(row);
       });
@@ -197,10 +217,11 @@
 
       const snapshot = await getDocs(collection(db, "lanang_salesOrders"));
       const storedOrders = snapshot.docs.map(doc => {
-        const data = doc.data();
-        if (!data.status) data.status = "In Progress";
-        return data;
-      });
+  const data = doc.data();
+  if (!data.status) data.status = "Received";
+  return data;
+});
+
 
       let filtered = (status === 'All') ? storedOrders : storedOrders.filter(o => o.status === status);
 
@@ -212,7 +233,11 @@
         return ok;
       });
 
-      renderTable(filtered);
+      
+     // Sort by dateBooked, newest first
+filtered.sort((a, b) => new Date(b.dateBooked) - new Date(a.dateBooked));
+
+renderTable(filtered);
     };
 
     window.viewOrder = async function (jobOrderNumber) {
@@ -252,6 +277,38 @@
     sdEl.addEventListener('change', refilter);
     edEl.addEventListener('change', refilter);
     clearBtn.addEventListener('click', () => { sdEl.value = ''; edEl.value = ''; refilter(); });
+
+    window.printTable = function () {
+  const table = document.getElementById("statusTable").outerHTML;
+  const activeStatus = document.querySelector('.filter-buttons .active')?.innerText || "All";
+  const sd = document.getElementById("startDate").value || "Any";
+  const ed = document.getElementById("endDate").value || "Any";
+
+  const win = window.open("", "_blank");
+  win.document.write(`
+    <html>
+    <head>
+      <title>Sales Status Report</title>
+      <style>
+        body { font-family: 'Inter', sans-serif; padding:20px; }
+        h2, p { text-align:center; }
+        table { width:100%; border-collapse: collapse; margin-top:20px; }
+        th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+        th { background:#800000; color:white; }
+      </style>
+    </head>
+    <body>
+      <h2>Sales Status Report - SM Lanang Branch</h2>
+      <p><strong>Status:</strong> ${activeStatus}</p>
+      <p><strong>Date Range:</strong> ${sd} to ${ed}</p>
+      ${table}
+    </body>
+    </html>
+  `);
+  win.document.close();
+  win.print();
+};
+
   </script>
 </body>
 </html>
