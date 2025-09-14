@@ -395,8 +395,8 @@ async function filterByDate() {
         <td>${order.receiver}</td>
         <td>${repairmen}</td>
        <td>${order.paymentMode}</td>
-         <td>₱${order.deposit || '0.00'}</td>
-         <td>₱${order.balance}</td>
+    <td>₱${Number(order.deposit || order.downpayment || 0).toFixed(2)}</td>
+       <td>₱${order.balance}</td>
          <td>₱${totalAmount.toFixed(2)}</td>
         <td>${formatDate(order.completionDate)}</td>
         <td style="white-space: pre-wrap; text-align: left">${items}</td>
@@ -405,13 +405,37 @@ async function filterByDate() {
       tableBody.appendChild(row);
     });
 
-    // ✅ Fix total sales (sum of totals, not balances)
-    const total = filtered.reduce((sum, o) => {
-      const orderTotal = (o.items || []).reduce((s, i) => s + (parseFloat(i.quantity || 0) * parseFloat(i.price || 0)), 0);
-      return sum + orderTotal;
-    }, 0);
+  // ✅ Fix totals (sales, deposit, balance)
+// ✅ Fix totals (sales, deposit, balance)
+const totals = filtered.reduce(
+  (acc, o) => {
+    // compute total order amount
+    const orderTotal = (o.items || []).reduce(
+      (s, i) => s + (parseFloat(i.quantity || 0) * parseFloat(i.price || 0)),
+      0
+    );
 
-    document.getElementById('totalSales').textContent = `Total Sales: ₱${total.toFixed(2)}`;
+    // Some branches save it as "deposit", some as "downpayment"
+    const deposit = Number(o.deposit || o.downpayment || 0);
+    const balance = Number(o.balance) || 0;
+
+    acc.sales += orderTotal;
+    acc.deposit += deposit;
+    acc.balance += balance;
+
+    return acc;
+  },
+  { sales: 0, deposit: 0, balance: 0 }
+);
+
+document.getElementById('totalSales').textContent =
+  `Total Sales: ₱${totals.sales.toFixed(2)}`;
+document.getElementById('totalDeposit').textContent =
+  `Total Deposit: ₱${totals.deposit.toFixed(2)}`;
+document.getElementById('totalBalance').textContent =
+  `Total Balance: ₱${totals.balance.toFixed(2)}`;
+
+
   }
 
   // ✅ Filters & events
@@ -543,3 +567,4 @@ window.printTable = function () {
 
 </body>
 </html>
+
