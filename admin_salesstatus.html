@@ -67,9 +67,18 @@ adminsalesstatus.html
     }
 
     .content-box {
-      background-color: white; padding: 1.5rem; border-radius: 1.5rem;
-      box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3); max-width: 100%; overflow-x: auto; margin: auto;
-    }
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3);
+  max-width: 100%;
+  margin: auto;
+
+  overflow-x: auto; /* still allow horizontal scroll if needed */
+  overflow-y: auto; /* ✅ vertical scroll only inside box */
+  max-height: 500px; /* ✅ adjust height so table scrolls inside */
+}
+
 
     .search-bar input {
       padding: 0.5rem 1rem;
@@ -159,6 +168,8 @@ adminsalesstatus.html
             <th>Repairman</th>
             <th>Items</th>
             <th>Status</th>
+              <th>Claimed Date</th> <!-- ✅ new -->
+
           </tr>
         </thead>
         <tbody></tbody>
@@ -245,12 +256,14 @@ row.innerHTML = `
       <option value="In Progress" ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
       <option value="With Balance" ${order.status === 'With Balance' ? 'selected' : ''}>With Balance</option>
       <option value="Finished" ${order.status === 'Finished' ? 'selected' : ''}>Finished</option>
-      <option value="Finished with Balance" ${order.status === 'Finished with Balance' ? 'selected' : ''}>Finished with Balance</option> <!-- ✅ NEW -->
+      <option value="Finished with Balance" ${order.status === 'Finished with Balance' ? 'selected' : ''}>Finished with Balance</option>
       <option value="Claimed" ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
-      <option value="Received" ${order.status === 'Received' ? 'selected' : ''}>Received</option> <!-- ✅ NEW -->
+      <option value="Received" ${order.status === 'Received' ? 'selected' : ''}>Received</option>
     </select>
   </td>
+  <td>${order.claimedDate || '—'}</td> <!-- ✅ show claimed date -->
 `;
+
 
         ;
         tableBody.appendChild(row);
@@ -263,7 +276,21 @@ row.innerHTML = `
           const newStatus = this.value;
 
           const docRef = doc(db, collection, docId);
-          await updateDoc(docRef, { status: newStatus });
+          const updateData = { status: newStatus };
+if (newStatus === "Claimed" && !order.claimedDate) {
+  updateData.claimedDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+}
+
+await updateDoc(docRef, updateData);
+
+// also update local array copy
+allOrders.forEach(o => {
+  if (o.docId === docId && o.collection === collection) {
+    o.status = newStatus;
+    if (updateData.claimedDate) o.claimedDate = updateData.claimedDate;
+  }
+});
+
 
           allOrders.forEach(o => {
             if (o.docId === docId && o.collection === collection) {
