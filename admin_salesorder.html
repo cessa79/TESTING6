@@ -395,7 +395,7 @@ async function filterByDate() {
         <td>${order.receiver}</td>
         <td>${repairmen}</td>
        <td>${order.paymentMode}</td>
-    <td>₱${Number(order.deposit || order.downpayment || 0).toFixed(2)}</td>
+      <td>₱${Number(order.deposit || order.downPayment || 0).toFixed(2)}</td>
        <td>₱${order.balance}</td>
          <td>₱${totalAmount.toFixed(2)}</td>
         <td>${formatDate(order.completionDate)}</td>
@@ -416,7 +416,8 @@ const totals = filtered.reduce(
     );
 
     // Some branches save it as "deposit", some as "downpayment"
-    const deposit = Number(o.deposit || o.downpayment || 0);
+
+const deposit = Number(o.deposit || o.downPayment || 0);
     const balance = Number(o.balance) || 0;
 
     acc.sales += orderTotal;
@@ -567,4 +568,3 @@ window.printTable = function () {
 
 </body>
 </html>
-
