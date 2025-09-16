@@ -104,6 +104,17 @@
         style="background:#800000; color:white; padding:0.6rem 1.2rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;">
         Print Results
       </button>
+      <div style="text-align:center; margin-bottom: 1rem;">
+  <input type="text" id="searchJO" placeholder="Search JO Number..." 
+    style="padding:0.5rem 1rem; border-radius:1rem; border:1px solid #ccc; width:250px;"/>
+  <button onclick="searchJO()" 
+    style="background:#800000; color:white; padding:0.5rem 1rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;">
+    Search
+  </button>
+  <button onclick="clearSearch()" 
+    style="background:#ccc; color:#333; padding:0.5rem 1rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;">
+    Clear
+  </button>
     </div>
 
     <div class="content-box" style="overflow-x: auto;">
@@ -338,6 +349,26 @@
       win.document.close();
       win.print();
     };
+    window.searchJO = function () {
+  const input = document.getElementById("searchJO").value.trim().toLowerCase();
+  const rows = document.querySelectorAll("#statusTable tbody tr");
+
+  rows.forEach(row => {
+    const joNumber = row.cells[0]?.innerText.toLowerCase(); // JO number is in first column
+    if (joNumber.includes(input) || input === "") {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+  });
+};
+
+window.clearSearch = function () {
+  document.getElementById("searchJO").value = "";
+  searchJO(); // reset table
+};
+
   </script>
 </body>
 </html>
+
