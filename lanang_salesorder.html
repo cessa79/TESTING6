@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sales Orders - SM Lanang </title>
+  <title>Sales Orders - Lanang </title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
@@ -277,7 +277,7 @@
   <header>
     <div class="logo-container">
       <img src="logo.png" alt="ERestore Logo" />
-      <h1>ERestore Leatherworks <span class="branch-name">| SM Lanang </span></h1>
+      <h1>ERestore Leatherworks <span class="branch-name">| SM </span></h1>
     </div>
     <nav class="nav-buttons">
       <a href="lanang.html">Homepage</a>
@@ -427,7 +427,7 @@
   }
 
   const filteredOrders = orders.filter(order => {
-    const isLanang = order.branch === "Lanang";
+    const isMercedes = order.branch === "SM Lanang";
     const jobOrderStr = (order.jobOrderNumber || '').toLowerCase();
     const matchJobOrder = jobOrderStr.includes((filter || '').toLowerCase());
 
@@ -457,7 +457,7 @@
     if (startRange) inRange = orderDate >= startRange;
     if (endRange)   inRange = inRange && orderDate <= endRange;
 
-    return isLanang && matchJobOrder && matchTime && inRange;
+    return isMercedes && matchJobOrder && matchTime && inRange;
   });
 
    // Sort by dateBooked, newest first
@@ -491,10 +491,15 @@ const balance = parseFloat(order.balance ?? (total - paid)); // keep as number
       <td>₱${total.toFixed(2)}</td>
         <td>₱${paid.toFixed(2)}</td> <!-- ✅ NEW Deposit column -->
 
-     <td>
-  ₱${balance}<br>
-  ${Number(balance) > 0 ? `<button class="edit-btn" onclick="editBalance('${order.id}', ${total})">Edit</button>` : ``}
+    <td>
+  <div><strong>Prev:</strong> ₱${(order.previousBalance ?? (total - paid)).toFixed(2)}</div>
+  <div><strong>Now:</strong> ₱${balance.toFixed(2)}</div>
+  ${Number(balance) > 0 
+    ? `<button class="edit-btn" onclick="editBalance('${order.id}', ${total}, ${balance})">Paid</button>` 
+    : `<span style="color:green; font-weight:bold;">✔ Paid</span>`}
 </td>
+
+
 
       <td>${order.completionDate}</td>
       <td style="white-space: pre-wrap; text-align: left">${items}</td>
@@ -526,10 +531,14 @@ window.resetFormFields = resetFormFields;
 
 let currentDocId = null;
 let currentTotalAmount = 0;
+let currentBalanceAmount = 0;
 
-window.editBalance = function (docId, totalAmount) {
+
+window.editBalance = function (docId, totalAmount, currentBalance) {
   currentDocId = docId;
   currentTotalAmount = totalAmount;
+  currentBalanceAmount = currentBalance; // ✅ save balance
+
 
   // reset modal state
   document.getElementById('markPaidCheckbox').checked = false;
@@ -548,11 +557,13 @@ async function confirmPaymentUpdate() {
   if (!method) { alert("Please select a payment method."); return; }
 
   try {
-    await updateDoc(doc(db, "lanang_salesOrders", currentDocId), {
-      amountPaid: currentTotalAmount,
-      balance: 0,
-      paymentMode: method
-    });
+   await updateDoc(doc(db, "lanang_salesOrders", currentDocId), {
+  amountPaid: currentTotalAmount,
+  previousBalance: currentBalanceAmount,   // ✅ save old balance
+  balance: 0,
+  paymentMode: method
+});
+
     alert("✅ Payment status updated.");
     closePaymentModal();
     loadSalesOrders(document.getElementById('searchInput').value || '');
