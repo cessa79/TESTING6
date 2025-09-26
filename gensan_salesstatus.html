@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sales Status - General Santos Branch</title>
+  <title>Sales Status - Gensan Branch</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
@@ -105,8 +105,8 @@
         Print Results
       </button>
       <div style="text-align:center; margin-bottom: 1rem;">
-  <input type="text" id="searchJO" placeholder="Search JO Number..." 
-    style="padding:0.5rem 1rem; border-radius:1rem; border:1px solid #ccc; width:250px;"/>
+       <input type="text" id="searchJO" placeholder="Search JO Number or Name..."
+        style="padding:0.5rem 1rem; border-radius:1rem; border:1px solid #ccc; width:250px;"/>
   <button onclick="searchJO()" 
     style="background:#800000; color:white; padding:0.5rem 1rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;">
     Search
@@ -128,6 +128,7 @@
               <th>Repairman</th>
               <th>Items</th>
               <th>Total Amount</th>
+              <th>Deposit</th>
               <th>Balance</th>
               <th>Payment Mode</th>
               <th>Status</th>
@@ -180,6 +181,7 @@
           <td>${order.items.map(i => i.repairman).filter(Boolean).join(", ") || 'N/A'}</td>
           <td style="white-space: pre-wrap; text-align: left">${items}</td>
           <td>${order.totalAmount || '₱0.00'}</td>
+          <td>${order.amountPaid ? '₱' + Number(order.amountPaid).toFixed(2) : '₱0.00'}</td> <!-- ✅ fixed -->
           <td>${order.balance || '₱0.00'}</td>
           <td>${order.paymentMode || '—'}</td>
           <td>
@@ -295,6 +297,9 @@
         <p><strong>Contact:</strong> ${order.contactNumber}</p>
         <p><strong>Email:</strong> ${order.email || '—'}</p>
         <p><strong>Receiver:</strong> ${order.receiver}</p>
+        <p><strong>Total Amount:</strong> ${order.totalAmount || '₱0.00'}</p>
+         <p><strong>Deposit:</strong> ${order.amountPaid ? '₱' + Number(order.amountPaid).toFixed(2) : '₱0.00'}</p> <!-- ✅ fixed -->
+        <p><strong>Balance:</strong> ${order.balance || '₱0.00'}</p>
         <p><strong>Payment Mode:</strong> ${order.paymentMode}</p>
         <p><strong>Status:</strong> ${order.status || 'In Progress'}</p>
         <p><strong>Claimed Date:</strong> ${order.claimedDate ? new Date(order.claimedDate).toLocaleDateString() : '—'}</p>
@@ -349,13 +354,17 @@
       win.document.close();
       win.print();
     };
-    window.searchJO = function () {
+   window.searchJO = function () {
   const input = document.getElementById("searchJO").value.trim().toLowerCase();
   const rows = document.querySelectorAll("#statusTable tbody tr");
 
   rows.forEach(row => {
-    const joNumber = row.cells[0]?.innerText.toLowerCase(); // JO number is in first column
-    if (joNumber.includes(input) || input === "") {
+    let rowText = "";
+    row.querySelectorAll("td").forEach(cell => {
+      rowText += cell.innerText.toLowerCase() + " ";
+    });
+
+    if (rowText.includes(input) || input === "") {
       row.style.display = "";
     } else {
       row.style.display = "none";
@@ -365,10 +374,12 @@
 
 window.clearSearch = function () {
   document.getElementById("searchJO").value = "";
-  searchJO(); // reset table
+  searchJO(); // reset table to show all
 };
+
 
   </script>
 </body>
 </html>
+
 
