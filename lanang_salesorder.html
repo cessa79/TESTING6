@@ -427,7 +427,7 @@
   }
 
   const filteredOrders = orders.filter(order => {
-    const isMercedes = order.branch === "SM Lanang";
+    const isMercedes = order.branch === "Lanang";
     const jobOrderStr = (order.jobOrderNumber || '').toLowerCase();
     const matchJobOrder = jobOrderStr.includes((filter || '').toLowerCase());
 
@@ -722,4 +722,5 @@ csv.push(`"${totalBalanceText}"`);
 
 </body>
 </html>
+
 
