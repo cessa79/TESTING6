@@ -196,8 +196,11 @@ const balanceDisplay = (() => {
           <td>${order.totalAmount || '₱0.00'}</td>
           <td>${order.amountPaid ? '₱' + Number(order.amountPaid).toFixed(2) : '₱0.00'}</td> <!-- ✅ fixed -->
           <td>${balanceDisplay}</td>
-          <td>${order.paymentMode || '—'}</td>
           <td>
+            ${Array.isArray(order.paymentMode) 
+                ? order.paymentMode.join("<br>") 
+                : order.paymentMode || '—'}
+          </td>          <td>
             <select class="status-dropdown" 
               onchange="updateStatus('${order.jobOrderNumber}', this.value)" 
               ${order.status === 'Claimed' ? 'disabled' : ''}>
@@ -313,7 +316,11 @@ const balanceDisplay = (() => {
         <p><strong>Total Amount:</strong> ${order.totalAmount || '₱0.00'}</p>
          <p><strong>Deposit:</strong> ${order.amountPaid ? '₱' + Number(order.amountPaid).toFixed(2) : '₱0.00'}</p> <!-- ✅ fixed -->
         <p><strong>Balance:</strong> ${order.balance || '₱0.00'}</p>
-        <p><strong>Payment Mode:</strong> ${order.paymentMode}</p>
+        <p><strong>Payment Mode:</strong><br>
+  ${Array.isArray(order.paymentMode) 
+      ? order.paymentMode.join("<br>") 
+      : order.paymentMode || '—'}
+</p>
         <p><strong>Status:</strong> ${order.status || 'In Progress'}</p>
         <p><strong>Claimed Date:</strong> ${order.claimedDate ? new Date(order.claimedDate).toLocaleDateString() : '—'}</p>
         <p><strong>Items:</strong></p>
