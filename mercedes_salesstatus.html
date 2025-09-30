@@ -172,6 +172,19 @@
         const items = order.items.map(i =>
           `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}`
         ).join("\n");
+        
+const balanceDisplay = (() => {
+  const balanceValue = parseFloat(order.balance) || 0;
+  const paid = order.isPaid || balanceValue === 0; // use flag if available, or infer
+
+  if (balanceValue === 0) {
+    return `<span style="color:green; font-weight:600;">✅ Paid</span>`;
+  } else if (paid) {
+    return `₱${balanceValue.toFixed(2)} <span style="color:green; font-weight:600;">(Paid)</span>`;
+  } else {
+    return `₱${balanceValue.toFixed(2)}`;
+  }
+})();
 
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -182,7 +195,7 @@
           <td style="white-space: pre-wrap; text-align: left">${items}</td>
           <td>${order.totalAmount || '₱0.00'}</td>
           <td>${order.amountPaid ? '₱' + Number(order.amountPaid).toFixed(2) : '₱0.00'}</td> <!-- ✅ fixed -->
-          <td>${order.balance || '₱0.00'}</td>
+          <td>${balanceDisplay}</td>
           <td>${order.paymentMode || '—'}</td>
           <td>
             <select class="status-dropdown" 
