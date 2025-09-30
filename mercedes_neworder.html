@@ -497,7 +497,7 @@
       <h2>New Sales Order</h2>
       <form id="salesOrderForm">
         <label for="jobOrderNumber">Job Order Number</label>
-        <input type="text" id="jobOrderNumber"/>
+        <input type="text" id="jobOrderNumber" readonly/>
 
         <label for="dateBooked">Date Booked</label>
         <input type="date" id="dateBooked" required />
@@ -825,11 +825,15 @@ function getNextTicketNumber() {
     });
 
     // Auto-generate Job Order Number
-    let currentNumber = parseInt(localStorage.getItem('jobOrderCounter') || '0');
-    currentNumber += 1;
-    localStorage.setItem('jobOrderCounter', currentNumber);
-    const formattedNumber = currentNumber.toString().padStart(5, '0');
-    document.getElementById('jobOrderNumber').value = 'JO-' + formattedNumber;
+   let currentNumber = parseInt(localStorage.getItem('jobOrderCounter') || '0');
+currentNumber += 1;
+localStorage.setItem('jobOrderCounter', currentNumber);
+
+// Format to 4 digits (e.g., 0001, 0002...)
+const formattedNumber = currentNumber.toString().padStart(4, '0');
+
+// Prefix fixed to 01-
+document.getElementById('jobOrderNumber').value = '01-' + formattedNumber;
 
     // FORM SUBMIT (Save & Redirect)
     document.getElementById('salesOrderForm').addEventListener('submit', async function (e) {
@@ -1090,6 +1094,43 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
   }
 
   loadCustomerList();
+
+  // your other functions here...
+
+  function generateJobOrderNumber() {
+    const prefix = "01-";
+
+    // Get all existing job order numbers from your table/list
+    const rows = document.querySelectorAll("#jobOrderTable tbody tr td:first-child"); 
+    let numbers = [];
+
+    rows.forEach(cell => {
+      const text = cell.textContent.trim();
+      if (text.startsWith(prefix)) {
+        const numPart = text.replace(prefix, ""); // remove prefix
+        const num = parseInt(numPart, 10);
+        if (!isNaN(num)) numbers.push(num);
+      }
+    });
+
+    // Find the next available number
+    let nextNumber;
+    if (numbers.length === 0) {
+      nextNumber = 1; // start at 0001 if none exists
+    } else {
+      nextNumber = Math.max(...numbers) + 1;
+    }
+
+    // Format number to 4 digits
+    const formatted = nextNumber.toString().padStart(4, "0");
+
+    // Set the value (readonly input)
+    document.getElementById("jobOrderNumber").value = prefix + formatted;
+  }
+window.onload = function() {
+  generateJobOrderNumber();
+};
+
 </script>
 
 
