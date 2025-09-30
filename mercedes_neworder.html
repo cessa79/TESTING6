@@ -824,17 +824,6 @@ function getNextTicketNumber() {
       });
     });
 
-    // Auto-generate Job Order Number
-   let currentNumber = parseInt(localStorage.getItem('jobOrderCounter') || '0');
-currentNumber += 1;
-localStorage.setItem('jobOrderCounter', currentNumber);
-
-// Format to 4 digits (e.g., 0001, 0002...)
-const formattedNumber = currentNumber.toString().padStart(4, '0');
-
-// Prefix fixed to 01-
-document.getElementById('jobOrderNumber').value = '01-' + formattedNumber;
-
     // FORM SUBMIT (Save & Redirect)
     document.getElementById('salesOrderForm').addEventListener('submit', async function (e) {
   e.preventDefault();
@@ -1097,7 +1086,7 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
 
   // your other functions here...
 
-  function generateJobOrderNumber() {
+  {
     const prefix = "01-";
 
     // Get all existing job order numbers from your table/list
@@ -1127,7 +1116,7 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
     // Set the value (readonly input)
     document.getElementById("jobOrderNumber").value = prefix + formatted;
   }
-window.onload = function() {
+ {
   generateJobOrderNumber();
 };
 
