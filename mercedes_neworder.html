@@ -679,17 +679,85 @@
     getDocs
   } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
-    authDomain: "erestore-leatherworks.firebaseapp.com",
-    projectId: "erestore-leatherworks",
-    storageBucket: "erestore-leatherworks.firebasestorage.app",
-    messagingSenderId: "727698074030",
-    appId: "1:727698074030:web:58870b6be96934e71c003f"
-  };
+   const firebaseConfig = {
+      apiKey: "AIzaSyAtDyx0ERPlGzIoQWge9ueSJKFlGV2jCek",
+      authDomain: "fixit-2025.firebaseapp.com",
+      projectId: "fixit-2025",
+      storageBucket: "fixit-2025.firebasestorage.app",
+      messagingSenderId: "438887212712",
+      appId: "1:438887212712:web:263725586d0377680db88a",
+      measurementId: "G-MN1BJTR1VX"
+    };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+    async function generateJobOrderNumber() {
+      const prefix = "01-";
+
+ try {
+const q = query(
+          collection(db, "jobOrders"),
+          orderBy("jobOrderNumber", "desc"),
+          limit(1)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        let nextNumber = 1;
+
+        if (!querySnapshot.empty) {
+          const lastJO = querySnapshot.docs[0].data().jobOrderNumber;
+          const lastNum = parseInt(lastJO.replace(prefix, ""), 10);
+          if (!isNaN(lastNum)) {
+            nextNumber = lastNum + 1;
+          }
+        }
+        const formatted = nextNumber.toString().padStart(4, "0");
+        document.getElementById("jobOrderNumber").value = prefix + formatted;
+
+      } catch (error) {
+        console.error("Error generating JO number:", error);
+        document.getElementById("jobOrderNumber").value = "01-0001";
+      }
+    }
+     document.getElementById("jobOrderForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+ const jobOrderNumber = document.getElementById("jobOrderNumber").value;
+      const requesterName = document.getElementById("requesterName").value;
+      const officeDepartment = document.getElementById("officeDepartment").value;
+      const jobDescription = document.getElementById("jobDescription").value;
+      const jobLocation = document.getElementById("jobLocation").value;
+      const priorityLevel = document.getElementById("priorityLevel").value;
+      const assignedTo = document.getElementById("assignedTo").value;
+
+ try {
+        await addDoc(collection(db, "jobOrders"), {
+          jobOrderNumber,
+          requesterName,
+          officeDepartment,
+          jobDescription,
+          jobLocation,
+          priorityLevel,
+          assignedTo,
+          createdAt: new Date(),
+          status: "Received" // default status
+        });
+
+ alert("Job Order saved: " + jobOrderNumber);
+
+ generateJobOrderNumber();
+
+  document.getElementById("jobOrderForm").reset();
+
+   } catch (error) {
+        console.error("Error saving JO:", error);
+        alert("Failed to save Job Order!");
+      }
+    });
+
+  window.addEventListener("DOMContentLoaded", generateJobOrderNumber);
 
   document.addEventListener('DOMContentLoaded', function () {
     // Receiver Password Modal
@@ -1084,41 +1152,6 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
 
   loadCustomerList();
 
-  // your other functions here...
-
-  {
-    const prefix = "01-";
-
-    // Get all existing job order numbers from your table/list
-    const rows = document.querySelectorAll("#jobOrderTable tbody tr td:first-child"); 
-    let numbers = [];
-
-    rows.forEach(cell => {
-      const text = cell.textContent.trim();
-      if (text.startsWith(prefix)) {
-        const numPart = text.replace(prefix, ""); // remove prefix
-        const num = parseInt(numPart, 10);
-        if (!isNaN(num)) numbers.push(num);
-      }
-    });
-
-    // Find the next available number
-    let nextNumber;
-    if (numbers.length === 0) {
-      nextNumber = 1; // start at 0001 if none exists
-    } else {
-      nextNumber = Math.max(...numbers) + 1;
-    }
-
-    // Format number to 4 digits
-    const formatted = nextNumber.toString().padStart(4, "0");
-
-    // Set the value (readonly input)
-    document.getElementById("jobOrderNumber").value = prefix + formatted;
-  }
- {
-  generateJobOrderNumber();
-};
 
 </script>
 
