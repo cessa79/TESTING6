@@ -151,7 +151,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where, limit, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, where, limit, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
 
     const firebaseConfig = {
       apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
@@ -195,10 +196,15 @@ const balanceDisplay = (() => {
           <td>${order.amountPaid ? '₱' + Number(order.amountPaid).toFixed(2) : '₱0.00'}</td> <!-- ✅ fixed -->
           <td>${balanceDisplay}</td>
           <td>
-            ${Array.isArray(order.paymentMode) 
-                ? order.paymentMode.join("<br>") 
-                : order.paymentMode || '—'}
-          </td>          <td>
+              ${Array.isArray(order.paymentMode) 
+              ? order.paymentMode.map((m, i) => 
+              i === 0 
+              ? `<span>${m}</span>` 
+              : `<br><span style="color:#555; font-size:0.9em;">${m}</span>`
+              ).join("") 
+              : order.paymentMode || '—'}
+          </td>         
+          <td>
             <select class="status-dropdown" 
               onchange="updateStatus('${order.jobOrderNumber}', this.value)" 
               ${order.status === 'Claimed' ? 'disabled' : ''}>
@@ -287,6 +293,25 @@ const balanceDisplay = (() => {
         where("jobOrderNumber", "==", jobOrderNumber),
         limit(1)
       );
+      window.updatePaymentMode = async function (jobOrderNumber, newPaymentMode) {
+  const q = query(
+    collection(db, "mercedes_salesOrders"),
+    where("jobOrderNumber", "==", jobOrderNumber),
+    limit(1)
+  );
+  const snapshot = await getDocs(q);
+
+  if (!snapshot.empty) {
+    const docRef = snapshot.docs[0].ref;
+
+    await updateDoc(docRef, {
+      paymentMode: arrayUnion(newPaymentMode) // ✅ adds instead of replacing
+    });
+
+    // Refresh table
+    filterStatus(document.querySelector('.filter-buttons .active').dataset.status);
+  }
+};
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
