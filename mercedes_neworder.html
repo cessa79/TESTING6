@@ -1,4 +1,6 @@
 
+You said:
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -677,10 +679,7 @@
     getFirestore,
     collection,
     addDoc,
-    getDocs,
-    query,
-    orderBy,
-    limit
+    getDocs
   } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -694,53 +693,6 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-
-  async function generateJobOrderNumber() {
-  const prefix = "01-";
-  const q = query(collection(db, "mercedes_salesOrders"), orderBy("jobOrderNumber", "desc"), limit(1));
-  const snapshot = await getDocs(q);
-
-  let nextNumber = 1;
-  snapshot.forEach(doc => {
-    const lastJO = doc.data().jobOrderNumber;
-    if (lastJO && lastJO.startsWith(prefix)) {
-      const numPart = lastJO.replace(prefix, "");
-      const num = parseInt(numPart, 10);
-      if (!isNaN(num)) {
-        nextNumber = num + 1;
-      }
-    }
-  });
-
-  const formatted = nextNumber.toString().padStart(4, "0");
-  document.getElementById("jobOrderNumber").value = prefix + formatted;
-}
-
-// Call when page loads
-window.addEventListener("DOMContentLoaded", () => {
-  generateJobOrderNumber();
-});
-
-// 4. Save button logic (Firestore insert)
-document.getElementById("saveSalesOrder").addEventListener("click", async () => {
-  const jobOrderNumber = document.getElementById("jobOrderNumber").value;
-  const customerName = document.getElementById("customerName").value;
-  const orderDate = document.getElementById("orderDate").value;
-
-  try {
-    await addDoc(collection(db, "mercedes_salesOrders"), {
-      jobOrderNumber,
-      customerName,
-      orderDate,
-      createdAt: new Date()
-    });
-
-    alert("Sales Order saved successfully!");
-    generateJobOrderNumber(); // ✅ Auto-generate next JO number
-  } catch (e) {
-    console.error("Error adding document: ", e);
-  }
-});
 
   document.addEventListener('DOMContentLoaded', function () {
     // Receiver Password Modal
@@ -790,7 +742,7 @@ function getNextTicketNumber() {
     addItemBtn.addEventListener('click', function () {
   const newRow = document.createElement('tr');
   const nextTicket = getNextTicketNumber();
-  newRow.innerHTML = `
+  newRow.innerHTML = 
        <td><input type="text" name="ticketNo" value="${nextTicket}" readonly /></td>
        <td><input type="text" name="itemDescription" list="brandList" /></td>
        <td><input type="number" name="quantity" required /></td>
@@ -807,7 +759,7 @@ function getNextTicketNumber() {
           </select>
         </td>
         <td><button type="button" class="removeBtn">Remove</button></td>
-      `;
+      ;
 
       itemTableBody.appendChild(newRow);
 
@@ -965,7 +917,7 @@ document.getElementById('printBtn').addEventListener('click', () => {
 
   const rows = document.querySelectorAll('#itemTable tbody tr');
   rows.forEach((row, index) => {
-    const ticketNo = row.querySelector('input[name="ticketNo"]').value || `#${index + 1}`;
+    const ticketNo = row.querySelector('input[name="ticketNo"]').value || #${index + 1};
     const itemDescription = row.querySelector('input[name="itemDescription"]').value || 'N/A';
     const price = parseFloat(row.querySelector('input[name="price"]').value || '0');
     const qty = parseFloat(row.querySelector('input[name="quantity"]').value || '1');
@@ -973,7 +925,7 @@ document.getElementById('printBtn').addEventListener('click', () => {
     const remarks = row.querySelector('input[name="remarks"]').value || 'No remarks';
 
     const p = document.createElement('p');
-    p.textContent = `Ticket No: ${ticketNo} | Description: ${itemDescription} | Qty: ${qty} | Total: ₱${total} | Remarks: ${remarks}`;
+    p.textContent = Ticket No: ${ticketNo} | Description: ${itemDescription} | Qty: ${qty} | Total: ₱${total} | Remarks: ${remarks};
     printedRemarks.appendChild(p);
   });
 
@@ -997,7 +949,7 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
 
   const rows = document.querySelectorAll('#itemTable tbody tr');
   rows.forEach((row, index) => {
-    const ticketNo = row.querySelector('input[name="ticketNo"]').value || `#${index + 1}`;
+    const ticketNo = row.querySelector('input[name="ticketNo"]').value || #${index + 1};
     const itemDescription = row.querySelector('input[name="itemDescription"]').value || 'N/A';
     const remarks = row.querySelector('input[name="remarks"]').value || 'No remarks';
     const price = parseFloat(row.querySelector('input[name="price"]').value || '0').toFixed(2);
@@ -1006,7 +958,7 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
 
     const ticketContent = document.createElement('div');
     ticketContent.classList.add('ticket-item');
-    ticketContent.innerHTML = `
+    ticketContent.innerHTML = 
       <div class="ticket-card">
         <h3>Repair Ticket</h3>
         <p><strong>Branch:</strong> ${branch}</p>
@@ -1024,7 +976,7 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
         <p><strong>Repairman Assigned:</strong> ${repairman}</p>
         <p><strong class="hl">Job Order No.:</strong> <span class="hl">${jobOrder}</span></p>
       </div>
-    `;
+    ;
     ticketSection.appendChild(ticketContent);
   });
 
@@ -1039,7 +991,7 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
   });
 
   const printWindow = window.open('', '', 'width=900,height=700');
-  printWindow.document.write(`
+  printWindow.document.write(
     <html>
     <head>
       <title>Repair Tickets</title>
@@ -1103,7 +1055,7 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
       <\/script>
     </body>
     </html>
-  `);
+  );
   printWindow.document.close();
 });
 
