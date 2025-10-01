@@ -1,8 +1,9 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>New Sales Order - SM Lanang</title>
+  <title>New Sales Order - SM Lanang </title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   
   <style>
@@ -478,7 +479,7 @@
   <header>
     <div class="logo-container">
       <img src="logo.png" alt="ERestore Logo" />
-      <h1>ERestore Leatherworks <span class="branch-name">| SM Lanang</span></h1>
+      <h1>ERestore Leatherworks <span class="branch-name">| SM Lanang </span></h1>
     </div>
     <nav class="nav-buttons">
       <a href="lanang.html">Homepage</a>
@@ -496,7 +497,7 @@
       <h2>New Sales Order</h2>
       <form id="salesOrderForm">
         <label for="jobOrderNumber">Job Order Number</label>
-        <input type="text" id="jobOrderNumber"/>
+        <input type="text" id="jobOrderNumber" readonly/>
 
         <label for="dateBooked">Date Booked</label>
         <input type="date" id="dateBooked" required />
@@ -674,8 +675,7 @@
   import {
     getFirestore,
     collection,
-    addDoc,
-    getDocs
+    addDoc
   } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -689,6 +689,24 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+  function generateJobOrderNumber() {
+      const prefix = "02-";
+
+      // Use timestamp + random digits for uniqueness
+      const now = Date.now(); 
+      const randomPart = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+
+      // Last 4 of timestamp + 3 random digits = 7 digits, then slice to 4 for shorter codes
+      const uniqueNum = (now.toString().slice(-4) + randomPart).slice(-4);
+
+      const formatted = uniqueNum.padStart(4, "0");
+      document.getElementById("jobOrderNumber").value = prefix + formatted;
+    }
+
+    generateJobOrderNumber();
+
+    
 
   document.addEventListener('DOMContentLoaded', function () {
     // Receiver Password Modal
@@ -823,26 +841,10 @@ function getNextTicketNumber() {
       });
     });
 
-    // Auto-generate Job Order Number
-    let currentNumber = parseInt(localStorage.getItem('jobOrderCounter') || '0');
-    currentNumber += 1;
-    localStorage.setItem('jobOrderCounter', currentNumber);
-    const formattedNumber = currentNumber.toString().padStart(5, '0');
-    document.getElementById('jobOrderNumber').value = 'JO-' + formattedNumber;
-
+    // FORM SUBMIT (Save & Redirect)
     document.getElementById('salesOrderForm').addEventListener('submit', async function (e) {
   e.preventDefault();
 
-const joInput = document.getElementById('jobOrderNumber');
-const joValue = (joInput.value || '').trim();
-if (!joValue) {
-  alert('Please enter a Job Order Number.');
-  joInput.focus();
-  return;
-}
-
-  
- 
 
   console.log("🚀 Submit clicked");
 
@@ -879,6 +881,7 @@ if (!joValue) {
   const discount = parseFloat(document.getElementById('discount').value || 0);
   const balance = totalAmount - discount - downPayment;
 
+  
   const order = {
     jobOrderNumber: document.getElementById('jobOrderNumber').value,
     dateBooked: document.getElementById('dateBooked').value,
@@ -893,9 +896,10 @@ if (!joValue) {
     totalAmount: totalAmount,
     amountPaid: downPayment,
     completionDate: document.getElementById('completionDate').value,
-    branch: "Lanang",
+    branch: "SM Lanang",
     items: items,
-    images: imageBase64List
+    images: imageBase64List,
+    timestamp: new Date()
   };
 
   console.log("📝 Order data to be saved:", order);
@@ -905,7 +909,9 @@ if (!joValue) {
     console.log("📤 Attempting to write to Firestore...");
     await addDoc(ordersCollection, order);
     alert("✅ Sales Order has been saved to Firestore!");
-    window.location.href = "lanang_salesorder.html";
+    document.getElementById("salesOrderForm").reset();
+    generateJobOrderNumber(); 
+    window.location.href = "mercedes_salesorder.html";
   } catch (error) {
     console.error("❌ Firestore Error:", error);
     alert("❌ Failed to save sales order. Please try again.");
@@ -953,7 +959,7 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
   const ticketSection = document.getElementById('ticketPrintSection');
   const jobOrder = document.getElementById('jobOrderNumber').value;
   const receiver = document.getElementById('receiver').value;
-  const branch = "Lanang";
+  const branch = "SM Lanang";
   const customerName = document.getElementById('customerName').value;
   const dateReceived = document.getElementById('dateBooked').value;
   const completionDate = document.getElementById('completionDate').value;
@@ -1098,19 +1104,45 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
   }
 
   loadCustomerList();
+
+  // your other functions here...
+
+  {
+    const prefix = "02-";
+
+    // Get all existing job order numbers from your table/list
+    const rows = document.querySelectorAll("#jobOrderTable tbody tr td:first-child"); 
+    let numbers = [];
+
+    rows.forEach(cell => {
+      const text = cell.textContent.trim();
+      if (text.startsWith(prefix)) {
+        const numPart = text.replace(prefix, ""); // remove prefix
+        const num = parseInt(numPart, 10);
+        if (!isNaN(num)) numbers.push(num);
+      }
+    });
+
+    // Find the next available number
+    let nextNumber;
+    if (numbers.length === 0) {
+      nextNumber = 1; // start at 0001 if none exists
+    } else {
+      nextNumber = Math.max(...numbers) + 1;
+    }
+
+    // Format number to 4 digits
+    const formatted = nextNumber.toString().padStart(4, "0");
+
+    // Set the value (readonly input)
+    document.getElementById("jobOrderNumber").value = prefix + formatted;
+  }
+ {
+  generateJobOrderNumber();
+};
+
 </script>
 
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
