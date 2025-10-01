@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sales Status - CDO Branch</title>
+  <title>Sales Status - Cagayan de Oro </title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
@@ -151,7 +151,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where, limit, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, where, limit, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
 
     const firebaseConfig = {
       apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
@@ -172,6 +173,17 @@
         const items = order.items.map(i =>
           `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}`
         ).join("\n");
+        
+const balanceDisplay = (() => {
+  const balanceValue = parseFloat(order.balance) || 0;
+  const paid = order.isPaid || balanceValue === 0; // use flag if available, or infer
+
+  if (paid) {
+    return `₱${balanceValue.toFixed(2)} <span style="color:green; font-weight:600;">(Paid)</span>`;
+  } else {
+    return `₱${balanceValue.toFixed(2)}`;
+  }
+})();
 
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -182,8 +194,16 @@
           <td style="white-space: pre-wrap; text-align: left">${items}</td>
           <td>${order.totalAmount || '₱0.00'}</td>
           <td>${order.amountPaid ? '₱' + Number(order.amountPaid).toFixed(2) : '₱0.00'}</td> <!-- ✅ fixed -->
-          <td>${order.balance || '₱0.00'}</td>
-          <td>${order.paymentMode || '—'}</td>
+          <td>${balanceDisplay}</td>
+          <td>
+              ${Array.isArray(order.paymentMode) 
+              ? order.paymentMode.map((m, i) => 
+              i === 0 
+              ? `<span>${m}</span>` 
+              : `<br><span style="color:#555; font-size:0.9em;">${m}</span>`
+              ).join("") 
+              : order.paymentMode || '—'}
+          </td>         
           <td>
             <select class="status-dropdown" 
               onchange="updateStatus('${order.jobOrderNumber}', this.value)" 
@@ -273,6 +293,25 @@
         where("jobOrderNumber", "==", jobOrderNumber),
         limit(1)
       );
+      window.updatePaymentMode = async function (jobOrderNumber, newPaymentMode) {
+  const q = query(
+    collection(db, "cdo_salesOrders"),
+    where("jobOrderNumber", "==", jobOrderNumber),
+    limit(1)
+  );
+  const snapshot = await getDocs(q);
+
+  if (!snapshot.empty) {
+    const docRef = snapshot.docs[0].ref;
+
+    await updateDoc(docRef, {
+      paymentMode: arrayUnion(newPaymentMode) // ✅ adds instead of replacing
+    });
+
+    // Refresh table
+    filterStatus(document.querySelector('.filter-buttons .active').dataset.status);
+  }
+};
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
@@ -300,7 +339,11 @@
         <p><strong>Total Amount:</strong> ${order.totalAmount || '₱0.00'}</p>
          <p><strong>Deposit:</strong> ${order.amountPaid ? '₱' + Number(order.amountPaid).toFixed(2) : '₱0.00'}</p> <!-- ✅ fixed -->
         <p><strong>Balance:</strong> ${order.balance || '₱0.00'}</p>
-        <p><strong>Payment Mode:</strong> ${order.paymentMode}</p>
+        <p><strong>Payment Mode:</strong><br>
+  ${Array.isArray(order.paymentMode) 
+      ? order.paymentMode.join("<br>") 
+      : order.paymentMode || '—'}
+</p>
         <p><strong>Status:</strong> ${order.status || 'In Progress'}</p>
         <p><strong>Claimed Date:</strong> ${order.claimedDate ? new Date(order.claimedDate).toLocaleDateString() : '—'}</p>
         <p><strong>Items:</strong></p>
@@ -344,7 +387,7 @@
           </style>
         </head>
         <body>
-          <h2>Sales Status Report - CDO Branch</h2>
+          <h2>Sales Status Report - Cagayan de Oro Branch</h2>
           <p><strong>Status:</strong> ${activeStatus}</p>
           <p><strong>Date Range:</strong> ${sd} to ${ed}</p>
           ${table}
@@ -381,5 +424,3 @@ window.clearSearch = function () {
   </script>
 </body>
 </html>
-
-
