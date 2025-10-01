@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -676,7 +677,10 @@
     getFirestore,
     collection,
     addDoc,
-    getDocs
+    getDocs,
+    query,
+    orderBy,
+    limit
   } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -690,6 +694,53 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+  async function generateJobOrderNumber() {
+  const prefix = "01-";
+  const q = query(collection(db, "mercedes_salesOrders"), orderBy("jobOrderNumber", "desc"), limit(1));
+  const snapshot = await getDocs(q);
+
+  let nextNumber = 1;
+  snapshot.forEach(doc => {
+    const lastJO = doc.data().jobOrderNumber;
+    if (lastJO && lastJO.startsWith(prefix)) {
+      const numPart = lastJO.replace(prefix, "");
+      const num = parseInt(numPart, 10);
+      if (!isNaN(num)) {
+        nextNumber = num + 1;
+      }
+    }
+  });
+
+  const formatted = nextNumber.toString().padStart(4, "0");
+  document.getElementById("jobOrderNumber").value = prefix + formatted;
+}
+
+// Call when page loads
+window.addEventListener("DOMContentLoaded", () => {
+  generateJobOrderNumber();
+});
+
+// 4. Save button logic (Firestore insert)
+document.getElementById("saveSalesOrder").addEventListener("click", async () => {
+  const jobOrderNumber = document.getElementById("jobOrderNumber").value;
+  const customerName = document.getElementById("customerName").value;
+  const orderDate = document.getElementById("orderDate").value;
+
+  try {
+    await addDoc(collection(db, "mercedes_salesOrders"), {
+      jobOrderNumber,
+      customerName,
+      orderDate,
+      createdAt: new Date()
+    });
+
+    alert("Sales Order saved successfully!");
+    generateJobOrderNumber(); // ✅ Auto-generate next JO number
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+});
 
   document.addEventListener('DOMContentLoaded', function () {
     // Receiver Password Modal
