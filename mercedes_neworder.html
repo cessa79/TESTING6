@@ -675,8 +675,7 @@
   import {
     getFirestore,
     collection,
-    addDoc,
-    getDocs
+    addDoc
   } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -690,6 +689,24 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+  function generateJobOrderNumber() {
+      const prefix = "01-";
+
+      // Use timestamp + random digits for uniqueness
+      const now = Date.now(); 
+      const randomPart = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+
+      // Last 4 of timestamp + 3 random digits = 7 digits, then slice to 4 for shorter codes
+      const uniqueNum = (now.toString().slice(-4) + randomPart).slice(-4);
+
+      const formatted = uniqueNum.padStart(4, "0");
+      document.getElementById("jobOrderNumber").value = prefix + formatted;
+    }
+
+    generateJobOrderNumber();
+
+    
 
   document.addEventListener('DOMContentLoaded', function () {
     // Receiver Password Modal
@@ -864,6 +881,7 @@ function getNextTicketNumber() {
   const discount = parseFloat(document.getElementById('discount').value || 0);
   const balance = totalAmount - discount - downPayment;
 
+  
   const order = {
     jobOrderNumber: document.getElementById('jobOrderNumber').value,
     dateBooked: document.getElementById('dateBooked').value,
@@ -880,7 +898,8 @@ function getNextTicketNumber() {
     completionDate: document.getElementById('completionDate').value,
     branch: "Mercedes",
     items: items,
-    images: imageBase64List
+    images: imageBase64List,
+    timestamp: new Date()
   };
 
   console.log("📝 Order data to be saved:", order);
@@ -890,6 +909,8 @@ function getNextTicketNumber() {
     console.log("📤 Attempting to write to Firestore...");
     await addDoc(ordersCollection, order);
     alert("✅ Sales Order has been saved to Firestore!");
+    document.getElementById("salesOrderForm").reset();
+    generateJobOrderNumber(); 
     window.location.href = "mercedes_salesorder.html";
   } catch (error) {
     console.error("❌ Firestore Error:", error);
