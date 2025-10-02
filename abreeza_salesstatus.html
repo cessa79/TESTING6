@@ -231,7 +231,7 @@ const balanceDisplay = (() => {
 
     // ✅ Filter with status + correct date field
     window.filterStatus = async function (status) {
-      let q = collection(db, "bcd_salesOrders");
+      let q = collection(db, "abreeza_salesOrders");
       let snapshot = await getDocs(q);
       let orders = snapshot.docs.map(doc => doc.data());
 
@@ -266,7 +266,7 @@ const balanceDisplay = (() => {
 
     window.updateStatus = async function (jobOrderNumber, newStatus) {
       const q = query(
-        collection(db, "bcd_salesOrders"),
+        collection(db, "abreeza_salesOrders"),
         where("jobOrderNumber", "==", jobOrderNumber),
         limit(1)
       );
@@ -289,13 +289,13 @@ const balanceDisplay = (() => {
     // ✅ New: update claimed date manually
     window.updateClaimedDate = async function (jobOrderNumber, newDate) {
       const q = query(
-        collection(db, "bcd_salesOrders"),
+        collection(db, "abreeza_salesOrders"),
         where("jobOrderNumber", "==", jobOrderNumber),
         limit(1)
       );
       window.updatePaymentMode = async function (jobOrderNumber, newPaymentMode) {
   const q = query(
-    collection(db, "bcd_salesOrders"),
+    collection(db, "abreeza_salesOrders"),
     where("jobOrderNumber", "==", jobOrderNumber),
     limit(1)
   );
@@ -322,7 +322,7 @@ const balanceDisplay = (() => {
     };
 
     window.viewOrder = async function (jobOrderNumber) {
-      const q = query(collection(db, "bcd_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
+      const q = query(collection(db, "abreeza_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
       const snapshot = await getDocs(q);
       if (snapshot.empty) { alert("Order not found."); return; }
       const order = snapshot.docs[0].data();
@@ -424,3 +424,4 @@ window.clearSearch = function () {
   </script>
 </body>
 </html>
+
