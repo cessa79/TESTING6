@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sales Orders -  bcd </title>
+  <title>Sales Orders - Bacolod </title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
@@ -355,19 +355,19 @@
 
     </div>
   </div>
-  <div id="paymentModal">
+  <!-- ✅ Simplified Payment Modal -->
+<div id="paymentModal">
   <div class="box">
     <h3>Mark as Paid</h3>
     <label style="display:inline-flex;align-items:center;gap:.5rem;">
       <input type="checkbox" id="markPaidCheckbox"> Paid
     </label>
     <br>
-    <select id="paymentMethodSelect" style="padding:0.5rem; width:100%; border-radius:0.5rem;">
-      <option value="" disabled selected>Select Payment Method</option>
+    <select id="paymentMethodSelect2" style="padding:0.5rem; width:100%; border-radius:0.5rem;">
+      <option value="" disabled selected>Select 2nd Payment Method (optional)</option>
       <option value="Cash">Cash</option>
       <option value="G-Cash">G-Cash</option>
-      <option value="Debit Card">Debit Card</option>
-      <option value="Credit Card">Credit Card</option>
+      <option value="Card">Card</option>
       <option value="Check">Check</option>
       <option value="PayMaya">PayMaya</option>
     </select>
@@ -377,6 +377,8 @@
     </div>
   </div>
 </div>
+
+
 
   <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-wrap:wrap; gap:1rem; padding:2rem;"></div>
 
@@ -427,7 +429,7 @@
   }
 
   const filteredOrders = orders.filter(order => {
-    const isMercedes = order.branch === "Bacolod";
+    const isBcd = order.branch === "Bacolod";
     const jobOrderStr = (order.jobOrderNumber || '').toLowerCase();
     const matchJobOrder = jobOrderStr.includes((filter || '').toLowerCase());
 
@@ -457,7 +459,7 @@
     if (startRange) inRange = orderDate >= startRange;
     if (endRange)   inRange = inRange && orderDate <= endRange;
 
-    return isMercedes && matchJobOrder && matchTime && inRange;
+    return isBcd && matchJobOrder && matchTime && inRange;
   });
 
    // Sort by dateBooked, newest first
@@ -487,7 +489,10 @@ const balance = parseFloat(order.balance ?? (total - paid)); // keep as number
       <td>${order.email || '—'}</td>
       <td>${order.receiver}</td>
       <td>${[...new Set(order.items.map(i => i.repairman))].join(', ')}</td>
-      <td>${order.paymentMode}</td>
+     <td>
+  ${order.paymentMode || '—'}
+  ${order.paymentMode2 ? `<br><small>+ ${order.paymentMode2}</small>` : ''}
+</td>
       <td>₱${total.toFixed(2)}</td>
         <td>₱${paid.toFixed(2)}</td> <!-- ✅ NEW Deposit column -->
 
@@ -537,32 +542,35 @@ let currentBalanceAmount = 0;
 window.editBalance = function (docId, totalAmount, currentBalance) {
   currentDocId = docId;
   currentTotalAmount = totalAmount;
-  currentBalanceAmount = currentBalance; // ✅ save balance
-
+  currentBalanceAmount = currentBalance;
 
   // reset modal state
   document.getElementById('markPaidCheckbox').checked = false;
-  document.getElementById('paymentMethodSelect').value = '';
+  document.getElementById('paymentMethodSelect2').value = ''; // ✅ FIXED (was paymentMethodSelect)
 
   // open modal
   document.getElementById('paymentModal').style.display = 'flex';
 };
 
+
 // confirm + update firestore
 async function confirmPaymentUpdate() {
   const paid = document.getElementById('markPaidCheckbox').checked;
-  const method = document.getElementById('paymentMethodSelect').value;
+  const method2 = document.getElementById('paymentMethodSelect2').value;
 
-  if (!paid) { alert("Please check 'Paid' to confirm payment."); return; }
-  if (!method) { alert("Please select a payment method."); return; }
+  if (!paid) { 
+    alert("Please check 'Paid' to confirm payment."); 
+    return; 
+  }
 
   try {
-   await updateDoc(doc(db, "bcd_salesOrders", currentDocId), {
-  amountPaid: currentTotalAmount,
-  previousBalance: currentBalanceAmount,   // ✅ save old balance
-  balance: 0,
-  paymentMode: method
-});
+    await updateDoc(doc(db, "bcd_salesOrders", currentDocId), {
+      amountPaid: currentTotalAmount,
+      previousBalance: currentBalanceAmount,
+      balance: 0,
+      paymentMode: "Cash", // ✅ or keep the original one if you saved it when creating order
+      paymentMode2: method2 || "" // ✅ now saves correctly
+    });
 
     alert("✅ Payment status updated.");
     closePaymentModal();
@@ -571,6 +579,9 @@ async function confirmPaymentUpdate() {
     alert("❌ Update failed: " + e.message);
   }
 }
+
+
+
 
 function closePaymentModal() {
   document.getElementById('paymentModal').style.display = 'none';
