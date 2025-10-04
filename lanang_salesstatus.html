@@ -231,7 +231,7 @@
 
   // ✅ Filter with status + correct date field
   window.filterStatus = async function (status) {
-    let q = collection(db, "Lanang_salesOrders");
+    let q = collection(db, "lanang_salesOrders");
     let snapshot = await getDocs(q);
     let orders = snapshot.docs.map(doc => doc.data());
 
@@ -257,7 +257,7 @@
   };
 
   window.updateStatus = async function (jobOrderNumber, newStatus) {
-    const q = query(collection(db, "Lanang_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
+    const q = query(collection(db, "lanang_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
     const snapshot = await getDocs(q);
 
     if (!snapshot.empty) {
@@ -272,7 +272,7 @@
   };
 
   window.updateClaimedDate = async function (jobOrderNumber, newDate) {
-    const q = query(collection(db, "Lanang_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
+    const q = query(collection(db, "lanang_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
     const snapshot = await getDocs(q);
     if (!snapshot.empty) {
       const docRef = snapshot.docs[0].ref;
@@ -282,7 +282,7 @@
   };
 
   window.viewOrder = async function (jobOrderNumber) {
-    const q = query(collection(db, "Lanang_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
+    const q = query(collection(db, "lanang_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
     const snapshot = await getDocs(q);
     if (snapshot.empty) return alert("Order not found.");
 
@@ -375,3 +375,4 @@
 
 </body>
 </html>
+
