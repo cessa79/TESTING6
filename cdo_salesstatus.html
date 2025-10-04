@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sales Status - Cagayan de Oro </title>
+  <title>Sales Status - Cagayan de Oro Branch</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
@@ -149,278 +148,230 @@
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where, limit, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getFirestore, collection, getDocs, query, where, limit, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+    authDomain: "erestore-leatherworks.firebaseapp.com",
+    projectId: "erestore-leatherworks",
+    storageBucket: "erestore-leatherworks.firebasestorage.app",
+    messagingSenderId: "727698074030",
+    appId: "1:727698074030:web:58870b6be96934e71c003f"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const tableBody = document.querySelector("#statusTable tbody");
+
+ function renderPaymentModes(order) {
+  const method1 = order.paymentMode || "";
+  const method2 = order.paymentMode2 || "";
+
+  if (!method1 && !method2) return "—";
+
+  let html = "";
+  if (method1) html += `<span><strong>Deposit:</strong> ${method1}</span>`;
+  if (method2) html += `<br><span><strong>Balance:</strong> ${method2}</span>`;
+  return html;
+}
 
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
-      authDomain: "erestore-leatherworks.firebaseapp.com",
-      projectId: "erestore-leatherworks",
-      storageBucket: "erestore-leatherworks.firebasestorage.app",
-      messagingSenderId: "727698074030",
-      appId: "1:727698074030:web:58870b6be96934e71c003f"
-    };
+  function renderTable(data) {
+    tableBody.innerHTML = "";
+    data.forEach(order => {
+      const items = order.items
+        .map(i => `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription || "No brand"})${i.remarks ? " - " + i.remarks : ""}`)
+        .join("\n");
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const tableBody = document.querySelector("#statusTable tbody");
+      const balanceDisplay = (() => {
+        const balanceValue = parseFloat(order.balance) || 0;
+        const paid = order.isPaid || balanceValue === 0;
+        return paid
+          ? `₱${balanceValue.toFixed(2)} <span style="color:green; font-weight:600;">(Paid)</span>`
+          : `₱${balanceValue.toFixed(2)}`;
+      })();
 
-    function renderTable(data) {
-      tableBody.innerHTML = "";
-      data.forEach(order => {
-        const items = order.items.map(i =>
-          `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}`
-        ).join("\n");
-        
-const balanceDisplay = (() => {
-  const balanceValue = parseFloat(order.balance) || 0;
-  const paid = order.isPaid || balanceValue === 0; // use flag if available, or infer
-
-  if (paid) {
-    return `₱${balanceValue.toFixed(2)} <span style="color:green; font-weight:600;">(Paid)</span>`;
-  } else {
-    return `₱${balanceValue.toFixed(2)}`;
-  }
-})();
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${order.jobOrderNumber}</td>
-          <td>${order.customerName}</td>
-          <td>${order.dateBooked}</td>
-          <td>${order.items.map(i => i.repairman).filter(Boolean).join(", ") || 'N/A'}</td>
-          <td style="white-space: pre-wrap; text-align: left">${items}</td>
-          <td>${order.totalAmount || '₱0.00'}</td>
-          <td>${order.amountPaid ? '₱' + Number(order.amountPaid).toFixed(2) : '₱0.00'}</td> <!-- ✅ fixed -->
-          <td>${balanceDisplay}</td>
-          <td>
-              ${Array.isArray(order.paymentMode) 
-              ? order.paymentMode.map((m, i) => 
-              i === 0 
-              ? `<span>${m}</span>` 
-              : `<br><span style="color:#555; font-size:0.9em;">${m}</span>`
-              ).join("") 
-              : order.paymentMode || '—'}
-          </td>         
-          <td>
-            <select class="status-dropdown" 
-              onchange="updateStatus('${order.jobOrderNumber}', this.value)" 
-              ${order.status === 'Claimed' ? 'disabled' : ''}>
-              <option ${order.status === 'Received' ? 'selected' : ''}>Received</option>
-              <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-              <option ${order.status === 'Finished without Balance' ? 'selected' : ''}>Finished without Balance</option>
-              <option ${order.status === 'Finished with Balance' ? 'selected' : ''}>Finished with Balance</option>
-              <option ${order.status === 'Claimed' ? 'selected' : ''}>Claimed</option>
-            </select>
-          </td>
-          <td>
-            ${
-              order.status === "Claimed"
-                ? `<input type="date" value="${order.claimedDate ? new Date(order.claimedDate).toISOString().split('T')[0] : ''}" 
-                    onchange="updateClaimedDate('${order.jobOrderNumber}', this.value)" />`
-                : (order.claimedDate ? new Date(order.claimedDate).toLocaleDateString() : '—')
-            }
-          </td>
-          <td><button onclick="viewOrder('${order.jobOrderNumber}')">View</button></td>
-        `;
-        tableBody.appendChild(row);
-      });
-    }
-
-    // ✅ Filter with status + correct date field
-    window.filterStatus = async function (status) {
-      let q = collection(db, "cdo_salesOrders");
-      let snapshot = await getDocs(q);
-      let orders = snapshot.docs.map(doc => doc.data());
-
-      if (status !== "All") {
-        orders = orders.filter(order => order.status === status);
-      }
-
-      const startDate = document.getElementById("startDate").value;
-      const endDate = document.getElementById("endDate").value;
-
-      if (status === "Claimed") {
-        if (startDate) {
-          orders = orders.filter(order => order.claimedDate && new Date(order.claimedDate) >= new Date(startDate));
-        }
-        if (endDate) {
-          orders = orders.filter(order => order.claimedDate && new Date(order.claimedDate) <= new Date(endDate));
-        }
-      } else {
-        if (startDate) {
-          orders = orders.filter(order => new Date(order.dateBooked) >= new Date(startDate));
-        }
-        if (endDate) {
-          orders = orders.filter(order => new Date(order.dateBooked) <= new Date(endDate));
-        }
-      }
-
-      document.querySelectorAll(".filter-buttons button").forEach(btn => btn.classList.remove("active"));
-      document.querySelector(`.filter-buttons button[data-status="${status}"]`).classList.add("active");
-
-      renderTable(orders);
-    };
-
-    window.updateStatus = async function (jobOrderNumber, newStatus) {
-      const q = query(
-        collection(db, "cdo_salesOrders"),
-        where("jobOrderNumber", "==", jobOrderNumber),
-        limit(1)
-      );
-      const snapshot = await getDocs(q);
-
-      if (!snapshot.empty) {
-        const docRef = snapshot.docs[0].ref;
-        let updateData = { status: newStatus };
-
-        if (newStatus === "Claimed") {
-          const now = new Date();
-          updateData.claimedDate = now.toISOString();
-        }
-
-        await updateDoc(docRef, updateData);
-        filterStatus(document.querySelector('.filter-buttons .active').dataset.status);
-      }
-    };
-
-    // ✅ New: update claimed date manually
-    window.updateClaimedDate = async function (jobOrderNumber, newDate) {
-      const q = query(
-        collection(db, "cdo_salesOrders"),
-        where("jobOrderNumber", "==", jobOrderNumber),
-        limit(1)
-      );
-      window.updatePaymentMode = async function (jobOrderNumber, newPaymentMode) {
-  const q = query(
-    collection(db, "cdo_salesOrders"),
-    where("jobOrderNumber", "==", jobOrderNumber),
-    limit(1)
-  );
-  const snapshot = await getDocs(q);
-
-  if (!snapshot.empty) {
-    const docRef = snapshot.docs[0].ref;
-
-    await updateDoc(docRef, {
-      paymentMode: arrayUnion(newPaymentMode) // ✅ adds instead of replacing
-    });
-
-    // Refresh table
-    filterStatus(document.querySelector('.filter-buttons .active').dataset.status);
-  }
-};
-      const snapshot = await getDocs(q);
-
-      if (!snapshot.empty) {
-        const docRef = snapshot.docs[0].ref;
-        await updateDoc(docRef, { claimedDate: new Date(newDate).toISOString() });
-        filterStatus(document.querySelector('.filter-buttons .active').dataset.status);
-      }
-    };
-
-    window.viewOrder = async function (jobOrderNumber) {
-      const q = query(collection(db, "cdo_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
-      const snapshot = await getDocs(q);
-      if (snapshot.empty) { alert("Order not found."); return; }
-      const order = snapshot.docs[0].data();
-      const modalContent = document.getElementById('modalContent');
-      const itemsHtml = order.items.map(i =>
-        `<li>${i.quantity}x ${i.name} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}</li>`
-      ).join("");
-      modalContent.innerHTML = `
-        <h3 style="color: #800000; margin-bottom: 0.5rem;">Order #${order.jobOrderNumber}</h3>
-        <p><strong>Customer:</strong> ${order.customerName}</p>
-        <p><strong>Contact:</strong> ${order.contactNumber}</p>
-        <p><strong>Email:</strong> ${order.email || '—'}</p>
-        <p><strong>Receiver:</strong> ${order.receiver}</p>
-        <p><strong>Total Amount:</strong> ${order.totalAmount || '₱0.00'}</p>
-         <p><strong>Deposit:</strong> ${order.amountPaid ? '₱' + Number(order.amountPaid).toFixed(2) : '₱0.00'}</p> <!-- ✅ fixed -->
-        <p><strong>Balance:</strong> ${order.balance || '₱0.00'}</p>
-        <p><strong>Payment Mode:</strong><br>
-  ${Array.isArray(order.paymentMode) 
-      ? order.paymentMode.join("<br>") 
-      : order.paymentMode || '—'}
-</p>
-        <p><strong>Status:</strong> ${order.status || 'In Progress'}</p>
-        <p><strong>Claimed Date:</strong> ${order.claimedDate ? new Date(order.claimedDate).toLocaleDateString() : '—'}</p>
-        <p><strong>Items:</strong></p>
-        <ul style="padding-left: 1.2rem;">${itemsHtml}</ul>
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${order.jobOrderNumber}</td>
+        <td>${order.customerName}</td>
+        <td>${order.dateBooked}</td>
+        <td>${order.items.map(i => i.repairman).filter(Boolean).join(", ") || "N/A"}</td>
+        <td style="white-space: pre-wrap; text-align: left">${items}</td>
+        <td>${order.totalAmount || "₱0.00"}</td>
+        <td>${order.amountPaid ? "₱" + Number(order.amountPaid).toFixed(2) : "₱0.00"}</td>
+        <td>${balanceDisplay}</td>
+        <td>${renderPaymentModes(order)}</td>
+        <td>
+          <select class="status-dropdown" 
+            onchange="updateStatus('${order.jobOrderNumber}', this.value)" 
+            ${order.status === "Claimed" ? "disabled" : ""}>
+            <option ${order.status === "Received" ? "selected" : ""}>Received</option>
+            <option ${order.status === "In Progress" ? "selected" : ""}>In Progress</option>
+            <option ${order.status === "Finished without Balance" ? "selected" : ""}>Finished without Balance</option>
+            <option ${order.status === "Finished with Balance" ? "selected" : ""}>Finished with Balance</option>
+            <option ${order.status === "Claimed" ? "selected" : ""}>Claimed</option>
+          </select>
+        </td>
+        <td>
+          ${
+            order.status === "Claimed"
+              ? `<input type="date" value="${order.claimedDate ? new Date(order.claimedDate).toISOString().split("T")[0] : ""}" 
+                  onchange="updateClaimedDate('${order.jobOrderNumber}', this.value)" />`
+              : order.claimedDate ? new Date(order.claimedDate).toLocaleDateString() : "—"
+          }
+        </td>
+        <td><button onclick="viewOrder('${order.jobOrderNumber}')">View</button></td>
       `;
-      document.getElementById('viewModal').style.display = 'flex';
-    }
-
-    window.closeModal = function () { document.getElementById('viewModal').style.display = 'none'; }
-
-    document.addEventListener('DOMContentLoaded', () => { filterStatus('All'); });
-
-    const sdEl = document.getElementById('startDate');
-    const edEl = document.getElementById('endDate');
-    const clearBtn = document.getElementById('clearDatesBtn');
-    function refilter() {
-      const active = document.querySelector('.filter-buttons .active')?.dataset.status || 'All';
-      filterStatus(active);
-    }
-    sdEl.addEventListener('change', refilter);
-    edEl.addEventListener('change', refilter);
-    clearBtn.addEventListener('click', () => { sdEl.value = ''; edEl.value = ''; refilter(); });
-
-    window.printTable = function () {
-      const table = document.getElementById("statusTable").outerHTML;
-      const activeStatus = document.querySelector('.filter-buttons .active')?.innerText || "All";
-      const sd = document.getElementById("startDate").value || "Any";
-      const ed = document.getElementById("endDate").value || "Any";
-
-      const win = window.open("", "_blank");
-      win.document.write(`
-        <html>
-        <head>
-          <title>Sales Status Report</title>
-          <style>
-            body { font-family: 'Inter', sans-serif; padding:20px; }
-            h2, p { text-align:center; }
-            table { width:100%; border-collapse: collapse; margin-top:20px; }
-            th, td { border:1px solid #ccc; padding:8px; text-align:center; }
-            th { background:#800000; color:white; }
-          </style>
-        </head>
-        <body>
-          <h2>Sales Status Report - Cagayan de Oro Branch</h2>
-          <p><strong>Status:</strong> ${activeStatus}</p>
-          <p><strong>Date Range:</strong> ${sd} to ${ed}</p>
-          ${table}
-        </body>
-        </html>
-      `);
-      win.document.close();
-      win.print();
-    };
-   window.searchJO = function () {
-  const input = document.getElementById("searchJO").value.trim().toLowerCase();
-  const rows = document.querySelectorAll("#statusTable tbody tr");
-
-  rows.forEach(row => {
-    let rowText = "";
-    row.querySelectorAll("td").forEach(cell => {
-      rowText += cell.innerText.toLowerCase() + " ";
+      tableBody.appendChild(row);
     });
+  }
 
-    if (rowText.includes(input) || input === "") {
-      row.style.display = "";
-    } else {
-      row.style.display = "none";
+  // ✅ Filter with status + correct date field
+  window.filterStatus = async function (status) {
+    let q = collection(db, "cdo_salesOrders");
+    let snapshot = await getDocs(q);
+    let orders = snapshot.docs.map(doc => doc.data());
+
+    if (status !== "All") {
+      orders = orders.filter(order => order.status === status);
     }
-  });
-};
 
-window.clearSearch = function () {
-  document.getElementById("searchJO").value = "";
-  searchJO(); // reset table to show all
-};
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
 
+    if (status === "Claimed") {
+      if (startDate) orders = orders.filter(order => order.claimedDate && new Date(order.claimedDate) >= new Date(startDate));
+      if (endDate) orders = orders.filter(order => order.claimedDate && new Date(order.claimedDate) <= new Date(endDate));
+    } else {
+      if (startDate) orders = orders.filter(order => new Date(order.dateBooked) >= new Date(startDate));
+      if (endDate) orders = orders.filter(order => new Date(order.dateBooked) <= new Date(endDate));
+    }
 
-  </script>
+    document.querySelectorAll(".filter-buttons button").forEach(btn => btn.classList.remove("active"));
+    document.querySelector(`.filter-buttons button[data-status="${status}"]`).classList.add("active");
+
+    renderTable(orders);
+  };
+
+  window.updateStatus = async function (jobOrderNumber, newStatus) {
+    const q = query(collection(db, "cdo_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      const docRef = snapshot.docs[0].ref;
+      let updateData = { status: newStatus };
+      if (newStatus === "Claimed") {
+        updateData.claimedDate = new Date().toISOString();
+      }
+      await updateDoc(docRef, updateData);
+      filterStatus(document.querySelector(".filter-buttons .active").dataset.status);
+    }
+  };
+
+  window.updateClaimedDate = async function (jobOrderNumber, newDate) {
+    const q = query(collection(db, "cdo_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      const docRef = snapshot.docs[0].ref;
+      await updateDoc(docRef, { claimedDate: new Date(newDate).toISOString() });
+      filterStatus(document.querySelector(".filter-buttons .active").dataset.status);
+    }
+  };
+
+  window.viewOrder = async function (jobOrderNumber) {
+    const q = query(collection(db, "cdo_salesOrders"), where("jobOrderNumber", "==", jobOrderNumber), limit(1));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return alert("Order not found.");
+
+    const order = snapshot.docs[0].data();
+    const itemsHtml = order.items
+      .map(i => `<li>${i.quantity}x ${i.name} (${i.itemDescription || "No brand"})${i.remarks ? " - " + i.remarks : ""}</li>`)
+      .join("");
+
+    const modalContent = document.getElementById("modalContent");
+    modalContent.innerHTML = `
+      <h3 style="color:#800000; margin-bottom:0.5rem;">Order #${order.jobOrderNumber}</h3>
+      <p><strong>Customer:</strong> ${order.customerName}</p>
+      <p><strong>Contact:</strong> ${order.contactNumber}</p>
+      <p><strong>Email:</strong> ${order.email || "—"}</p>
+      <p><strong>Receiver:</strong> ${order.receiver}</p>
+      <p><strong>Total Amount:</strong> ${order.totalAmount || "₱0.00"}</p>
+      <p><strong>Deposit:</strong> ${order.amountPaid ? "₱" + Number(order.amountPaid).toFixed(2) : "₱0.00"}</p>
+      <p><strong>Balance:</strong> ${order.balance || "₱0.00"}</p>
+      <p><strong>Payment Mode:</strong><br>${renderPaymentModes(order)}</p>
+      <p><strong>Status:</strong> ${order.status || "In Progress"}</p>
+      <p><strong>Claimed Date:</strong> ${order.claimedDate ? new Date(order.claimedDate).toLocaleDateString() : "—"}</p>
+      <p><strong>Items:</strong></p>
+      <ul style="padding-left:1.2rem;">${itemsHtml}</ul>
+    `;
+    document.getElementById("viewModal").style.display = "flex";
+  };
+
+  window.closeModal = () => document.getElementById("viewModal").style.display = "none";
+
+  document.addEventListener("DOMContentLoaded", () => filterStatus("All"));
+
+  const sdEl = document.getElementById("startDate");
+  const edEl = document.getElementById("endDate");
+  const clearBtn = document.getElementById("clearDatesBtn");
+
+  function refilter() {
+    const active = document.querySelector(".filter-buttons .active")?.dataset.status || "All";
+    filterStatus(active);
+  }
+  sdEl.addEventListener("change", refilter);
+  edEl.addEventListener("change", refilter);
+  clearBtn.addEventListener("click", () => { sdEl.value = ""; edEl.value = ""; refilter(); });
+
+  window.printTable = function () {
+    const table = document.getElementById("statusTable").outerHTML;
+    const activeStatus = document.querySelector(".filter-buttons .active")?.innerText || "All";
+    const sd = document.getElementById("startDate").value || "Any";
+    const ed = document.getElementById("endDate").value || "Any";
+
+    const win = window.open("", "_blank");
+    win.document.write(`
+      <html>
+      <head>
+        <title>Sales Status Report</title>
+        <style>
+          body { font-family: 'Inter', sans-serif; padding:20px; }
+          h2, p { text-align:center; }
+          table { width:100%; border-collapse: collapse; margin-top:20px; }
+          th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+          th { background:#800000; color:white; }
+        </style>
+      </head>
+      <body>
+        <h2>Sales Status Report - Cagayan de Oro Branch</h2>
+        <p><strong>Status:</strong> ${activeStatus}</p>
+        <p><strong>Date Range:</strong> ${sd} to ${ed}</p>
+        ${table}
+      </body>
+      </html>
+    `);
+    win.document.close();
+    win.print();
+  };
+
+  window.searchJO = function () {
+    const input = document.getElementById("searchJO").value.trim().toLowerCase();
+    const rows = document.querySelectorAll("#statusTable tbody tr");
+    rows.forEach(row => {
+      let rowText = "";
+      row.querySelectorAll("td").forEach(cell => rowText += cell.innerText.toLowerCase() + " ");
+      row.style.display = rowText.includes(input) || input === "" ? "" : "none";
+    });
+  };
+
+  window.clearSearch = function () {
+    document.getElementById("searchJO").value = "";
+    searchJO();
+  };
+</script>
+
 </body>
 </html>
