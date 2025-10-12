@@ -293,7 +293,7 @@
   <div class="main-content">
     <div class="content-box">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-  <input type="text" id="searchInput" placeholder="Search Job Order #"
+  <input type="text" id="searchInput" placeholder="Search JO, Name, etc..."
     style="padding: 0.6rem 1rem; border-radius: 1rem; border: 1px solid #ccc; font-size: 0.9rem; max-width: 300px;" />
 
   <select id="timeFilter" style="padding: 0.6rem 1rem; border-radius: 1rem; border: 1px solid #ccc; font-size: 0.9rem; max-width: 200px;">
@@ -413,11 +413,12 @@
   const startDateVal = document.getElementById('startDate')?.value || '';
   const endDateVal   = document.getElementById('endDate')?.value || '';
   const now = new Date();
+  const searchValue = (filter || '').toLowerCase(); // 🔍 normalize search
 
   const snapshot = await getDocs(collection(db, "mercedes_salesOrders"));
   const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-  // Build inclusive range (00:00:00 to 23:59:59)
+  // Build inclusive range
   let startRange = null, endRange = null;
   if (startDateVal) {
     startRange = new Date(startDateVal);
@@ -430,8 +431,20 @@
 
   const filteredOrders = orders.filter(order => {
     const isMercedes = order.branch === "Mercedes";
-    const jobOrderStr = (order.jobOrderNumber || '').toLowerCase();
-    const matchJobOrder = jobOrderStr.includes((filter || '').toLowerCase());
+
+    // 🧠 combine all searchable fields
+    const combinedText = `
+      ${order.jobOrderNumber || ''}
+      ${order.customerName || ''}
+      ${order.contactNumber || ''}
+      ${order.email || ''}
+      ${order.receiver || ''}
+      ${order.paymentMode || ''}
+      ${order.paymentMode2 || ''}
+      ${order.items?.map(i => `${i.itemDescription || ''} ${i.ticketNo || ''} ${i.repairman || ''}`).join(' ') || ''}
+    `.toLowerCase();
+
+    const matchesSearch = combinedText.includes(searchValue);
 
     // Parse order date
     const orderDate = new Date(order.dateBooked);
@@ -454,27 +467,26 @@
       matchTime = orderDate.getFullYear() === now.getFullYear();
     }
 
-    // Apply date range (inclusive)
+    // Apply date range
     let inRange = true;
     if (startRange) inRange = orderDate >= startRange;
     if (endRange)   inRange = inRange && orderDate <= endRange;
 
-    return isMercedes && matchJobOrder && matchTime && inRange;
+    return isMercedes && matchesSearch && matchTime && inRange;
   });
 
-   // Sort by dateBooked, newest first
+  // Sort newest first
   filteredOrders.sort((a, b) => new Date(b.dateBooked) - new Date(a.dateBooked));
   tableBody.innerHTML = '';
 
-let totalSales = 0;
-let totalDeposit = 0;
-let totalBalance = 0;
-
+  let totalSales = 0;
+  let totalDeposit = 0;
+  let totalBalance = 0;
 
   filteredOrders.forEach(order => {
     const total = parseFloat(order.totalAmount || 0);
     const paid = parseFloat(order.amountPaid || 0);
-const balance = parseFloat(order.balance ?? (total - paid)); // keep as number
+    const balance = parseFloat(order.balance ?? (total - paid));
 
     const items = order.items.map(i =>
       `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}`
@@ -489,39 +501,35 @@ const balance = parseFloat(order.balance ?? (total - paid)); // keep as number
       <td>${order.email || '—'}</td>
       <td>${order.receiver}</td>
       <td>${[...new Set(order.items.map(i => i.repairman))].join(', ')}</td>
-     <td>
-  ${order.paymentMode || '—'}
-  ${order.paymentMode2 ? `<br><small>+ ${order.paymentMode2}</small>` : ''}
-</td>
+      <td>
+        ${order.paymentMode || '—'}
+        ${order.paymentMode2 ? `<br><small>+ ${order.paymentMode2}</small>` : ''}
+      </td>
       <td>₱${total.toFixed(2)}</td>
-        <td>₱${paid.toFixed(2)}</td> <!-- ✅ NEW Deposit column -->
-
-    <td>
-  <div><strong>Prev:</strong> ₱${(order.previousBalance ?? (total - paid)).toFixed(2)}</div>
-  <div><strong>Now:</strong> ₱${balance.toFixed(2)}</div>
-  ${Number(balance) > 0 
-    ? `<button class="edit-btn" onclick="editBalance('${order.id}', ${total}, ${balance})">Paid</button>` 
-    : `<span style="color:green; font-weight:bold;">✔ Paid</span>`}
-</td>
-
-
-
+      <td>₱${paid.toFixed(2)}</td>
+      <td>
+        <div><strong>Prev:</strong> ₱${(order.previousBalance ?? (total - paid)).toFixed(2)}</div>
+        <div><strong>Now:</strong> ₱${balance.toFixed(2)}</div>
+        ${Number(balance) > 0 
+          ? `<button class="edit-btn" onclick="editBalance('${order.id}', ${total}, ${balance})">Paid</button>` 
+          : `<span style="color:green; font-weight:bold;">✔ Paid</span>`}
+      </td>
       <td>${order.completionDate}</td>
       <td style="white-space: pre-wrap; text-align: left">${items}</td>
       <td>${order.images?.length ? `<button class='view-images-btn' onclick='showImages(${JSON.stringify(order.images)})'>View Images</button>` : ''}</td>
     `;
     tableBody.appendChild(row);
-    totalSales += total;
-totalDeposit += paid;
-totalBalance += balance;
 
+    totalSales += total;
+    totalDeposit += paid;
+    totalBalance += balance;
   });
 
-   document.getElementById('totalSales').textContent = `Total Sales: ₱${totalSales.toFixed(2)}`;
-document.getElementById('totalDeposit').textContent = `Total Deposit: ₱${totalDeposit.toFixed(2)}`;
-document.getElementById('totalBalance').textContent = `Total Balance: ₱${totalBalance.toFixed(2)}`;
-
+  document.getElementById('totalSales').textContent = `Total Sales: ₱${totalSales.toFixed(2)}`;
+  document.getElementById('totalDeposit').textContent = `Total Deposit: ₱${totalDeposit.toFixed(2)}`;
+  document.getElementById('totalBalance').textContent = `Total Balance: ₱${totalBalance.toFixed(2)}`;
 }
+
 
 function resetFormFields() {
   document.getElementById('searchInput').value = '';
