@@ -384,7 +384,7 @@
 
  <script type="module">
   async function deleteAllSalesOrders() {
-  const snapshot = await getDocs(collection(db, "greenhills_salesOrders"));
+  const snapshot = await getDocs(collection(db, "gh_salesOrders"));
   const batchDeletes = snapshot.docs.map(doc => {
     return doc.ref.delete();
   });
@@ -415,7 +415,7 @@
   const now = new Date();
   const searchValue = (filter || '').toLowerCase(); // 🔍 normalize search
 
-  const snapshot = await getDocs(collection(db, "greenhills_salesOrders"));
+  const snapshot = await getDocs(collection(db, "gh_salesOrders"));
   const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
   // Build inclusive range
@@ -741,5 +741,6 @@ csv.push(`"${totalBalanceText}"`);
 
 </body>
 </html>
+
 
 
