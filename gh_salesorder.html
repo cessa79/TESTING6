@@ -572,7 +572,7 @@ async function confirmPaymentUpdate() {
   }
 
   try {
-    await updateDoc(doc(db, "greenhills_salesOrders", currentDocId), {
+    await updateDoc(doc(db, "gh_salesOrders", currentDocId), {
       amountPaid: currentTotalAmount,
       previousBalance: currentBalanceAmount,
       balance: 0,
@@ -741,4 +741,5 @@ csv.push(`"${totalBalanceText}"`);
 
 </body>
 </html>
+
 
