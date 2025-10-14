@@ -430,7 +430,7 @@
   }
 
   const filteredOrders = orders.filter(order => {
-    const isMercedes = order.branch === "Cagayan de Oro";
+    const isCDO = order.branch === "Cagayan de Oro";
 
     // 🧠 combine all searchable fields
     const combinedText = `
@@ -741,3 +741,4 @@ csv.push(`"${totalBalanceText}"`);
 
 </body>
 </html>
+
