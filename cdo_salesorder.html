@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sales Orders - Cagayan de Oro </title>
+  <title>Sales Orders - CDO </title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
@@ -430,7 +430,7 @@
   }
 
   const filteredOrders = orders.filter(order => {
-    const isCdo = order.branch === "cdo";
+    const isMercedes = order.branch === "Cagayan de Oro";
 
     // 🧠 combine all searchable fields
     const combinedText = `
@@ -472,7 +472,7 @@
     if (startRange) inRange = orderDate >= startRange;
     if (endRange)   inRange = inRange && orderDate <= endRange;
 
-    return isCdo && matchesSearch && matchTime && inRange;
+    return isCDO && matchesSearch && matchTime && inRange;
   });
 
   // Sort newest first
