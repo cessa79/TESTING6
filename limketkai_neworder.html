@@ -911,7 +911,7 @@ function getNextTicketNumber() {
     alert("✅ Sales Order has been saved to Firestore!");
     document.getElementById("salesOrderForm").reset();
     generateJobOrderNumber(); 
-    window.location.href = "limketkai_salesorder.html";
+    window.location.href = "limketkai_salesorders.html";
   } catch (error) {
     console.error("❌ Firestore Error:", error);
     alert("❌ Failed to save sales order. Please try again.");
@@ -1146,3 +1146,4 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
 
 </body>
 </html>
+
