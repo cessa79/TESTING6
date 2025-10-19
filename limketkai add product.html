@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Selling Items - E-Restore Leatherworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* Base */
+    * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+    body, html {
+      height: 100%;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)),
+        url('bg.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    /* Header */
+    header {
+      background-color: #800000;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .logo-container { display: flex; align-items: center; gap: 2rem; }
+    .logo-container img { height: 80px; width: auto; }
+    .logo-container h1 { font-size: 2rem; font-weight: 700; }
+    .branch-name { font-size: 1.3rem; font-weight: 600; color: #ffffff; }
+    .nav-buttons { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .nav-buttons a {
+      background-color: #ffffff;
+      color: #800000;
+      padding: 0.6rem 1.3rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .nav-buttons a:hover {
+      background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .row {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.col {
+  flex: 1;
+  min-width: 200px;
+}
+
+    /* Page */
+    .main-content { padding: 3rem; }
+    .form-container {
+      background-color: white;
+      border-radius: 2rem;
+      padding: 2rem;
+      box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3);
+      max-width: 1200px;
+      margin: auto;
+    }
+    h2 { color: #800000; text-align: center; margin-bottom: 1rem; }
+    label { font-weight: 600; display: block; margin-top: 1rem; }
+    input, select {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+      margin-top: 0.3rem;
+    }
+
+    table { width: 100%; margin-top: 2rem; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 0.6rem; text-align: center; }
+    th { background: #fafafa; }
+
+    .button-group {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 0.7rem 1.5rem;
+      border-radius: 1rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      background-color: #800000;
+      color: white;
+    }
+    button:hover { background-color: #500303; }
+
+    .muted { color: #666; font-size: .9rem; }
+
+    /* Receipt Preview */
+    .receipt-preview {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      border: 1px solid #333;
+      background: #f9f9f9;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="ERestore Logo">
+      <h1>ERestore Leatherworks <span class="branch-name">| Limketkai </span></h1>
+    </div>
+    <nav class="nav-buttons">
+      <a href="limketkai.html">Homepage</a>
+      <a href="limketaki_announcement.html">Announcements</a>
+      <a href="limketkai_report.html">Reports</a>
+      <a href="limketkai_appointment.html">Appointments</a>
+      <a href="limketkai_customerlist.html">Customers</a>
+      <a href="limketkai_attendance.html">Attendance</a>
+      <a href="limketkai_expenses.html">Expenses</a>
+    </nav>
+  </header>
+
+  <div class="main-content">
+    <div class="form-container">
+      <h2>Sell Items</h2>
+      <form id="sellForm">
+        <div class="row">
+  <div class="col">
+    <label for="customer">Customer Name</label>
+<input type="text" id="customer" required placeholder="Walk-in / Name">
+
+<div class="row">
+  <div class="col">
+    <label for="date">Transaction Date</label>
+    <input type="date" id="date" required>
+  </div>
+
+  <div class="col">
+    <label for="payment">Mode of Payment</label>
+    <select id="payment" required>
+      <option value="" disabled selected>Select Payment Method</option>
+      <option value="Cash">Cash</option>
+      <option value="GCash">GCash</option>
+      <option value="Card">Card</option>
+       <option value="PayMaya">PayMaya</option>
+             <option value="Bank Transfer">Bank Transfer</option>
+      <option value="Others">Others</option>
+    </select>
+  </div>
+</div>
+
+
+        <table id="sellTable">
+          <thead>
+            <tr>
+              <th style="min-width:240px;">Item Description</th>
+              <th>Quantity</th>
+              <th>Unit Price (₱)</th>
+              <th>Total (₱)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="button-group">
+          <button type="button" id="addItem">+ Add Item</button>
+          <button type="submit">Submit Sale</button>
+        </div>
+
+        <h3 style="text-align:right; margin-top:1rem;">Grand Total: ₱<span id="grandTotal">0.00</span></h3>
+        <p class="muted" style="text-align:right;">Prices auto-fill for known items. You can override them.</p>
+      </form>
+
+      <!-- Receipt Preview -->
+      <div id="receiptPreview" class="receipt-preview"></div>
+      <div class="button-group" style="justify-content:flex-start;">
+        <button type="button" id="printBtn" style="display:none;">🖨 Print Receipt</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+      authDomain: "erestore-leatherworks.firebaseapp.com",
+      projectId: "erestore-leatherworks",
+      storageBucket: "erestore-leatherworks.firebasestorage.app",
+      messagingSenderId: "727698074030",
+      appId: "1:727698074030:web:58870b6be96934e71c003f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    const tableBody    = document.querySelector('#sellTable tbody');
+    const grandTotalEl = document.getElementById('grandTotal');
+    const addItemBtn   = document.getElementById('addItem');
+    const sellForm     = document.getElementById('sellForm');
+    const receiptDiv   = document.getElementById('receiptPreview');
+    const printBtn     = document.getElementById('printBtn');
+
+    const ITEM_PRICES = {
+      "Leather Cream Conditioner": 449,
+      "Horse Hair Brush": 249,
+      "All Purpose Cleaner": 249,
+      "Bundle Set": 799
+    };
+
+    function calculateTotals() {
+      let total = 0;
+      tableBody.querySelectorAll('tr').forEach(row => {
+        const qty   = parseFloat(row.querySelector('.qty')?.value)   || 0;
+        const price = parseFloat(row.querySelector('.price')?.value) || 0;
+        const rowTotal = qty * price;
+        row.querySelector('.total').textContent = rowTotal.toFixed(2);
+        total += rowTotal;
+      });
+      grandTotalEl.textContent = total.toFixed(2);
+    }
+
+    function addRow() {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>
+          <select class="desc" required>
+            <option value="" disabled selected>Select Item</option>
+            <option value="Leather Cream Conditioner">Leather Cream Conditioner</option>
+            <option value="Horse Hair Brush">Horse Hair Brush</option>
+            <option value="All Purpose Cleaner">All Purpose Cleaner</option>
+            <option value="Bundle Set">Bundle Set</option>
+          </select>
+        </td>
+        <td><input type="number" class="qty" min="1" value="1" required></td>
+        <td><input type="number" class="price" min="0" step="0.01" required></td>
+        <td class="total">0.00</td>
+        <td><button type="button" class="removeRow">Remove</button></td>
+      `;
+
+      const select     = row.querySelector('.desc');
+      const priceInput = row.querySelector('.price');
+
+      select.addEventListener('change', () => {
+        const selected = select.value;
+        if (ITEM_PRICES[selected] != null) {
+          priceInput.value = ITEM_PRICES[selected];
+          calculateTotals();
+        }
+      });
+
+      row.querySelectorAll('input, select').forEach(input =>
+        input.addEventListener('input', calculateTotals)
+      );
+
+      row.querySelector('.removeRow').addEventListener('click', () => {
+        row.remove();
+        calculateTotals();
+      });
+
+      tableBody.appendChild(row);
+      calculateTotals();
+    }
+
+    addItemBtn.addEventListener('click', addRow);
+
+    sellForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const customer = document.getElementById('customer').value.trim();
+      const date     = document.getElementById('date').value;
+      const payment  = document.getElementById('payment').value;
+
+      if (!customer) { alert('Please enter a customer name.'); return; }
+      if (!date)     { alert('Please select a transaction date.'); return; }
+      if (!payment)  { alert('Please select a mode of payment.'); return; }
+
+      const items = [];
+      const rows = tableBody.querySelectorAll('tr');
+      if (!rows.length) { alert('Please add at least one item.'); return; }
+
+      rows.forEach(row => {
+        const desc  = row.querySelector('.desc').value;
+        const qty   = parseFloat(row.querySelector('.qty').value) || 0;
+        const price = parseFloat(row.querySelector('.price').value) || 0;
+        const total = qty * price;
+        items.push({ description: desc, quantity: qty, unitPrice: price, lineTotal: total });
+      });
+
+      const grandTotal = parseFloat(grandTotalEl.textContent) || 0;
+
+      const payload = {
+        branch: "Limketkai",
+        date,
+        customer,
+        payment,
+        items,
+        grandTotal,
+        createdAt: serverTimestamp(),
+      };
+
+      try {
+        await addDoc(collection(db, "limketkai_soldItems"), payload);
+        alert("✅ Sale submitted to Firestore!");
+
+        let itemsHtml = items.map(i => `
+          <tr>
+            <td>${i.description}</td>
+            <td>${i.quantity}</td>
+            <td>₱${i.unitPrice.toFixed(2)}</td>
+            <td>₱${i.lineTotal.toFixed(2)}</td>
+          </tr>
+        `).join("");
+
+        receiptDiv.innerHTML = `
+          <div class="receipt-container">
+            <h3 style="text-align:center;">E-Restore Leatherworks - Limketkais</h3>
+            <p><strong>Date:</strong> ${date}</p>
+            <p><strong>Customer:</strong> ${customer}</p>
+            <p><strong>Mode of Payment:</strong> ${payment}</p>
+            <table style="width:100%; border-collapse:collapse; margin-top:10px;" border="1">
+              <tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+              ${itemsHtml}
+            </table>
+            <h3 style="text-align:right; margin-top:10px;">Grand Total: ₱${grandTotal.toFixed(2)}</h3>
+            <p style="text-align:center; margin-top:20px;">Thank you for your purchase!</p>
+          </div>
+        `;
+        receiptDiv.style.display = "block";
+        printBtn.style.display = "inline-block";
+
+        sellForm.reset();
+        tableBody.innerHTML = '';
+        addRow();
+        calculateTotals();
+      } catch (err) {
+        console.error(err);
+        alert("❌ Failed to submit sale. Please try again.");
+      }
+    });
+
+    /* Print button */
+    printBtn.addEventListener('click', () => {
+      const receiptContent = receiptDiv.innerHTML;
+      const w = window.open('', '_blank', 'width=1000,height=800,scrollbars=no');
+      w.document.write(`
+        <html>
+          <head>
+            <title>Receipt</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin:0; padding:20px; display:flex; justify-content:center; align-items:center; height:100vh; }
+              .receipt-container { width:80%; border:1px solid #000; padding:15px; }
+              table { width:100%; border-collapse: collapse; margin-top:10px; }
+              th, td { border:1px solid #000; padding:4px; text-align:center; }
+              h3 { margin:5px 0; }
+              @media print {
+                @page { size: A5 portrait; margin: 10mm; }
+                body { display:block; height:auto; padding:0; }
+                .receipt-container { width:100%; border:none; }
+              }
+            </style>
+          </head>
+          <body>${receiptContent}</body>
+        </html>
+      `);
+      w.document.close();
+      w.focus();
+      w.print();
+    });
+
+    addRow();
+  </script>
+
+</body>
+</html>
