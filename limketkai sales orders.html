@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sales Orders - Limketkai </title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    .edit-btn {
+  background-color: #004080;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 1rem;
+  border: none;
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+  cursor: pointer;
+}
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      height: 100%;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)),
+        url('bg.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+    header {
+      background-color: #800000;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    .logo-container img {
+      height: 80px;
+      width: auto;
+    }
+    .logo-container h1 {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .branch-name {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-left: 0.10rem;
+      color: #ffffff;
+    }
+    .main-content {
+      padding: 3rem;
+    }
+    .content-box {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 2rem;
+      box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3);
+      max-width: 2200px;
+      margin: auto;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+    .nav-buttons a {
+      background-color: #ffffff;
+      color: #800000;
+      padding: 0.6rem 1.3rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .nav-buttons a:hover {
+      background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    h2 {
+      text-align: center;
+      color: #800000;
+      margin-bottom: 1.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: center;
+      vertical-align: top;
+      word-wrap: break-word;
+    }
+    td:last-child {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-width: 300px;
+    }
+    button {
+      background-color: #800000;
+      color: white;
+      padding: 0.7rem 1.2rem;
+      border: none;
+      border-radius: 1rem;
+      margin: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover {
+      background-color: #500303;
+    }
+
+    .date-range {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* smaller gap */
+}
+
+.date-range input {
+  padding: 0.6rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  max-width: 150px; /* smaller so they fit better */
+}
+
+.date-range span {
+  font-size: 0.9rem;
+  color: #555;
+  padding: 0 2px;
+}
+
+    /* Payment modal */
+#paymentModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+
+#paymentModal .box {
+  background:#fff;
+  padding:2rem;
+  border-radius:1rem;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
+  width:320px;
+  text-align:center;
+}
+
+#paymentModal .box h3 {
+  margin-bottom:1rem;
+  color:#800000;
+}
+#paymentModal .box select,
+#paymentModal .box input[type="checkbox"] {
+  margin: 0.5rem 0;
+}
+#paymentModal .actions {
+  margin-top: 1rem;
+  display:flex;
+  justify-content:center;
+  gap:.5rem;
+}
+
+    @media print {
+  body, html {
+    background: white !important;
+    color: black;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 10pt;
+    padding: 1cm;
+  }
+
+  header,
+  .nav-buttons,
+  .action-buttons,
+  .view-images-btn,
+  #imageModal,
+  button {
+    display: none !important;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 9pt;
+    table-layout: fixed;
+  }
+
+  th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: center;
+  }
+
+  td {
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: center;
+    vertical-align: top;
+    word-wrap: break-word;
+  }
+
+  #salesOrdersTable th:nth-child(12),
+  #salesOrdersTable td:nth-child(12) {
+    display: none !important;
+  }
+
+  h2 {
+    color: #000;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  #totalSales {
+    margin-top: 1rem;
+    font-weight: bold;
+    font-size: 10pt;
+    text-align: right;
+    color: black !important;
+  }
+
+  .content-box {
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .main-content {
+    padding: 0;
+  }
+
+   #startDate, #endDate { display: none !important; }
+
+  @page {
+    margin: 1cm;
+    size: A4 portrait;
+  }
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 1rem;
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="ERestore Logo" />
+      <h1>ERestore Leatherworks <span class="branch-name">| Limketkai </span></h1>
+    </div>
+    <nav class="nav-buttons">
+      <a href="limketkai.html">Homepage</a>
+      <a href="limketkai_announcement.html">Announcements</a>
+      <a href="limketkai_report.html">Reports</a>
+      <a href="limketkai_appointment.html">Appointments</a>
+      <a href="limketkai_customerlist.html">Customers</a>
+      <a href="limketkai_attendance.html">Attendance</a>
+      <a href="limketkai_expenses.html">Expenses</a>
+    </nav>
+  </header>
+
+  <div class="main-content">
+    <div class="content-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+  <input type="text" id="searchInput" placeholder="Search JO, Name, etc..."
+    style="padding: 0.6rem 1rem; border-radius: 1rem; border: 1px solid #ccc; font-size: 0.9rem; max-width: 300px;" />
+
+  <select id="timeFilter" style="padding: 0.6rem 1rem; border-radius: 1rem; border: 1px solid #ccc; font-size: 0.9rem; max-width: 200px;">
+    <option value="all">All Time</option>
+    <option value="day">Today</option>
+    <option value="week">This Week</option>
+    <option value="month">This Month</option>
+    <option value="year">This Year</option>
+  </select>
+
+ <div class="date-range">
+  <input type="date" id="startDate" />
+  <span>to</span>
+  <input type="date" id="endDate" />
+</div>
+
+</div>
+
+
+      <h2>Sales Order List</h2>
+<div class="action-buttons">
+  <button onclick="printTable()"> Print</button>
+  <button onclick="exportToCSV()"> Export to CSV</button>
+  <button onclick="resetFormFields()" style="background-color: #ccc; color: #333; padding: 0.4rem 1rem; border-radius: 0.5rem;">Reset</button>
+
+</div>
+
+<!-- ✅ Wrap the table in a scrollable div -->
+<div class="table-wrapper">
+  <table id="salesOrdersTable">
+    <thead>
+      <tr>
+        <th>Order #</th>
+        <th>Date</th>
+        <th>Customer</th>
+        <th>Contact</th>
+        <th>Email</th>
+        <th>Receiver</th>
+        <th>Repairman</th>
+        <th>Payment</th>
+        <th>Total</th>
+       <th>Deposit</th> <!-- ✅ NEW -->
+        <th>Balance</th>
+        <th>Completion</th>
+        <th>Items</th>
+        <th>Images</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+      <p id="totalSales" style="font-size: 1rem; font-weight: bold; color: #800000; margin-top: 1rem;">Total Sales: ₱0.00</p>
+      <p id="totalDeposit" style="font-size: 1rem; font-weight: bold; color: #004080; margin-top: 0.2rem;">
+  Total Deposit: ₱0.00
+</p>
+<p id="totalBalance" style="font-size: 1rem; font-weight: bold; color: #500303; margin-top: 0.2rem;">
+  Total Balance: ₱0.00
+</p>
+
+    </div>
+  </div>
+  <!-- ✅ Simplified Payment Modal -->
+<div id="paymentModal">
+  <div class="box">
+    <h3>Mark as Paid</h3>
+    <label style="display:inline-flex;align-items:center;gap:.5rem;">
+      <input type="checkbox" id="markPaidCheckbox"> Paid
+    </label>
+    <br>
+    <select id="paymentMethodSelect2" style="padding:0.5rem; width:100%; border-radius:0.5rem;">
+      <option value="" disabled selected>Select 2nd Payment Method (optional)</option>
+      <option value="Cash">Cash</option>
+      <option value="G-Cash">G-Cash</option>
+      <option value="Card">Card</option>
+      <option value="Check">Check</option>
+      <option value="PayMaya">PayMaya</option>
+    </select>
+    <div class="actions">
+      <button id="paymentConfirmBtn" style="background:#004080;color:#fff;padding:.5rem 1rem;border-radius:1rem;border:0;cursor:pointer;">Confirm</button>
+      <button id="paymentCancelBtn" style="background:#ccc;color:#000;padding:.5rem 1rem;border-radius:1rem;border:0;cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+
+  <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-wrap:wrap; gap:1rem; padding:2rem;"></div>
+
+ <script type="module">
+  async function deleteAllSalesOrders() {
+  const snapshot = await getDocs(collection(db, "limketkai_salesOrders"));
+  const batchDeletes = snapshot.docs.map(doc => {
+    return doc.ref.delete();
+  });
+  await Promise.all(batchDeletes);
+  alert("All sales orders have been deleted.");
+  loadSalesOrders(); // Refresh table
+}
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+    authDomain: "erestore-leatherworks.firebaseapp.com",
+    projectId: "erestore-leatherworks",
+    storageBucket: "erestore-leatherworks.firebasestorage.app",
+    messagingSenderId: "727698074030",
+    appId: "1:727698074030:web:58870b6be96934e71c003f"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function loadSalesOrders(filter = '') {
+  const tableBody = document.querySelector('#salesOrdersTable tbody');
+  const timeFilter = document.getElementById('timeFilter').value;
+  const startDateVal = document.getElementById('startDate')?.value || '';
+  const endDateVal   = document.getElementById('endDate')?.value || '';
+  const now = new Date();
+  const searchValue = (filter || '').toLowerCase(); // 🔍 normalize search
+
+  const snapshot = await getDocs(collection(db, "limketkai_salesOrders"));
+  const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  // Build inclusive range
+  let startRange = null, endRange = null;
+  if (startDateVal) {
+    startRange = new Date(startDateVal);
+    startRange.setHours(0, 0, 0, 0);
+  }
+  if (endDateVal) {
+    endRange = new Date(endDateVal);
+    endRange.setHours(23, 59, 59, 999);
+  }
+
+  const filteredOrders = orders.filter(order => {
+    const isLimketkai = order.branch === "Limketkai";
+
+    // 🧠 combine all searchable fields
+    const combinedText = `
+      ${order.jobOrderNumber || ''}
+      ${order.customerName || ''}
+      ${order.contactNumber || ''}
+      ${order.email || ''}
+      ${order.receiver || ''}
+      ${order.paymentMode || ''}
+      ${order.paymentMode2 || ''}
+      ${order.items?.map(i => `${i.itemDescription || ''} ${i.ticketNo || ''} ${i.repairman || ''}`).join(' ') || ''}
+    `.toLowerCase();
+
+    const matchesSearch = combinedText.includes(searchValue);
+
+    // Parse order date
+    const orderDate = new Date(order.dateBooked);
+
+    // Apply preset time filter
+    let matchTime = true;
+    if (timeFilter === 'day') {
+      matchTime = orderDate.toDateString() === now.toDateString();
+    } else if (timeFilter === 'week') {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+      matchTime = orderDate >= startOfWeek && orderDate <= endOfWeek;
+    } else if (timeFilter === 'month') {
+      matchTime = orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear();
+    } else if (timeFilter === 'year') {
+      matchTime = orderDate.getFullYear() === now.getFullYear();
+    }
+
+    // Apply date range
+    let inRange = true;
+    if (startRange) inRange = orderDate >= startRange;
+    if (endRange)   inRange = inRange && orderDate <= endRange;
+
+    return isMercedes && matchesSearch && matchTime && inRange;
+  });
+
+  // Sort newest first
+  filteredOrders.sort((a, b) => new Date(b.dateBooked) - new Date(a.dateBooked));
+  tableBody.innerHTML = '';
+
+  let totalSales = 0;
+  let totalDeposit = 0;
+  let totalBalance = 0;
+
+  filteredOrders.forEach(order => {
+    const total = parseFloat(order.totalAmount || 0);
+    const paid = parseFloat(order.amountPaid || 0);
+    const balance = parseFloat(order.balance ?? (total - paid));
+
+    const items = order.items.map(i =>
+      `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription || 'No brand'})${i.remarks ? ' - ' + i.remarks : ''}`
+    ).join('\n');
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${order.jobOrderNumber}</td>
+      <td>${order.dateBooked}</td>
+      <td>${order.customerName}</td>
+      <td>${order.contactNumber}</td>
+      <td>${order.email || '—'}</td>
+      <td>${order.receiver}</td>
+      <td>${[...new Set(order.items.map(i => i.repairman))].join(', ')}</td>
+      <td>
+        ${order.paymentMode || '—'}
+        ${order.paymentMode2 ? `<br><small>+ ${order.paymentMode2}</small>` : ''}
+      </td>
+      <td>₱${total.toFixed(2)}</td>
+      <td>₱${paid.toFixed(2)}</td>
+      <td>
+        <div><strong>Prev:</strong> ₱${(order.previousBalance ?? (total - paid)).toFixed(2)}</div>
+        <div><strong>Now:</strong> ₱${balance.toFixed(2)}</div>
+        ${Number(balance) > 0 
+          ? `<button class="edit-btn" onclick="editBalance('${order.id}', ${total}, ${balance})">Paid</button>` 
+          : `<span style="color:green; font-weight:bold;">✔ Paid</span>`}
+      </td>
+      <td>${order.completionDate}</td>
+      <td style="white-space: pre-wrap; text-align: left">${items}</td>
+      <td>${order.images?.length ? `<button class='view-images-btn' onclick='showImages(${JSON.stringify(order.images)})'>View Images</button>` : ''}</td>
+    `;
+    tableBody.appendChild(row);
+
+    totalSales += total;
+    totalDeposit += paid;
+    totalBalance += balance;
+  });
+
+  document.getElementById('totalSales').textContent = `Total Sales: ₱${totalSales.toFixed(2)}`;
+  document.getElementById('totalDeposit').textContent = `Total Deposit: ₱${totalDeposit.toFixed(2)}`;
+  document.getElementById('totalBalance').textContent = `Total Balance: ₱${totalBalance.toFixed(2)}`;
+}
+
+
+function resetFormFields() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('timeFilter').value = 'all';
+  const sd = document.getElementById('startDate');
+  const ed = document.getElementById('endDate');
+  if (sd) sd.value = '';
+  if (ed) ed.value = '';
+  loadSalesOrders('');
+}
+window.resetFormFields = resetFormFields;
+
+let currentDocId = null;
+let currentTotalAmount = 0;
+let currentBalanceAmount = 0;
+
+
+window.editBalance = function (docId, totalAmount, currentBalance) {
+  currentDocId = docId;
+  currentTotalAmount = totalAmount;
+  currentBalanceAmount = currentBalance;
+
+  // reset modal state
+  document.getElementById('markPaidCheckbox').checked = false;
+  document.getElementById('paymentMethodSelect2').value = ''; // ✅ FIXED (was paymentMethodSelect)
+
+  // open modal
+  document.getElementById('paymentModal').style.display = 'flex';
+};
+
+
+// confirm + update firestore
+async function confirmPaymentUpdate() {
+  const paid = document.getElementById('markPaidCheckbox').checked;
+  const method2 = document.getElementById('paymentMethodSelect2').value;
+
+  if (!paid) { 
+    alert("Please check 'Paid' to confirm payment."); 
+    return; 
+  }
+
+  try {
+    await updateDoc(doc(db, "limketkai_salesOrders", currentDocId), {
+      amountPaid: currentTotalAmount,
+      previousBalance: currentBalanceAmount,
+      balance: 0,
+      paymentMode: "Cash", // ✅ or keep the original one if you saved it when creating order
+      paymentMode2: method2 || "" // ✅ now saves correctly
+    });
+
+    alert("✅ Payment status updated.");
+    closePaymentModal();
+    loadSalesOrders(document.getElementById('searchInput').value || '');
+  } catch (e) {
+    alert("❌ Update failed: " + e.message);
+  }
+}
+
+
+
+
+function closePaymentModal() {
+  document.getElementById('paymentModal').style.display = 'none';
+}
+
+// hook up modal buttons + backdrop click
+document.getElementById('paymentConfirmBtn').addEventListener('click', confirmPaymentUpdate);
+document.getElementById('paymentCancelBtn').addEventListener('click', closePaymentModal);
+document.getElementById('paymentModal').addEventListener('click', (e) => {
+  if (e.target.id === 'paymentModal') closePaymentModal();
+});
+
+
+  function showImages(images) {
+    const modal = document.getElementById('imageModal');
+    modal.innerHTML = images.map(url =>
+      `<img src="${url}" style="max-width:300px; max-height:300px; border-radius:1rem;" />`
+    ).join('');
+    modal.style.display = 'flex';
+
+    modal.onclick = () => {
+      modal.style.display = 'none';
+      modal.innerHTML = '';
+    };
+  }
+
+  window.showImages = showImages;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadSalesOrders();
+    document.getElementById('searchInput').addEventListener('input', function () {
+      loadSalesOrders(this.value);
+    });
+    document.getElementById('timeFilter').addEventListener('change', function () {
+      loadSalesOrders(document.getElementById('searchInput').value);
+    });
+
+   document.getElementById('startDate').addEventListener('change', function () {
+    loadSalesOrders(document.getElementById('searchInput').value);
+  });
+  document.getElementById('endDate').addEventListener('change', function () {
+    loadSalesOrders(document.getElementById('searchInput').value);
+  });resetFormFields
+  });
+
+  window.resetFormFields = resetFormFields;
+
+  window.printTable = function () {
+  const table = document.getElementById('salesOrdersTable').outerHTML;
+  const startDateVal = document.getElementById('startDate').value;
+  const endDateVal   = document.getElementById('endDate').value;
+
+  // Create header note
+  let headerNote = "Showing: All Records";
+  if (startDateVal && endDateVal) {
+    headerNote = `Showing: ${startDateVal} to ${endDateVal}`;
+  } else if (startDateVal) {
+    headerNote = `Showing: From ${startDateVal}`;
+  } else if (endDateVal) {
+    headerNote = `Showing: Until ${endDateVal}`;
+  }
+
+  // Get total sales text
+  const totalSales = document.getElementById('totalSales').textContent;
+  const totalDeposit = document.getElementById('totalDeposit').textContent;
+const totalBalance = document.getElementById('totalBalance').textContent;
+
+  // Open print window
+  const win = window.open('', '', 'width=900,height=650');
+  win.document.write(`
+    <html>
+      <head>
+        <title>Sales Order List</title>
+        <style>
+  body { font-family: 'Inter', sans-serif; padding: 20px; }
+  h2 { text-align: center; color: #800000; margin-bottom: 0.5rem; }
+  p { text-align: center; margin-bottom: 1rem; font-size: 0.9rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  th, td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: top; }
+  th { background: #f0f0f0; }
+  #totalSalesPrint { margin-top: 1rem; font-weight: bold; text-align: right; }
+
+/* ✅ HIDE Images column ONLY */
+th:nth-last-child(1), td:nth-last-child(1) {
+  display: none;
+}
+ 
+
+</style>
+
+      </head>
+      <body>
+        <h2>Sales Order List</h2>
+        <p>${headerNote}</p>
+        ${table}
+        <div id="totals">
+  <p>${totalSales}</p>
+  <p>${totalDeposit}</p>
+  <p>${totalBalance}</p>
+</div>
+
+        </body>
+    </html>
+  `);
+  win.document.close();
+  win.print();
+};
+
+window.exportToCSV = function () {
+  const table = document.getElementById("salesOrdersTable");
+  let csv = [];
+  const rows = table.querySelectorAll("tr");
+
+  for (let row of rows) {
+    let cols = row.querySelectorAll("th, td");
+    let rowData = [];
+    cols.forEach((col, i) => {
+      // ✅ Skip Images column (last one)
+      if (i === cols.length - 1) return;
+      rowData.push(`"${col.innerText.replace(/"/g, '""')}"`);
+    });
+    csv.push(rowData.join(","));
+  }
+
+  // ✅ Add Total Sales at bottom
+  // ✅ Add Totals at bottom
+const totalSalesText = document.getElementById("totalSales").textContent;
+const totalDepositText = document.getElementById("totalDeposit").textContent;
+const totalBalanceText = document.getElementById("totalBalance").textContent;
+
+csv.push("");
+csv.push(`"${totalSalesText}"`);
+csv.push(`"${totalDepositText}"`);
+csv.push(`"${totalBalanceText}"`);
+
+
+  // ✅ Download CSV
+  const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+  const downloadLink = document.createElement("a");
+  downloadLink.download = "sales_orders.csv";
+  downloadLink.href = window.URL.createObjectURL(csvFile);
+  downloadLink.style.display = "none";
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+};
+
+
+</script>
+
+</body>
+</html>

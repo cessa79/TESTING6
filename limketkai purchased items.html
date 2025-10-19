@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sold Items - Limketkai </title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+    body, html {
+      height: 100%;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)),
+        url('bg.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    header {
+      background-color: #800000;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .logo-container { display: flex; align-items: center; gap: 2rem; }
+    .logo-container img { height: 80px; width: auto; }
+    .logo-container h1 { font-size: 2rem; font-weight: 700; }
+    .branch-name { font-size: 1.3rem; font-weight: 600; color: #ffffff; }
+    .nav-buttons { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .nav-buttons a {
+      background-color: #ffffff;
+      color: #800000;
+      padding: 0.6rem 1.3rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .nav-buttons a:hover {
+      background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .main-content {
+      padding: 3rem;
+      height: calc(100vh - 112px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .form-container {
+      background-color: white;
+      border-radius: 2rem;
+      padding: 1.5rem;
+      box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3);
+      max-width: 1200px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h2 { color: #800000; text-align: center; margin-bottom: 0.75rem; }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+    .filters {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filters input {
+      padding: 0.5rem 0.9rem;
+      border-radius: 1rem;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+    }
+    .btn-light {
+      background:#ccc; color:#333; padding:0.5rem 0.9rem; border:none; border-radius:1rem; font-weight:600; cursor:pointer;
+    }
+    .btn-light:hover { filter: brightness(0.95); }
+
+    .table-wrapper {
+      border: 1px solid #ddd;
+      border-radius: 1rem;
+      overflow: hidden;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1 1 auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #800000;
+      color: #fff;
+      z-index: 1;
+    }
+    th, td { border: 1px solid #ccc; padding: 0.6rem; text-align: center; }
+    td.items-list { text-align: left; }
+    td.no-data { text-align: center; font-style: italic; color: #666; }
+
+    .table-scroll {
+      overflow-y: auto;
+      max-height: 100%;
+    }
+
+    @media (max-width: 640px) {
+      .main-content { padding: 1.5rem; }
+      .form-container { border-radius: 1.25rem; padding: 1rem; }
+      .logo-container h1 { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="ERestore Logo">
+      <h1>ERestore Leatherworks <span class="branch-name">| Limketkai </span></h1>
+    </div>
+    <nav class="nav-buttons">
+      <a href="limketkai.html">Homepage</a>
+      <a href="limketkai_announcement.html">Announcements</a>
+      <a href="limketkai_report.html">Reports</a>
+      <a href="limketkai_appointment.html">Appointments</a>
+      <a href="limketkai_customerlist.html">Customers</a>
+      <a href="limketkai_attendance.html">Attendance</a>
+      <a href="limketkai_expenses.html">Expenses</a>
+    </nav>
+  </header>
+
+  <div class="main-content">
+    <div class="form-container">
+      <h2>Sold Items Record</h2>
+
+      <div class="toolbar">
+        <div class="filters">
+          <input type="date" id="startDate" />
+          <span style="opacity:.7;">to</span>
+          <input type="date" id="endDate" />
+          <input type="text" id="searchCustomer" placeholder="Search customer name..." />
+          <button id="clearFiltersBtn" class="btn-light">Clear</button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <div class="table-scroll">
+          <table>
+            <thead>
+  <tr>
+    <th style="min-width:110px;">Date</th>
+    <th style="min-width:160px;">Customer</th>
+    <th>Items</th>
+    <th style="min-width:120px;">Mode of Payment</th>
+    <th style="min-width:140px;">Grand Total (₱)</th>
+  </tr>
+</thead>
+
+            <tbody id="soldTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+  // Firebase config (same as in Selling Items page)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+    authDomain: "erestore-leatherworks.firebaseapp.com",
+    projectId: "erestore-leatherworks",
+    storageBucket: "erestore-leatherworks.firebasestorage.app",
+    messagingSenderId: "727698074030",
+    appId: "1:727698074030:web:58870b6be96934e71c003f"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  const tableBody = document.getElementById('soldTableBody');
+  const sdEl = document.getElementById('startDate');
+  const edEl = document.getElementById('endDate');
+  const searchEl = document.getElementById('searchCustomer');
+  const clearBtn = document.getElementById('clearFiltersBtn');
+
+  let sales = []; // will hold Firestore data
+
+  function inRange(dateStr, startRange, endRange) {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    if (isNaN(d)) return false;
+    let ok = true;
+    if (startRange) ok = ok && d >= startRange;
+    if (endRange)   ok = ok && d <= endRange;
+    return ok;
+  }
+
+  function renderTable(list) {
+    if (!list.length) {
+      tableBody.innerHTML = '<tr><td colspan="4" class="no-data">No sales recorded yet.</td></tr>';
+      return;
+    }
+    tableBody.innerHTML = '';
+    list.forEach(sale => {
+      const itemList = (sale.items || []).map(i =>
+        `• ${i.description} (x${i.quantity}) - ₱${(i.lineTotal || 0).toFixed(2)}`
+      ).join('<br>');
+
+      const row = document.createElement('tr');
+     row.innerHTML = `
+  <td>${sale.date || '—'}</td>
+  <td>${sale.customer || '—'}</td>
+  <td class="items-list">${itemList || '—'}</td>
+  <td>${sale.payment || '—'}</td>
+  <td>₱${(sale.grandTotal || 0).toFixed(2)}</td>
+`;
+
+      tableBody.appendChild(row);
+    });
+  }
+
+  function applyFilters() {
+    const sdVal = sdEl.value;
+    const edVal = edEl.value;
+    const searchVal = searchEl.value.trim().toLowerCase();
+    let startRange = null, endRange = null;
+
+    if (sdVal) { startRange = new Date(sdVal); startRange.setHours(0,0,0,0); }
+    if (edVal) { endRange   = new Date(edVal); endRange.setHours(23,59,59,999); }
+
+    const filtered = sales.filter(s => {
+      const matchDate = inRange(s.date, startRange, endRange);
+      const matchCustomer = !searchVal || (s.customer || '').toLowerCase().includes(searchVal);
+      return matchDate && matchCustomer;
+    });
+
+    renderTable(filtered);
+  }
+
+  // Event bindings
+  sdEl.addEventListener('change', applyFilters);
+  edEl.addEventListener('change', applyFilters);
+  searchEl.addEventListener('input', applyFilters);
+  clearBtn.addEventListener('click', () => {
+    sdEl.value = '';
+    edEl.value = '';
+    searchEl.value = '';
+    applyFilters();
+  });
+
+  // 🔥 Fetch data from Firestore
+  async function loadSales() {
+    try {
+      const q = query(collection(db, "limketkai_soldItems"), orderBy("date", "desc"));
+      const snapshot = await getDocs(q);
+      sales = snapshot.docs.map(doc => doc.data());
+      renderTable(sales);
+    } catch (err) {
+      console.error("Error loading sales:", err);
+      tableBody.innerHTML = '<tr><td colspan="4" class="no-data">Failed to load sales.</td></tr>';
+    }
+  }
+
+  loadSales();
+</script>
+
+
+</body>
+</html>
