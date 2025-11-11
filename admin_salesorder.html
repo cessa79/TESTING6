@@ -204,6 +204,7 @@ adminsalesorder.html
   <option value="gensan">Gensan</option>
   <option value="lanang">Lanang</option>
   <option value="mercedes">Mercedes</option>
+   <option value="limketkai">Limketkai</option>
 
         </select>
 
@@ -309,7 +310,7 @@ adminsalesorder.html
 
   // ✅ Fetch all branches
   async function fetchAllBranchesOrders() {
-    const branchKeys = ['gh', 'abreeza', 'bcd', 'cdo', 'gensan', 'lanang', 'mercedes'];
+    const branchKeys = ['gh', 'abreeza', 'bcd', 'cdo', 'gensan', 'lanang', 'mercedes', 'limketkai'];
     const all = await Promise.all(branchKeys.map(fetchBranchOrders));
     return all.flat();
   }
@@ -568,3 +569,4 @@ window.printTable = function () {
 
 </body>
 </html>
+
