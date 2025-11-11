@@ -264,6 +264,7 @@
             <option value="Greenhills">Greenhills</option>
             <option value="General Santos">General Santos</option>
             <option value="Lanang">SM Lanang</option>
+             <option value="Limketkai">Limketkai</option>
           </select>
           <label for="datePicker" style="margin-left: 1rem;">Date:</label>
           <input type="date" id="datePicker" onchange="filterTable()" />
@@ -303,7 +304,8 @@
           <span style="color:#1976d2;">■ Bacolod</span> &nbsp;
           <span style="color:#fbc02d;">■ Cagayan de Oro</span> &nbsp;
           <span style="color:#7b1fa2;">■ General Santos</span> &nbsp;
-          <span style="color:#ff5722;">■ Lanang</span>
+          <span style="color:#ff5722;">■ Lanang</span> &nbsp;
+          <span style="color:#009688;">■ Limketkai</span> &nbsp;
         </div>
       </div>
     </div>
@@ -337,7 +339,8 @@
     'Bacolod': '#1976d2',
     'Cagayan de Oro': '#fbc02d',
     'General Santos': '#7b1fa2',
-    'Lanang': '#ff5722'
+    'Lanang': '#ff5722,
+       'Limketkai': '#009688
   };
 
   const branchMap = {
@@ -346,7 +349,8 @@
     'bcd_attendance': 'Bacolod',
     'cdo_attendance': 'Cagayan de Oro',
     'gensan_attendance': 'General Santos',
-    'lanang_attendance': 'Lanang'
+    'lanang_attendance': 'Lanang',
+      'limketkai_attendance': 'Limketkai'
   };
 
   let allRecords = [];
@@ -492,3 +496,4 @@ allRecords.sort((a, b) => {
 
 </body>
 </html>
+
