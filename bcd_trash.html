@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trash - Bacolod </title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+    html, body { height: 100%; background: linear-gradient(to bottom, rgba(128,0,0,0.85), rgba(255,255,255,0.8), rgba(128,0,0,0.85)); }
+    header { background-color: #800000; color: white; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .logo-container { display: flex; align-items: center; gap: 2rem; }
+    .logo-container img { height: 80px; width: auto; }
+    .logo-container h1 { font-size: 2rem; font-weight: 700; }
+    .branch-name { font-size: 1.3rem; font-weight: 600; margin-left: 0.10rem; color: #fff; }
+    .nav-buttons { display: flex; gap: 2rem; align-items: center; }
+    .nav-buttons a { background-color: #fff; color: #800000; padding: 0.6rem 1.3rem; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: 0.3s; }
+    .nav-buttons a:hover { background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    .main-content { padding: 3rem; min-height: 100vh; }
+    .content-box { background: #fff; padding: 2.5rem; border-radius: 2.5rem; box-shadow: 0 12px 40px rgba(0,0,0,0.18); max-width: 2200px; margin: auto; }
+    h2 { text-align: center; color: #800000; margin-bottom: 1.5rem; }
+    .table-wrapper { overflow-x: auto; max-height: 520px; overflow-y: auto; border: 1px solid #eee; border-radius: 1.5rem; background: #fff; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+    th, td { border-bottom: 1px solid #eee; padding: 0.75rem; text-align: center; }
+    th { background: #f5f5f5; font-weight: 600; color: #333; }
+    td:last-child { white-space: pre-wrap; word-wrap: break-word; max-width: 200px; }
+    .action-cell { text-align: center; vertical-align: middle; }
+    .restore-btn {
+      all: unset; display: inline-block; background: linear-gradient(180deg, #004080, #0060c0); color: #fff; padding: 4px 12px; font-size: 0.72rem; font-weight: 600; border-radius: 4px; cursor: pointer; line-height: 1; text-align: center;
+    }
+    .restore-btn:hover { background: linear-gradient(180deg, #0060c0, #0080ff); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="ERestore Logo" />
+      <h1>ERestore Leatherworks <span class="branch-name">| Bacolod </span></h1>
+    </div>
+    <nav class="nav-buttons">
+      <a href="bcd_salesorder.html">Go Back</a>
+    </nav>
+  </header>
+
+  <div class="main-content">
+    <div class="content-box">
+      <h2>Trash - Deleted Sales Orders</h2>
+      <div class="table-wrapper">
+        <table id="trashTable">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Contact</th>
+              <th>Email</th>
+              <th>Receiver</th>
+              <th>Repairman</th>
+              <th>Payment</th>
+              <th>Total</th>
+              <th>Deposit</th>
+              <th>Balance</th>
+              <th>Completion</th>
+              <th>Items</th>
+              <th>Deleted At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+  authDomain: "erestore-leatherworks.firebaseapp.com",
+  projectId: "erestore-leatherworks",
+  storageBucket: "erestore-leatherworks.firebasestorage.app",
+  messagingSenderId: "727698074030",
+  appId: "1:727698074030:web:58870b6be96934e71c003f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+async function loadTrashOrders() {
+  const tableBody = document.querySelector("#trashTable tbody");
+  const snapshot = await getDocs(collection(db, "bcd_salesOrders_trash"));
+  const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  tableBody.innerHTML = "";
+  orders.sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt));
+  orders.forEach(order => {
+    const items = order.items?.map(i => `• ${i.quantity}x ${i.ticketNo} (${i.itemDescription})`).join('\n') || '';
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${order.jobOrderNumber}</td>
+      <td>${order.dateBooked}</td>
+      <td>${order.customerName}</td>
+      <td>${order.contactNumber}</td>
+      <td>${order.email || '—'}</td>
+      <td>${order.receiver}</td>
+      <td>${[...new Set(order.items?.map(i=>i.repairman))].join(', ')}</td>
+      <td>${order.paymentMode || '—'} ${order.paymentMode2 ? `<br><small>+ ${order.paymentMode2}</small>` : ''}</td>
+      <td>₱${parseFloat(order.totalAmount || 0).toFixed(2)}</td>
+      <td>₱${parseFloat(order.amountPaid || 0).toFixed(2)}</td>
+      <td>₱${parseFloat(order.balance || 0).toFixed(2)}</td>
+      <td>${order.completionDate || '—'}</td>
+      <td style="white-space: pre-wrap; text-align: left;">${items}</td>
+      <td>${new Date(order.deletedAt).toLocaleString()}</td>
+      <td class="action-cell">
+        <button class="restore-btn" onclick="restoreOrder('${order.id}')">Restore</button>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+window.restoreOrder = async function(id) {
+  if (!confirm("✅ Restore this order back to active list?")) return;
+
+  try {
+    // 1. Reference the document in trash
+    const trashDocRef = doc(db, "bcd_salesOrders_trash", id);
+
+    // 2. Get the trash document
+    const trashDocSnap = await getDocs(collection(db, "bcd_salesOrders_trash"));
+    const orderDoc = trashDocSnap.docs.find(d => d.id === id);
+
+    if (!orderDoc) {
+      alert("Record not found in trash.");
+      return;
+    }
+
+    // 3. Add the document to active orders
+    await addDoc(collection(db, "bcd_salesOrders"), orderDoc.data());
+
+    // 4. Delete it from trash
+    await deleteDoc(trashDocRef);
+
+    alert("Order restored successfully.");
+
+    // 5. Reload the trash table
+    loadTrashOrders();
+  } catch (error) {
+    console.error("Restore failed:", error);
+    alert("Failed to restore order. Check console for details.");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadTrashOrders);
+</script>
+</body>
+</html>
