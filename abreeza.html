@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,11 +17,9 @@
 
     body, html {
       height: 100%;
-      background:
-        linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)),
-        url('bg.png') no-repeat center center fixed;
-      background-size: cover;
-    }
+      background: linear-gradient(to bottom, rgba(128,0,0,0.85), rgba(255,255,255,0.8), rgba(128,0,0,0.85));
+     }
+
 
     header {
       background-color: #800000;
@@ -105,7 +104,7 @@
     .overlay {
       background-color: white;
       padding: 4rem;
-      border-radius: 4rem;
+      border-radius: 5rem;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.979);
       text-align: center;
       max-width: 700px;
@@ -140,6 +139,11 @@
       text-decoration: none;
       transition: background-color 0.3s ease, transform 0.2s;
     }
+
+    .button-group a:last-child {
+  grid-column: span 2; /* makes the last button span both columns */
+  justify-self: center; /* center it horizontally */
+}
 
     .button-group a:hover {
       background: linear-gradient(135deg, #ff0909 0%, #005555 100%);
@@ -264,7 +268,6 @@
   <div class="main-content">
     <div class="overlay">
       <h2>Welcome to Abreeza Branch</h2>
-      <p class="branch-welcome">Choose a task</p>
       <div class="button-group">
   <a href="abreeza_neworder.html">New Sales Order</a>
   <a href="abreeza_salesorder.html">Sales Order List</a>
@@ -360,4 +363,5 @@
 </script>
 </body>
 </html>
+
 
