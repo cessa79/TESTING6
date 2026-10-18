@@ -986,7 +986,8 @@ document.getElementById('printTicketBtn').addEventListener('click', () => {
     const ticketNo = row.querySelector('input[name="ticketNo"]').value || `#${index + 1}`;
     const itemDescription = row.querySelector('input[name="itemDescription"]').value || 'N/A';
     const remarks = row.querySelector('input[name="remarks"]').value || 'No remarks';
-    const price = parseFloat(row.querySelector('input[name="price"]').value || '0').toFixed(2);
+    const originalPrice = parseFloat(row.querySelector('input[name="price"]').value || '0');
+    const price = (originalPrice * 0.88).toFixed(2);
     const qty = row.querySelector('input[name="quantity"]').value || '1';
     const repairman = row.querySelector('select[name="repairman"]').value || 'N/A';
 
